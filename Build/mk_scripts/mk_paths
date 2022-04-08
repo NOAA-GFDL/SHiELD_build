@@ -1,0 +1,80 @@
+#!/bin/sh
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANYWARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is and as such is unsupported.
+#
+
+CONFIG="shield"
+COMPILER="intel"
+
+#
+## parse arguments
+for arg in "$@"
+do
+    case $arg in
+        shield|solo)
+        CONFIG="${arg#*=}"
+        shift # Remove CONFIG from processing
+        ;;
+        intel|gnu)
+        COMPILER="${arg#*=}"
+        shift # Remove COMPILER from processing
+        ;;
+        *)
+        exit 99
+        ;;
+    esac
+done
+
+echo $PATH
+
+pushd ${SHiELD_SRC}
+
+if [ ${CONFIG} = 'solo' ] ; then
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${COMPILER}/pathnames_fv3 \
+      GFDL_atmos_cubed_sphere/driver/solo/ \
+      GFDL_atmos_cubed_sphere/tools/ \
+      GFDL_atmos_cubed_sphere/model/ \
+      SHiELD_physics/atmos_drivers/solo/
+
+elif [ ${CONFIG} = 'shield' ] ; then
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${COMPILER}/pathnames_gfs \
+      GFDL_atmos_cubed_sphere/model/gfdl_cld_mp.F90 \
+      GFDL_atmos_cubed_sphere/model/cld_eff_rad.F90 \
+      SHiELD_physics/gsmphys/  \
+      SHiELD_physics/GFS_layer/ \
+      SHiELD_physics/IPD_layer/ \
+      SHiELD_physics/COSP
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${COMPILER}/pathnames_fv3 \
+      SHiELD_physics/FV3GFS/ \
+      SHiELD_physics/atmos_drivers/coupled/atmos_model.F90 \
+      SHiELD_physics/simple_coupler/coupler_main.F90 \
+      GFDL_atmos_cubed_sphere/driver/SHiELD/atmosphere.F90 \
+      GFDL_atmos_cubed_sphere/tools/ \
+      GFDL_atmos_cubed_sphere/model/ \
+      GFDL_atmos_cubed_sphere/GFDL_tools/fv_diag_column.F90
+fi
+
+popd
+
+exit 0

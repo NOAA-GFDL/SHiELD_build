@@ -1,0 +1,386 @@
+#!/bin/sh
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANYWARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is for the purpose of continuous
+#              integration software regression testing and as such is
+#              unsupported.
+#
+#SBATCH --output=./stdout/%x.o%j
+#SBATCH --qos=debug
+#SBATCH --account=_your_account_
+#SBATCH --time=00:10:00
+#SBATCH --clusters=c4
+#SBATCH --nodes=1
+
+if [ -z ${BUILDDIR} ] ; then
+  echo -e "\nERROR:\tset BUILDDIR to the base path /<path>/SHiELD_build/ \n"
+  exit 99
+fi
+
+# configure the site
+COMPILER=${COMPILER:-intel}
+. ${BUILDDIR}/site/environment.${COMPILER}.sh
+
+set -x
+
+# necessary for OpenMP
+export OMP_STACKSIZE=256m
+
+# case specific details
+MEMO="solo.mtn_rest_shear"
+TYPE="nh"          # choices:  nh, hydro (affects USE_COND and MOIST_CAPPA)
+MODE="64bit"      # choices:  32bit, 64bit
+MONO="non-mono"        # choices:  mono, non-mono
+GRID="d96_1k"
+HYPT="on"         # choices:  on, off  (controls hyperthreading)
+COMP="repro"       # choices:  debug, repro, prod
+
+# directory structure
+WORKDIR=${SCRATCHDIR:-${BUILDDIR}}/CI/BATCH-CI/${GRID}.${MEMO}/
+executable=${BUILDDIR}/Build/bin/SOLO_${TYPE}.${COMP}.${MODE}.${COMPILER}.x
+
+# changeable parameters
+    # dycore definitions
+    npx="97"
+    npy="5"
+    npz="50"
+    layout_x="4"
+    layout_y="1"
+    io_layout="1,1"
+    nthreads="2"
+    # doubly-periodic domain
+    dd_const=1000.
+
+    # time step parameters
+    k_split="1"
+    n_split="12"
+    dt_atmos="15"
+
+
+    # blocking factor used for threading and general physics performance
+    blocksize="16"
+
+    # run length
+    months="0"
+    days="0"
+    hours="5"
+    minutes="0"
+    seconds="0"
+
+    #initialization options
+    # set the pre-conditioning of the solution
+    # =0 implies no pre-conditioning
+    # >0 means new adiabatic pre-conditioning
+    # <0 means older adiabatic pre-conditioning
+    na_init=0
+
+    print_freq="-15"
+    # variables for gfs diagnostic output intervals and time to zero out time-accumulated data
+
+    # set various debug options
+    no_dycore=".F."
+
+    # set variables in input.nml for initial run
+    mountain=".F."
+    external_ic=".F."
+    warm_start=".F."
+    add_noise=0.0
+    curr_date="0,0,0,0"
+
+    if [ ${TYPE} = "nh" ]; then
+      # non-hydrostatic options
+      make_nh=".T."
+      hydrostatic=".F."
+      consv_te="0." # Use 0 in doubly-periodic
+    else
+      # hydrostatic options
+      make_nh=".F."
+      hydrostatic=".T."
+      consv_te="0." # Use 0 in doubly-periodic
+    fi
+
+    if [ ${MONO} = "mono" ] || [ ${MONO} = "monotonic" ] ; then
+      # monotonic options
+      d_con="1."
+      do_vort_damp=".false."
+      vtdm4="0.00"
+      if [ ${TYPE}="nh" ] ; then
+        # non-hydrostatic
+        hord_mt=" 8"
+        hord_xx=" 8"
+        hord_tr=" 8"
+      else
+        # hydrostatic
+        hord_mt=" 10"
+        hord_xx=" 10"
+        hord_tr=" 10"
+      fi
+      kord=9
+      dddmp=0.
+    else
+      # non-monotonic options
+      d_con="1.0"
+      do_vort_damp=".true."
+      if [ ${TYPE}="nh" ] ; then
+        # non-hydrostatic
+        hord_mt=" 5"
+        hord_xx=" 5"
+        hord_tr="-5"
+        vtdm4="0.06"
+      else
+        # hydrostatic
+        hord_mt=" 5"
+        hord_xx=" 5"
+        hord_tr="-5"
+        vtdm4="0.06"
+      fi
+        kord=11
+        dddmp=0.2
+    fi
+
+# variables for hyperthreading
+if [ ${HYPT} = "on" ] ; then
+  hyperthread=".true."
+  div=2
+else
+  hyperthread=".false."
+  div=1
+fi
+skip=`expr ${nthreads} \/ ${div}`
+
+# when running with threads, need to use the following command
+npes=`expr ${layout_x} \* ${layout_y}`
+LAUNCHER=${LAUNCHER:-srun}
+if [ ${LAUNCHER} = 'srun' ] ; then
+    export SLURM_CPU_BIND=verbose
+    run_cmd="${LAUNCHER} --label --ntasks=$npes --cpus-per-task=$skip ./${executable##*/}"
+else
+    export MPICH_ENV_DISPLAY=YES
+    run_cmd="${LAUNCHER} -prepend-rank -np $npes ./${executable##*/}"
+fi
+
+# set up the run area
+\rm -rf $WORKDIR
+mkdir -p $WORKDIR
+cd $WORKDIR
+mkdir -p RESTART
+mkdir -p INPUT
+
+# copy over the executable
+cp $executable .
+
+# copy over the tables
+#
+# create an empty data_table
+touch data_table
+
+#
+# build the diag_table with the experiment name and date stamp
+cat > diag_table << EOF
+${GRID}.${MEMO}
+0 0 0 0 0 0
+"grid_spec",              -1,  "months",   1, "days",  "time"
+"atmos_static",           -1,  "hours",    1, "hours", "time"
+"atmos_hourly",            1,  "hours",    1, "hours", "time"
+#output variables
+#=======================
+# ATMOSPHERE DIAGNOSTICS
+#=======================
+###
+# grid_spec
+###
+ "dynamics", "grid_lon", "grid_lon", "grid_spec", "all", .false.,  "none", 2,
+ "dynamics", "grid_lat", "grid_lat", "grid_spec", "all", .false.,  "none", 2,
+ "dynamics", "grid_lont", "grid_lont", "grid_spec", "all", .false.,  "none", 2,
+ "dynamics", "grid_latt", "grid_latt", "grid_spec", "all", .false.,  "none", 2,
+ "dynamics", "area",     "area",     "grid_spec", "all", .false.,  "none", 2,
+#### 3D
+ "dynamics",  "ucomp",   "ucomp",      "atmos_hourly",  "all",  .false.,  "none",  2
+ "dynamics",  "vcomp",   "vcomp",      "atmos_hourly",  "all",  .false.,  "none",  2
+ "dynamics",  "temp",    "temp",      "atmos_hourly",  "all",  .false.,  "none",  2
+ "dynamics",  "pfnh",   "pfnh",      "atmos_hourly",  "all",  .false.,  "none",  2
+ "dynamics",  "delp",   "delp",      "atmos_hourly",  "all",  .false.,  "none",  2
+ "dynamics",  "delz",   "delz",      "atmos_hourly",  "all",  .false.,  "none",  2
+ "dynamics",  "hght",   "hght",      "atmos_hourly",  "all",  .false.,  "none",  2
+ "dynamics",  "w",       "w",         "atmos_hourly",  "all",  .false.,  "none",  2
+
+#### Integrated fields
+ "dynamics",  "ps",          "ps",     "atmos_hourly", "all", .false., "none", 2
+
+###
+# gfs static data
+###
+ "dynamics",      "pk",          "pk",           "atmos_static",      "all", .false.,  "none", 2
+ "dynamics",      "bk",          "bk",           "atmos_static",      "all", .false.,  "none", 2
+ "dynamics",      "hyam",        "hyam",         "atmos_static",      "all", .false.,  "none", 2
+ "dynamics",      "hybm",        "hybm",         "atmos_static",      "all", .false.,  "none", 2
+ "dynamics",      "zsurf",       "zsurf",          "atmos_static",      "all", .false.,  "none", 2
+EOF
+
+
+#
+# build the field_table
+cat > field_table <<EOF
+# added by FRE: sphum must be present in atmos
+# specific humidity for moist runs
+ "TRACER", "atmos_mod", "sphum"
+           "longname",     "specific humidity"
+           "units",        "kg/kg"
+       "profile_type", "fixed", "surface_value=1.e30" /
+EOF
+
+
+#
+# build the input.nml
+cat > input.nml <<EOF
+ &atmos_model_nml
+     blocksize = $blocksize
+     chksum_debug = .false.
+/
+
+&diag_manager_nml
+     flush_nc_files = .false.
+     prepend_date = .F.
+/
+
+ &fms_affinity_nml
+    affinity = .false.
+/
+
+ &fms_io_nml
+       checksum_required   = .false.
+       max_files_r = 100,
+       max_files_w = 100,
+/
+
+ &fms_nml
+       clock_grain = 'ROUTINE',
+       domains_stack_size = 10000000,
+       print_memory_usage = .F.
+/
+
+ &fv_grid_nml
+!       grid_file = 'INPUT/grid_spec.nc'
+/
+
+ &fv_core_nml
+    !Domain and layout parameters
+       layout   = $layout_x,$layout_y
+       io_layout = $io_layout
+       npx      = $npx
+       npy      = $npy
+       ntiles   = 1,
+       npz    = $npz
+       !npz_type = 'lowtop'
+       grid_type = 4
+       dx_const = ${dd_const}
+       dy_const = ${dd_const}
+       deglat   = 0.
+
+    !Solver options
+       k_split  = $k_split
+       n_split  = $n_split
+       z_tracer = .T.
+       hydrostatic = $hydrostatic
+       nwat = 0
+       dnats = 1
+
+       hord_mt = $hord_mt
+       hord_vt = $hord_xx
+       hord_tm = $hord_xx
+       hord_dp = $hord_xx
+       hord_tr = $hord_tr
+
+       kord_tm = -${kord}
+       kord_mt =  ${kord}
+       kord_wz =  ${kord}
+       kord_tr =  ${kord}
+
+    !Initialization options
+       make_nh = $make_nh
+       na_init = $na_init
+       nudge_qv = .F.
+       external_ic = ${external_ic}
+       add_noise = ${add_noise}
+       mountain = $mountain
+
+    !Damping options
+       nord =  3
+       d4_bg = 0.15
+       do_vort_damp = .T.
+       vtdm4 = 0.03
+       delt_max = 0.0
+       d_con = 0.0
+       dddmp = 0.0
+       d_ext = 0.0
+
+    !Upper boundary options
+       n_sponge = 0
+       fv_sg_adj = -1
+       tau =  -1
+       rf_cutoff = -1
+       d2_bg_k1 = 0.2
+       d2_bg_k2 = 0.1
+
+
+     !Physics options
+       consv_te = $consv_te
+       do_sat_adj = .F.
+       do_inline_mp = .F.
+       fill = .T.
+       phys_hydrostatic = .F.
+
+    !Debugging and diagnostics
+       print_freq = $print_freq
+       warm_start = $warm_start
+       no_dycore = $no_dycore
+       fv_debug = .F.
+       range_warn = .F.
+
+/
+
+&gfdl_mp_nml
+
+/
+
+&test_case_nml ! cold start
+    test_case = 22
+/
+
+ &main_nml
+       days  = $days
+       hours = $hours
+       minutes = $minutes
+       seconds = $seconds
+       dt_atmos = $dt_atmos
+       current_time =  $curr_date
+       atmos_nthreads = $nthreads
+       use_hyper_thread = $hyperthread
+/
+EOF
+
+# run the executable
+${run_cmd} | tee fms.out || exit
+
+#
+# verification
+# < add logic for verification >

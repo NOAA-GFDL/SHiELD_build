@@ -1,0 +1,101 @@
+#!/bin/sh
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANYWARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is and as such is unsupported.
+#
+
+#
+# set up some default variables for use within the script
+BUILD_ROOT=${PWD%/*}
+SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC
+PATH="${BUILD_ROOT}/mkmf/bin:${PATH}"
+COMPILER="intel"
+
+#
+## parse arguments
+for arg in "$@"
+do
+    case $arg in
+        intel|gnu)
+        COMPILER="${arg#*=}"
+        shift # Remove compiler from processing
+        ;;
+    esac
+done
+
+#
+# get the correct system environment
+. ${BUILD_ROOT}/site/environment.${COMPILER}.sh
+
+#
+# CPPDEFS needed to build libFMS
+cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS"
+
+#
+# clean up and create the FMS library directory
+\rm -rf libFMS/${COMPILER}
+
+#########################
+#---CREATE 32-BIT libFMS
+#########################
+bit="32bit"
+mkdir -p libFMS/${COMPILER}/${bit}
+pushd libFMS/${COMPILER}/${bit}
+(cd ${SHiELD_SRC} ; list_paths -o ${BUILD_ROOT}/Build/libFMS/${COMPILER}/${bit}/pathnames_fms FMS)
+mkmf -m Makefile -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "$cppDefs" \
+     -p libFMS.a ${BUILD_ROOT}/Build/libFMS/${COMPILER}/${bit}/pathnames_fms
+echo "building libFMS/${COMPILER}/32bit/libFMS.a..."
+make -j8 OPENMP=Y AVX=Y 32BIT=Y Makefile libFMS.a >& Build_libFMS.out
+
+#
+# test and report on build success
+if [ $? -ne 0 ] ; then
+   echo " ${bit} build failed "
+   exit 1
+fi
+
+#
+# return to the root directory
+popd
+
+#########################
+#---CREATE 64-BIT libFMS
+#########################
+bit="64bit"
+mkdir -p libFMS/${COMPILER}/${bit}
+pushd libFMS/${COMPILER}/${bit}
+(cd ${SHiELD_SRC} ; list_paths -o ${BUILD_ROOT}/Build/libFMS/${COMPILER}/${bit}/pathnames_fms FMS)
+mkmf -m Makefile -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "$cppDefs" \
+     -p libFMS.a ${BUILD_ROOT}/Build/libFMS/${COMPILER}/${bit}/pathnames_fms
+echo "building libFMS/${COMPILER}/64bit/libFMS.a..."
+make -j8 OPENMP=Y AVX=Y Makefile libFMS.a >& Build_libFMS.out
+
+#
+# test and report on build success
+if [ $? -ne 0 ] ; then
+   echo " ${bit} build failed "
+   exit 1
+fi
+
+echo "Build of libfms_32bit.a and libfms_64bit.a successful"
+popd
+exit 0

@@ -1,0 +1,9 @@
+stdout
+STDO
+old
+*.test*
+exec
+bin
+libFMS
+*.out
+.lib*

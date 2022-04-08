@@ -1,0 +1,219 @@
+#!/bin/sh
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANYWARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is and as such is unsupported.
+#
+
+#
+# function to display a spinning wheel while a command is in progress
+spin()
+{
+  spinner="\\|/-\\|/-"
+  while :
+  do
+    for i in `seq 0 7`
+    do
+      echo -n "${spinner:$i:1}"
+      echo -en "\010"
+      sleep 1
+    done
+  done
+}
+# end function
+
+#
+# start the spinner
+spin &
+SPIN_PID=$!
+trap "kill -9 $SPIN_PID" `seq 0 15`
+#------------------------------------------------------------------------------
+# functional code below this point
+
+#
+# set default values
+#
+# configure your build parameters
+  config="shield"
+  hydro="nh"
+  comp="prod"
+  bit="32bit"
+  avx="Y"
+  compiler="intel"
+  clean="noclean"
+
+  config_name="SHiELD"
+
+#
+# parse arguments
+  for arg in "$@"
+  do
+      case $arg in
+          shield|solo)
+             config="${arg#*=}"
+             if [ $config = 'solo' ] ; then
+               config_name="SOLO"
+             fi
+             shift # Remove "config" from processing
+             ;;
+          nh|hydro|sw)
+             hydro="${arg#*=}"
+             shift # remove "hydro" from processing
+             ;;
+          prod|repro|debug)
+             comp="${arg#*=}"
+             shift # remove "comp" from processing
+             ;;
+          32bit|64bit)
+             bit="${arg#*=}"
+             shift # remove "bit" from processing
+             ;;
+          avx|noavx)
+             if [ ${arg#*} = 'noavx' ] ; then
+               avx="N"
+             fi
+             shift # remove "avx from processing
+             ;;
+          intel|gnu)
+             compiler="${arg#*=}"
+             shift # Remove "compiler" from processing
+             ;;
+          noclean|clean|cleanall)
+             clean="${arg#*=}"
+             shift # Remove "clean" from processing
+             ;;
+          *)
+          if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
+            echo "option "${arg#}" not found"
+          fi
+          echo -e ' '
+          echo -e "valid options are:"
+          echo -e "\t[shield(D) | solo] \t\t\t configuration"
+          echo -e "\t[nh(D) | hydro | sw] \t\t\t executable configuration"
+          echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
+          echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
+          echo -e "\t[avx(D) | noavx] \t\t\t use AVX_LEVEL defined in site/environment.<compiler>.sh"
+          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
+          echo -e "\n"
+          exit
+          ;;
+      esac
+  done
+
+if [ $hydro = "sw" ] && [ $config = "shield" ] ; then
+  echo -e ">>> option '$hydro' with '$config' is not a valid configuration"
+  exit 1
+fi
+
+#
+# set up some default variables for use within the helper scripts
+export BUILD_ROOT=${PWD%/*}
+export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
+export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
+
+#
+# load the proper environment for your machine
+. ${BUILD_ROOT}/site/environment.${compiler}.sh
+
+#
+# output the build setup
+echo -e ' '
+module list
+echo -e ' '
+echo -e "Compilation will continue in five seconds with"
+echo -e "\tconfig   = $config"
+echo -e "\thydro    = $hydro"
+echo -e "\tcomp     = $comp"
+echo -e "\tbit      = $bit"
+echo -e "\tavx      = $avx"
+echo -e "\tcompiler = $compiler"
+echo -e "\tclean    = $clean"
+echo -e "\n"
+sleep 5
+
+#
+# conditionally clean the build directory
+  if [ ${clean} = "cleanall" ] ; then
+     echo " cleaning FMS library and build directory in 2 seconds"
+     sleep 2
+     \rm -rf libFMS/${compiler}/*
+     \rm -rf exec/${config}_${compiler}/*
+  elif [ ${clean} = "clean" ] ; then
+     echo " cleaning build directory in 2 seconds"
+     sleep 2
+     \rm -rf exec/${config}_${compiler}/*
+  fi
+
+#
+# check to make sure libFMS exists
+  if [ -d libFMS/${compiler} ] && [ -e libFMS/${compiler}/32bit/libFMS.a ] && [ -e libFMS/${compiler}/64bit/libFMS.a ] ; then
+     echo " pre-built libFMS/${compiler} exists"
+  else
+     echo " libFMS/${compiler} does not exist - building libFMS/${compiler}"
+     MAKE_libFMS ${compiler}  >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
+     #
+     # test and report on libFMS build success
+     if [ $? -ne 0 ] ; then
+       echo ">>> libFMS $compiler build failed"
+       exit 2
+     fi
+     echo " libFMS build successful"
+  fi
+
+#
+# ensure the build and final executable locations are available
+  mkdir -p ./exec/${config}_${compiler}
+  mkdir -p ./bin/
+
+# build the model
+echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
+  #
+  # create the file list for the build
+    mk_paths ${config} ${compiler}                      > build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    if [ $? -ne 0 ] ; then
+       echo ">>> filelist cration failed"
+       exit 3
+    fi
+  #
+  # create the library makefiles
+    mk_makefile ${config} ${hydro} ${bit} ${compiler}  >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    if [ $? -ne 0 ] ; then
+       echo ">>> makefile creation failed"
+       exit 4
+    fi
+  #
+  # build the configuration
+    mk_make ${config} ${comp} ${bit} ${avx} ${compiler}          >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+  #
+  # move the executable to an accessible area
+    mv exec/${config}_${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x
+
+#
+# test and report on build success
+  if [ $? -ne 0 ] ; then
+     echo ">>> ${config_name} build ${hydro} ${comp} ${bit} ${compiler} failed"
+     exit 5
+  else
+     echo " ${config_name} build ${hydro} ${comp} ${bit} ${compiler} successful"
+  fi
+
+exit 0

@@ -1,0 +1,228 @@
+#!/bin/sh
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANYWARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is for the purpose of continuous
+#              integration software regression testing and as such is
+#              unsupported.
+#
+#SBATCH --output=./stdout/%x.o%j
+#SBATCH --qos=debug
+#SBATCH --account=_your_acct_
+#SBATCH --time=0:10:00
+#SBATCH --clusters=c4
+#SBATCH --nodes=3
+
+if [ -z ${BUILDDIR} ] ; then
+  echo -e "\nERROR:\tset BUILDDIR to the base path /<path>/SHiELD_build/ \n"
+  exit 99
+fi
+
+# configure the site
+COMPILER=${COMPILER:-intel}
+. ${BUILDDIR}/site/environment.${COMPILER}.sh
+
+set -x
+
+# necessary for OpenMP
+export OMP_STACKSIZE=256m
+
+# case specific details
+res=384
+MEMO="BTwave" # trying repro executable
+TYPE="sw"         # choices:  nh, hydro
+MODE="64bit"      # choices:  32bit, 64bit
+GRID="C$res"
+HYPT="on"         # choices:  on, off  (controls hyperthreading)
+COMP="repro"       # choices:  debug, repro, prod
+
+# directory structure
+WORKDIR=${SCRATCHDIR:-${BUILDDIR}}/CI/BATCH-CI/${GRID}.${MEMO}/
+executable=${BUILDDIR}/Build/bin/SOLO_${TYPE}.${COMP}.${MODE}.${COMPILER}.x
+
+# changeable parameters
+    # dycore definitions
+    npx="385"
+    npy="385"
+    npz="1" #Shallow water
+    layout_x="4"
+    layout_y="4"
+    io_layout="1,1" #Want to increase this in a production run??
+    nthreads="2"
+
+    # run length
+    days="7"
+    hours="0"
+    minutes="0"
+    seconds="0"
+    dt_atmos="1200"
+
+    # set variables in input.nml for initial run
+    na_init=0 # TRY 1
+    curr_date="0,0,0,0"
+
+    make_nh=".F."
+    hydrostatic=".T."
+    phys_hydrostatic=".F."     # will be ignored in hydro mode
+    use_hydro_pressure=".T."   # have to be .T. in hydro mode
+    consv_te="0."
+
+# variables for hyperthreading
+if [ ${HYPT} = "on" ] ; then
+  hyperthread=".true."
+  div=2
+else
+  hyperthread=".false."
+  div=1
+fi
+skip=`expr ${nthreads} \/ ${div}`
+
+# when running with threads, need to use the following command
+npes=`expr ${layout_x} \* ${layout_y} \* 6 `
+LAUNCHER=${LAUNCHER:-srun}
+if [ ${LAUNCHER} = 'srun' ] ; then
+    export SLURM_CPU_BIND=verbose
+    run_cmd="${LAUNCHER} --label --ntasks=$npes --cpus-per-task=$skip ./${executable##*/}"
+else
+    export MPICH_ENV_DISPLAY=YES
+    run_cmd="${LAUNCHER} -prepend-rank -np $npes ./${executable##*/}"
+fi
+
+# set up the run area
+\rm -rf $WORKDIR
+mkdir -p $WORKDIR
+cd $WORKDIR
+mkdir -p RESTART
+mkdir -p INPUT
+
+# copy over the executable
+cp $executable .
+
+# copy over the tables
+#
+# create an empty data_table
+touch data_table
+
+
+#
+# build the field_table
+cat > field_table <<EOF
+
+ "TRACER", "atmos_mod", "sphum"
+           "longname",     "specific humidity"
+           "units",        "kg/kg"
+           "profile_type", "fixed", "surface_value=3.e-6" /
+EOF
+
+
+#
+# build the diag_table with the experiment name and date stamp
+cat > diag_table << EOF
+${GRID}.${MODE}
+0 0 0 0 0 0
+"grid_spec",    -1,  "hours",  1, "days", "time",
+"atmos_daily",  0,  "hours",  1, "days", "time",
+
+"dynamics", "grid_lon", "grid_lon", "grid_spec", "all", .false.,  "none", 2,
+"dynamics", "grid_lat", "grid_lat", "grid_spec", "all", .false.,  "none", 2,
+"dynamics", "area", "area", "grid_spec", "all", .false.,  "none", 2,
+
+"dynamics", "ps_ic", "ps_ic",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "ps",    "ps",      "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "ua_ic", "ua_ic",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "va_ic", "va_ic",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "ucomp", "ucomp",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "vcomp", "vcomp",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "vort", "vort",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "pv", "pv",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "delp", "delp",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "sphum", "sphum",   "atmos_daily", "all", .false.,  "none", 2,
+
+EOF
+
+
+#
+# build the input.nml
+cat > input.nml <<EOF
+ &fms_affinity_nml
+    affinity = .false.
+/
+
+ &fms_io_nml
+       checksum_required   = .false.
+/
+
+ &fms_nml
+       clock_grain = 'ROUTINE',
+       domains_stack_size = 20000000,
+       print_memory_usage = .false.
+/
+
+ &fv_core_nml
+       layout   = $layout_x,$layout_y
+       io_layout = $io_layout
+       npx      = $npx
+       npy      = $npy
+       ntiles   = 6
+       npz    = $npz
+       grid_type = 0
+       beta = 0.
+       n_split = 32
+       nwat = 0
+       na_init = $na_init
+       nord = 2
+       d4_bg = 0.12
+       mountain = .F.
+       hord_mt = 8
+       hord_vt = 8
+       hord_tm = 8
+       hord_dp = 8
+       hord_tr = 8
+       print_freq = 24
+       warm_start = .F.
+     do_schmidt = .false.
+     adiabatic = .true.
+/
+
+ &test_case_nml
+    test_case = 7
+    alpha = 0.
+/
+
+ &main_nml
+       days  = $days
+       hours = $hours
+       minutes = $minutes
+       seconds = $seconds
+       dt_atmos = $dt_atmos
+       current_time =  $curr_date
+       atmos_nthreads = $nthreads
+       use_hyper_thread = $hyperthread
+/
+
+EOF
+
+# run the executable
+${run_cmd} | tee fms.out || exit
+
+#
+# verification
+# < add logic for verification >
