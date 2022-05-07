@@ -1,4 +1,4 @@
-# template for the Intel fortran compiler
+# template for the GNU fortran compiler
 # typical use with mkmf
 # mkmf -t template.ifc -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 ############
