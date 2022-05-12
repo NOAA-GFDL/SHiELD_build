@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #***********************************************************************
 #*                   GNU Lesser General Public License
 #*
@@ -48,7 +48,7 @@ done
 
 #
 # CPPDEFS needed to build libFMS
-cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS"
+cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS -DGFS_CONSTANTS"
 
 #
 # clean up and create the FMS library directory
