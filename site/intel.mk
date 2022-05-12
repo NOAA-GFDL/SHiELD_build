@@ -29,10 +29,10 @@ MAKEFLAGS += --jobs=8
 
 NETCDF_ROOT = $(NETCDF_DIR)
 MPI_ROOT    = $(MPICH_DIR)
-ifeq(`nf-config --fc`,ifort)
-	INCLUDE = "`nf-config --fflags` `nc-config --cflags`"
+ifeq (`nf-config --fc`,ifort)
+INCLUDE = "`nf-config --fflags` `nc-config --cflags`"
 else
-	INCLUDE = -I$(NETCDF_ROOT)/include
+INCLUDE = -I$(NETCDF_ROOT)/include
 endif
 FPPFLAGS := -fpp -Wp,-w $(INCLUDE)
 

@@ -29,8 +29,11 @@ MAKEFLAGS += --jobs=8
 
 NETCDF_ROOT = $(NETCDF_DIR)
 MPI_ROOT    = $(MPICH_DIR)
+ifeq (`nf-config --fc`,gfortran)
+INCLUDE = "`nf-config --fflags` `nc-config --cflags`"
+else
 INCLUDE = -I$(NETCDF_ROOT)/include
-
+endif
 FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
 
 FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace
@@ -133,7 +136,11 @@ LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib
 # The macro TMPFILES is provided to slate files like the above for removal.
 
 RM = rm -f
-SHELL = /bin/csh -f
+ifeq (${SHELL},csh)
+ SHELL = /bin/csh -f
+else
+ SHELL = /bin/bash -f
+endif
 TMPFILES = .*.m *.B *.L *.i *.i90 *.l *.s *.opt
 
 .SUFFIXES: .F .F90 .H .L .T .f .f90 .h .i .i90 .l .o .s .opt .x
