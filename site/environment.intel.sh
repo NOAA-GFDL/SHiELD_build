@@ -46,6 +46,8 @@ if [ `hostname | cut -c1-4` = "gaea" ] || [ `hostname | cut -c1-3` = "nid" ] ; t
    # highest level of AVX support
    export AVX_LEVEL=-xCORE-AVX2
 
+   echo -e ' '
+   module list
 
 elif [ `hostname | cut -c1-5` = "Orion" ] ; then
    echo " Orion environment "
@@ -72,6 +74,9 @@ elif [ `hostname | cut -c1-5` = "Orion" ] ; then
    # highest level of AVX support
    export AVX_LEVEL=-xSKYLAKE-AVX512
 
+   echo -e ' '
+   module list
+
 
 elif [ `hostname | cut -c1-2` = "fe" ] || [ `hostname | cut -c1` = "x" ] ; then
    echo " jet environment "
@@ -96,6 +101,8 @@ elif [ `hostname | cut -c1-2` = "fe" ] || [ `hostname | cut -c1` = "x" ] ; then
    export TEMPLATE=site/intel.mk
    export LAUNCHER=srun
 
+   echo -e ' '
+   module list
 
 elif [ `hostname | cut -c1` = "h" ] ; then
    echo " hera environment "
@@ -118,6 +125,9 @@ elif [ `hostname | cut -c1` = "h" ] ; then
 
    # highest level of AVX support
    export AVX_LEVEL=-xSKYLAKE-AVX512
+
+   echo -e ' '
+   module list
 
 elif [ `hostname | cut -c1-3` = "lsc" ] ; then
    echo " lsc environment "
@@ -146,6 +156,9 @@ elif [ `hostname | cut -c1-3` = "lsc" ] ; then
    else
      export AVX_LEVEL=-xSKYLAKE-AVX512
    fi
+
+   echo -e ' '
+   module list
 
 else
 
