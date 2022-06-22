@@ -32,15 +32,12 @@ MPI_ROOT    = $(MPICH_DIR)
 # start with blank LIB
 LIBS :=
 
-ifneq (`nf-config --prefix`,`nc-config --prefix`)
+ifneq (`nc-config --libs`,)
   INCLUDE = `nf-config --fflags` `nc-config --cflags`
   LIBS += `nf-config --flibs` `nc-config --libs`
-else ifneq ($(findstring netcdf/4,$(LOADEDMODULES)),)
-  INCLUDE = -I$(NETCDF_ROOT)/include
-  LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 else
   INCLUDE = -I$(NETCDF_ROOT)/include
-  LIBS += -lnetcdf
+  LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
 
 FPPFLAGS := -fpp -Wp,-w $(INCLUDE)
