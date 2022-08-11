@@ -57,7 +57,7 @@ export OMP_STACKSIZE=256m
 
 # case specific details
 res=192
-MEMO="BLvortex" # trying repro executable
+MEMO="sw.BLvortex" # trying repro executable
 TYPE="sw"         # choices:  nh, hydro
 MODE="64bit"      # choices:  32bit, 64bit
 GRID="C$res"

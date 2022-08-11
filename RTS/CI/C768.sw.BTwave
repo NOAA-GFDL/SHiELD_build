@@ -57,7 +57,7 @@ export OMP_STACKSIZE=256m
 
 # case specific details
 res=768
-MEMO="BTwave" # trying repro executable
+MEMO="sw.BTwave" # trying repro executable
 TYPE="sw"         # choices:  nh, hydro
 MODE="64bit"      # choices:  32bit, 64bit
 GRID="C$res"

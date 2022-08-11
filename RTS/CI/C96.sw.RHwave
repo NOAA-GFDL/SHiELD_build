@@ -57,7 +57,7 @@ export OMP_STACKSIZE=256m
 
 # case specific details
 res=96
-MEMO="RHwave" # trying repro executable
+MEMO="sw.RHwave" # trying repro executable
 TYPE="sw"         # choices:  nh, hydro
 MODE="64bit"      # choices:  32bit, 64bit
 GRID="C$res"
