@@ -24,16 +24,21 @@
 #              integration software regression testing and as such is
 #              unsupported.
 #
-#SBATCH --output=./stdout/%x.o%j
-#SBATCH --qos=debug
-#SBATCH --account=_your_acct_
-#SBATCH --time=0:10:00
-#SBATCH --clusters=c4
-#SBATCH --nodes=1
+#SBATCH --ntasks=24
 
 if [ -z ${BUILDDIR} ] ; then
   echo -e "\nERROR:\tset BUILDDIR to the base path /<path>/SHiELD_build/ \n"
   exit 99
+fi
+
+# when we are running this test for CI, we run it in a container
+# an expected value for container would be "--mpi=pmi2 singularity exec -B <file directory> <container>"
+# this is needed within the run command
+if [ -z "$1" ] ; then
+  CONTAINER=""
+else
+  CONTAINER=$1
+  echo -e "\nThis test will be run inside of a container with the command $1"
 fi
 
 # configure the site
@@ -100,10 +105,10 @@ npes=`expr ${layout_x} \* ${layout_y} \* 6 `
 LAUNCHER=${LAUNCHER:-srun}
 if [ ${LAUNCHER} = 'srun' ] ; then
     export SLURM_CPU_BIND=verbose
-    run_cmd="${LAUNCHER} --label --ntasks=$npes --cpus-per-task=$skip ./${executable##*/}"
+    run_cmd="${LAUNCHER} --label --ntasks=$npes --cpus-per-task=$skip $CONTAINER ./${executable##*/}"
 else
     export MPICH_ENV_DISPLAY=YES
-    run_cmd="${LAUNCHER} -prepend-rank -np $npes ./${executable##*/}"
+    run_cmd="${LAUNCHER} -prepend-rank -np $npes $CONTAINER ./${executable##*/}"
 fi
 
 # set up the run area

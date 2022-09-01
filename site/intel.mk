@@ -29,11 +29,17 @@ MAKEFLAGS += --jobs=8
 
 NETCDF_ROOT = $(NETCDF_DIR)
 MPI_ROOT    = $(MPICH_DIR)
-ifeq (`nf-config --fc`,ifort)
-INCLUDE = "`nf-config --fflags` `nc-config --cflags`"
+# start with blank LIB
+LIBS :=
+
+ifneq (`nc-config --libs`,)
+  INCLUDE = `nf-config --fflags` `nc-config --cflags`
+  LIBS += `nf-config --flibs` `nc-config --libs`
 else
-INCLUDE = -I$(NETCDF_ROOT)/include
+  INCLUDE = -I$(NETCDF_ROOT)/include
+  LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
+
 FPPFLAGS := -fpp -Wp,-w $(INCLUDE)
 
 FFLAGS := $(INCLUDE) -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -nowarn -sox -align array64byte -traceback
@@ -79,9 +85,6 @@ LDFLAGS :=
 LDFLAGS_OPENMP := -qopenmp
 LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 
-# start with blank LIBS
-LIBS :=
-
 ifneq ($(REPRO),)
 CFLAGS += $(CFLAGS_REPRO)
 FFLAGS += $(FFLAGS_REPRO)
@@ -117,12 +120,6 @@ ifeq ($(NETCDF),3)
   ifneq ($(findstring -Duse_netCDF,$(CPPDEFS)),)
     CPPDEFS += -Duse_LARGEFILE
   endif
-endif
-
-ifneq ($(findstring netcdf/4,$(LOADEDMODULES)),)
-  LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
-else
-  LIBS += -lnetcdf
 endif
 
 LIBS +=

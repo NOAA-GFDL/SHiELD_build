@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #***********************************************************************
 #*                   GNU Lesser General Public License
 #*
@@ -136,8 +136,6 @@ export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
 
 #
 # output the build setup
-echo -e ' '
-module list
 echo -e ' '
 echo -e "Compilation will continue in five seconds with"
 echo -e "\tconfig   = $config"
