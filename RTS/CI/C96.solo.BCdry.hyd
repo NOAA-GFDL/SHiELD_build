@@ -24,12 +24,7 @@
 #              integration software regression testing and as such is
 #              unsupported.
 #
-#SBATCH --output=./stdout/%x.o%j
-#SBATCH --qos=debug
-#SBATCH --account=_your_acct_
-#SBATCH --time=0:10:00
-#SBATCH --clusters=c4
-#SBATCH --nodes=1
+#SBATCH --ntasks=24
 
 #Dry baroclinic wave in hydrostatic dynamics
 #Also demonstrates the plev diagnostic capability

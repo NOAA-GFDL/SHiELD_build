@@ -44,4 +44,4 @@ git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMSCoupler
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/atmos_drivers
 
 #Automatic release tracking from Matt M.
-echo $release > ../../release
+echo $release > release
