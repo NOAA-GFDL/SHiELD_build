@@ -154,11 +154,11 @@ sleep 5
      echo " cleaning FMS library and build directory in 2 seconds"
      sleep 2
      \rm -rf libFMS/${compiler}/*
-     \rm -rf exec/${config}_${compiler}/*
+     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
-     \rm -rf exec/${config}_${compiler}/*
+     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
   fi
 
 #
@@ -179,31 +179,31 @@ sleep 5
 
 #
 # ensure the build and final executable locations are available
-  mkdir -p ./exec/${config}_${compiler}
+  mkdir -p ./exec/${config}_${hydro}.${comp}.${bit}.${compiler}
   mkdir -p ./bin/
 
 # build the model
 echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
   #
   # create the file list for the build
-    mk_paths ${config} ${compiler}                      > build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_paths ${config} ${hydro} ${comp} ${bit} ${compiler}       > build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> filelist cration failed"
        exit 3
     fi
   #
   # create the library makefiles
-    mk_makefile ${config} ${hydro} ${bit} ${compiler}  >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> makefile creation failed"
        exit 4
     fi
   #
   # build the configuration
-    mk_make ${config} ${comp} ${bit} ${avx} ${compiler}          >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
   #
   # move the executable to an accessible area
-    mv exec/${config}_${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x
+    mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x
 
 #
 # test and report on build success
