@@ -161,21 +161,32 @@ sleep 5
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
   fi
 
+# If EXTERNAL_LIBS is set, then the program will use the path defined by
+#    EXTERNAL_LIBS as the location of nceplibs and libFMS
+if [ -z ${EXTERNAL_LIBS} ] ; then
 #
 # check to make sure libFMS exists
   if [ -d libFMS/${compiler} ] && [ -e libFMS/${compiler}/32bit/libFMS.a ] && [ -e libFMS/${compiler}/64bit/libFMS.a ] ; then
      echo " pre-built libFMS/${compiler} exists"
   else
-     echo " libFMS/${compiler} does not exist - building libFMS/${compiler}"
-     MAKE_libFMS ${compiler}  >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
-     #
-     # test and report on libFMS build success
-     if [ $? -ne 0 ] ; then
-       echo ">>> libFMS $compiler build failed"
-       exit 2
-     fi
-     echo " libFMS build successful"
+     echo " libFMS/${compiler} does not exist"
+     ./BUILDlibfms ${compiler}
   fi
+else
+  echo " External Libraries are being used: ${EXTERNAL_LIBS}"
+  if [ -d ${EXTERNAL_LIBS}/nceplibs/${compiler} ] && [ -d ${EXTERNAL_LIBS}/libFMS/${compiler} ] && \
+     [ -e ${EXTERNAL_LIBS}/libFMS/${compiler}/32bit/libFMS.a ] && [ -e ${EXTERNAL_LIBS}/libFMS/${compiler}/64bit/libFMS.a ] && \
+     [ -e ${EXTERNAL_LIBS}/nceplibs/${compiler}/libbacio.a ] && [ -e ${EXTERNAL_LIBS}/nceplibs/${compiler}/libsp_d.a ] && \
+     [ -e ${EXTERNAL_LIBS}/nceplibs/${compiler}/libbacio.a ] && [ -e ${EXTERNAL_LIBS}/nceplibs/${compiler}/libw3nco_d.a ] ; then
+     ln -sf ${EXTERNAL_LIBS}/nceplibs/${compiler}/* nceplibs/${compiler}/.
+     ln -sf ${EXTERNAL_LIBS}/libFMS/${compiler}/32bit/* libFMS/${compiler}/32bit/.
+     ln -sf ${EXTERNAL_LIBS}/libFMS/${compiler}/64bit/* libFMS/${compiler}/64bit/.
+  else
+     echo "The necessary nceplibs or libFMS libraries are not installed at ${EXTERNAL_LIBS}"
+     echo "Unset EXTERNAL_LIBS if you intend to use the libraries in SHiELD_build/Build"
+     exit 99
+  fi
+fi
 
 #
 # ensure the build and final executable locations are available

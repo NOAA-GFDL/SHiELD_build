@@ -84,7 +84,7 @@ $FC --version
 NCEPLIBS="../../libFMS/${COMPILER}/${bit}/libFMS.a"
 if [ ${CONFIG} = 'shield' ] ; then
   NCEPLIBS+=" ./libgfs.a"
-  NCEPLIBS+=" -L../../nceplibs/${COMPILER}/ -lbacio_4  -lsp_v2.0.2_d  -lw3emc_d  -lw3nco_d"
+  NCEPLIBS+=" -L../../nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
 fi
 
 if [ ${CONFIG} = 'shield' ] ; then

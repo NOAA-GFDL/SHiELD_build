@@ -1,0 +1,66 @@
+#!/bin/bash
+
+#set default compiler
+compiler="intel"
+
+# parse arguments
+  for arg in "$@"
+  do
+      case $arg in
+          intel|gnu)
+             compiler="${arg#*=}"
+             shift # Remove "compiler" from processing
+             ;;
+	  *)
+      esac
+  done
+
+# set up some default variables
+BUILD_ROOT=${PWD%/*}
+if [ -z ${EXTERNAL_LIBS} ] ; then
+   nceplibs_dir=${BUILD_ROOT}/Build/nceplibs/${compiler}
+else
+   nceplibs_dir=${EXTERNAL_LIBS}/nceplibs/${compiler}
+fi
+
+\rm -rf $nceplibs_dir
+
+# load the proper environment for your machine
+. ${BUILD_ROOT}/site/environment.${compiler}.sh
+module load cmake/3.20.1
+
+git clone https://github.com/NOAA-EMC/NCEPLIBS-bacio
+pushd NCEPLIBS-bacio
+cmake -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install .
+make -j8
+make install
+popd
+
+git clone https://github.com/NOAA-EMC/NCEPLIBS-sp
+pushd NCEPLIBS-sp
+cmake -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-sp/install .
+make -j8 sp_d
+make install
+popd
+
+git clone https://github.com/NOAA-EMC/NCEPLIBS-w3emc
+pushd NCEPLIBS-w3emc
+cmake -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install -DCMAKE_PREFIX_PATH=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
+make -j8 w3emc_d
+make install
+popd
+
+git clone https://github.com/NOAA-EMC/NCEPLIBS-w3nco
+pushd NCEPLIBS-w3nco
+cmake -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install .
+make -j8 w3nco_d
+make install
+popd
+
+mkdir -p $nceplibs_dir
+mv ${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/libbacio.a $nceplibs_dir/.
+mv ${BUILD_ROOT}/Build/NCEPLIBS-sp/install/lib64/libsp_d.a $nceplibs_dir/.
+mv ${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install/lib64/libw3emc_d.a $nceplibs_dir/.
+mv ${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install/lib/libw3nco_d.a $nceplibs_dir/.
+
+\rm -rf NCEPLIBS-bacio NCEPLIBS-sp NCEPLIBS-w3emc NCEPLIBS-w3nco

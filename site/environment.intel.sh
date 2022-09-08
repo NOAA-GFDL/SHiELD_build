@@ -28,9 +28,10 @@ if [ `hostname | cut -c1-4` = "gaea" ] || [ `hostname | cut -c1-3` = "nid" ] ; t
    echo " gaea environment "
 
    . ${MODULESHOME}/init/sh
-   module unload PrgEnv-pgi
+   module unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu
    module load   PrgEnv-intel
    module rm intel
+   module rm gcc
    module load intel/19.0.5.281
    module load cray-netcdf
    module load craype-hugepages4M
