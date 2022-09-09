@@ -11,7 +11,7 @@
 #* (at your option) any later version.
 #*
 #* The SHiELD Build System distributed in the hope that it will be
-#* useful, but WITHOUT ANYWARRANTY; without even the implied warranty
+#* useful, but WITHOUT ANY WARRANTY; without even the implied warranty
 #* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #* See the GNU General Public License for more details.
 #*
@@ -67,6 +67,6 @@ MAKE_libFMS ${compiler}  >> build_libFMS_${compiler}.out 2>&1   # build 32bit an
 # test and report on libFMS build success
 if [ $? -ne 0 ] ; then
   echo ">>> libFMS $compiler build failed"
-  exit 2
+  exit 1
 fi
 echo " libFMS build successful"

@@ -81,10 +81,10 @@ module list
 
 $FC --version
 
-NCEPLIBS="../../libFMS/${COMPILER}/${bit}/libFMS.a"
+NCEPLIBS="${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a"
 if [ ${CONFIG} = 'shield' ] ; then
   NCEPLIBS+=" ./libgfs.a"
-  NCEPLIBS+=" -L../../nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+  NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
 fi
 
 if [ ${CONFIG} = 'shield' ] ; then

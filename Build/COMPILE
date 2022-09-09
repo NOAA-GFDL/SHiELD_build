@@ -11,7 +11,7 @@
 #* (at your option) any later version.
 #*
 #* The SHiELD Build System distributed in the hope that it will be
-#* useful, but WITHOUT ANYWARRANTY; without even the implied warranty
+#* useful, but WITHOUT ANY WARRANTY; without even the implied warranty
 #* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #* See the GNU General Public License for more details.
 #*
@@ -163,30 +163,37 @@ sleep 5
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
 #    EXTERNAL_LIBS as the location of nceplibs and libFMS
-if [ -z ${EXTERNAL_LIBS} ] ; then
-#
-# check to make sure libFMS exists
-  if [ -d libFMS/${compiler} ] && [ -e libFMS/${compiler}/32bit/libFMS.a ] && [ -e libFMS/${compiler}/64bit/libFMS.a ] ; then
-     echo " pre-built libFMS/${compiler} exists"
+  if [ -z ${EXTERNAL_LIBS} ] ; then
+  # internal libraries (fms and ncep) are being used
+    export NCEP_DIR=${BUILD_ROOT}/Build
+  #
+  # check to make sure libFMS exists
+    if [ -d libFMS/${compiler} ] && [ -e libFMS/${compiler}/32bit/libFMS.a ] && [ -e libFMS/${compiler}/64bit/libFMS.a ] ; then
+       echo " pre-built libFMS/${compiler} exists"
+    else
+       echo " libFMS/${compiler} does not exist"
+       ./BUILDlibfms ${compiler}
+       if [ $? -ne 0 ] ; then
+          echo ">>> Libfms ${compiler} build failed"
+          exit 2
+       fi
+    fi
   else
-     echo " libFMS/${compiler} does not exist"
-     ./BUILDlibfms ${compiler}
+    echo " External Libraries are being used: ${EXTERNAL_LIBS}"
+    export NCEP_DIR=${EXTERNAL_LIBS}
   fi
-else
-  echo " External Libraries are being used: ${EXTERNAL_LIBS}"
-  if [ -d ${EXTERNAL_LIBS}/nceplibs/${compiler} ] && [ -d ${EXTERNAL_LIBS}/libFMS/${compiler} ] && \
-     [ -e ${EXTERNAL_LIBS}/libFMS/${compiler}/32bit/libFMS.a ] && [ -e ${EXTERNAL_LIBS}/libFMS/${compiler}/64bit/libFMS.a ] && \
-     [ -e ${EXTERNAL_LIBS}/nceplibs/${compiler}/libbacio.a ] && [ -e ${EXTERNAL_LIBS}/nceplibs/${compiler}/libsp_d.a ] && \
-     [ -e ${EXTERNAL_LIBS}/nceplibs/${compiler}/libbacio.a ] && [ -e ${EXTERNAL_LIBS}/nceplibs/${compiler}/libw3nco_d.a ] ; then
-     ln -sf ${EXTERNAL_LIBS}/nceplibs/${compiler}/* nceplibs/${compiler}/.
-     ln -sf ${EXTERNAL_LIBS}/libFMS/${compiler}/32bit/* libFMS/${compiler}/32bit/.
-     ln -sf ${EXTERNAL_LIBS}/libFMS/${compiler}/64bit/* libFMS/${compiler}/64bit/.
+
+# Check that nceplibs and fms libs are built
+  if [ -d ${NCEP_DIR}/nceplibs/${compiler} ] && [ -d ${NCEP_DIR}/libFMS/${compiler} ] && \
+     [ -e ${NCEP_DIR}/libFMS/${compiler}/32bit/libFMS.a ] && [ -e ${NCEP_DIR}/libFMS/${compiler}/64bit/libFMS.a ] && \
+     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libsp_d.a ] && \
+     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libw3nco_d.a ] ; then
   else
-     echo "The necessary nceplibs or libFMS libraries are not installed at ${EXTERNAL_LIBS}"
-     echo "Unset EXTERNAL_LIBS if you intend to use the libraries in SHiELD_build/Build"
-     exit 99
+     echo "The necessary nceplibs or libFMS libraries are not installed at ${NCEP_DIR}"
+     echo "Set EXTERNAL_LIBS if you intend to use an external location for nceplibs and libFMS"
+     echo "Unset EXTERNAL_LIBS if you intend to use libraries stored in SHiELD_build/Build"
+     exit 3
   fi
-fi
 
 #
 # ensure the build and final executable locations are available
@@ -200,14 +207,14 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
     mk_paths ${config} ${hydro} ${comp} ${bit} ${compiler}       > build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> filelist cration failed"
-       exit 3
+       exit 4
     fi
   #
   # create the library makefiles
     mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> makefile creation failed"
-       exit 4
+       exit 5
     fi
   #
   # build the configuration
@@ -220,7 +227,7 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
 # test and report on build success
   if [ $? -ne 0 ] ; then
      echo ">>> ${config_name} build ${hydro} ${comp} ${bit} ${compiler} failed"
-     exit 5
+     exit 6
   else
      echo " ${config_name} build ${hydro} ${comp} ${bit} ${compiler} successful"
   fi
