@@ -184,11 +184,10 @@ sleep 5
   fi
 
 # Check that nceplibs and fms libs are built
-  if [ -d ${NCEP_DIR}/nceplibs/${compiler} ] && [ -d ${NCEP_DIR}/libFMS/${compiler} ] && \
-     [ -e ${NCEP_DIR}/libFMS/${compiler}/32bit/libFMS.a ] && [ -e ${NCEP_DIR}/libFMS/${compiler}/64bit/libFMS.a ] && \
-     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libsp_d.a ] && \
-     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libw3nco_d.a ] ; then
-  else
+  if [ ! -d ${NCEP_DIR}/nceplibs/${compiler} ] && [ ! -d ${NCEP_DIR}/libFMS/${compiler} ] && \
+     [ ! -e ${NCEP_DIR}/libFMS/${compiler}/32bit/libFMS.a ] && [ ! -e ${NCEP_DIR}/libFMS/${compiler}/64bit/libFMS.a ] && \
+     [ ! -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && [ ! -e ${NCEP_DIR}/nceplibs/${compiler}/libsp_d.a ] && \
+     [ ! -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && [ ! -e ${NCEP_DIR}/nceplibs/${compiler}/libw3nco_d.a ] ; then
      echo "The necessary nceplibs or libFMS libraries are not installed at ${NCEP_DIR}"
      echo "Set EXTERNAL_LIBS if you intend to use an external location for nceplibs and libFMS"
      echo "Unset EXTERNAL_LIBS if you intend to use libraries stored in SHiELD_build/Build"
