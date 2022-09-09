@@ -52,18 +52,18 @@ cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DIN
 
 #
 # clean up and create the FMS library directory
-\rm -rf libFMS/${COMPILER}
+\rm -rf ${NCEPDIR}/libFMS/${COMPILER}
 
 #########################
 #---CREATE 32-BIT libFMS
 #########################
 bit="32bit"
-mkdir -p libFMS/${COMPILER}/${bit}
-pushd libFMS/${COMPILER}/${bit}
-(cd ${SHiELD_SRC} ; list_paths -o ${BUILD_ROOT}/Build/libFMS/${COMPILER}/${bit}/pathnames_fms FMS)
+mkdir -p ${NCEP_DIR}/libFMS/${COMPILER}/${bit}
+pushd ${NCEP_DIR}/libFMS/${COMPILER}/${bit}
+(cd ${SHiELD_SRC} ; list_paths -o ${NCEP_DIR}/libFMS/${COMPILER}/${bit}/pathnames_fms FMS)
 mkmf -m Makefile -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "$cppDefs" \
-     -p libFMS.a ${BUILD_ROOT}/Build/libFMS/${COMPILER}/${bit}/pathnames_fms
-echo "building libFMS/${COMPILER}/32bit/libFMS.a..."
+     -p libFMS.a ${NCEP_DIR}/libFMS/${COMPILER}/${bit}/pathnames_fms
+echo "building ${NCEP_DIR}/libFMS/${COMPILER}/32bit/libFMS.a..."
 make -j8 OPENMP=Y AVX=Y 32BIT=Y Makefile libFMS.a >& Build_libFMS.out
 
 #
@@ -81,12 +81,12 @@ popd
 #---CREATE 64-BIT libFMS
 #########################
 bit="64bit"
-mkdir -p libFMS/${COMPILER}/${bit}
-pushd libFMS/${COMPILER}/${bit}
-(cd ${SHiELD_SRC} ; list_paths -o ${BUILD_ROOT}/Build/libFMS/${COMPILER}/${bit}/pathnames_fms FMS)
+mkdir -p ${NCEP_DIR}/libFMS/${COMPILER}/${bit}
+pushd ${NCEP_DIR}/libFMS/${COMPILER}/${bit}
+(cd ${SHiELD_SRC} ; list_paths -o ${NCEP_DIR}/libFMS/${COMPILER}/${bit}/pathnames_fms FMS)
 mkmf -m Makefile -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "$cppDefs" \
-     -p libFMS.a ${BUILD_ROOT}/Build/libFMS/${COMPILER}/${bit}/pathnames_fms
-echo "building libFMS/${COMPILER}/64bit/libFMS.a..."
+     -p libFMS.a ${NCEP_DIR}/libFMS/${COMPILER}/${bit}/pathnames_fms
+echo "building ${NCEP_DIR}/libFMS/${COMPILER}/64bit/libFMS.a..."
 make -j8 OPENMP=Y AVX=Y Makefile libFMS.a >& Build_libFMS.out
 
 #

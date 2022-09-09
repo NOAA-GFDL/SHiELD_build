@@ -47,19 +47,23 @@ compiler="intel"
       esac
   done
 
-# set up some default variables
-BUILD_ROOT=${PWD%/*}
-if [ -z ${EXTERNAL_LIBS} ] ; then
-   nceplibs_dir=${BUILD_ROOT}/Build/nceplibs/${compiler}
-else
-   nceplibs_dir=${EXTERNAL_LIBS}/nceplibs/${compiler}
+# set up some default variables if not called from COMPILE
+# NCEP_DIR is set if this script is called from the COMPILE script
+# EXTERNAL_LIBS is set if using external location for storage of nceplibs
+if [ -z ${NCEP_DIR} ] ; then
+   BUILD_ROOT=${PWD%/*}
+   NCEP_DIR=${BUILD_ROOT}/Build
+   if [ ! -z ${EXTERNAL_LIBS} ] ; then
+   NCEP_DIR=${EXTERNAL_LIBS}
+   fi
+   # load the proper environment for your machine
+   . ${BUILD_ROOT}/site/environment.${compiler}.sh
 fi
+module load cmake/3.20.1
 
+nceplibs_dir=${NCEP_DIR}/nceplibs/${compiler}
 \rm -rf $nceplibs_dir
 
-# load the proper environment for your machine
-. ${BUILD_ROOT}/site/environment.${compiler}.sh
-module load cmake/3.20.1
 
 git clone https://github.com/NOAA-EMC/NCEPLIBS-bacio
 pushd NCEPLIBS-bacio

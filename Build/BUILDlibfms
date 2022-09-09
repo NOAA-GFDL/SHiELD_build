@@ -50,23 +50,29 @@
   done
 
 #
-# set up some default variables for use within the helper scripts
-export BUILD_ROOT=${PWD%/*}
-export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
-export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
-
-#
-# load the proper environment for your machine
-. ${BUILD_ROOT}/site/environment.${compiler}.sh
+# set up some default variables if not called from COMPILE
+# NCEP_DIR is set if this script is called from the COMPILE script
+# EXTERNAL_LIBS is set if using external location for storage of libFMS
+if [ -z ${NCEP_DIR} ] ; then
+   export BUILD_ROOT=${PWD%/*}
+   export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
+   export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
+   export NCEP_DIR=${BUILD_ROOT}/Build
+   if [ ! -z ${EXTERNAL_LIBS} ] ; then
+      export NCEP_DIR=${EXTERNAL_LIBS}
+   fi
+  # load the proper environment for your machine
+   . ${BUILD_ROOT}/site/environment.${compiler}.sh
+fi
 
 #
 # build FMS library
-echo " building libFMS/${compiler}"
+echo " building ${NCEP_DIR}/libFMS/${compiler}"
 MAKE_libFMS ${compiler}  >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
 #
 # test and report on libFMS build success
 if [ $? -ne 0 ] ; then
-  echo ">>> libFMS $compiler build failed"
+  echo ">>> ${NCEPDIR}/libFMS/${compiler} build failed"
   exit 1
 fi
 echo " libFMS build successful"

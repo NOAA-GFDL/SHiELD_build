@@ -5,5 +5,6 @@ old
 exec
 bin
 libFMS
+nceplibs
 *.out
 .lib*

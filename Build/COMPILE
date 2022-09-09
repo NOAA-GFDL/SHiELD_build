@@ -129,6 +129,7 @@ fi
 export BUILD_ROOT=${PWD%/*}
 export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
 export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
+export NCEP_DIR=${BUILD_ROOT}/Build
 
 #
 # load the proper environment for your machine
@@ -151,10 +152,11 @@ sleep 5
 #
 # conditionally clean the build directory
   if [ ${clean} = "cleanall" ] ; then
-     echo " cleaning FMS library and build directory in 2 seconds"
+     echo " cleaning FMS library, nceplibs and build directory in 2 seconds"
      sleep 2
      \rm -rf libFMS/${compiler}/*
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+     \rm -rf nceplibs/${compiler}/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
@@ -163,35 +165,35 @@ sleep 5
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
 #    EXTERNAL_LIBS as the location of nceplibs and libFMS
-  if [ -z ${EXTERNAL_LIBS} ] ; then
-  # internal libraries (fms and ncep) are being used
-    export NCEP_DIR=${BUILD_ROOT}/Build
-  #
-  # check to make sure libFMS exists
-    if [ -d libFMS/${compiler} ] && [ -e libFMS/${compiler}/32bit/libFMS.a ] && [ -e libFMS/${compiler}/64bit/libFMS.a ] ; then
-       echo " pre-built libFMS/${compiler} exists"
-    else
-       echo " libFMS/${compiler} does not exist"
-       ./BUILDlibfms ${compiler}
-       if [ $? -ne 0 ] ; then
-          echo ">>> Libfms ${compiler} build failed"
-          exit 2
-       fi
-    fi
-  else
+  if [ ! -z ${EXTERNAL_LIBS} ] ; then
     echo " External Libraries are being used: ${EXTERNAL_LIBS}"
     export NCEP_DIR=${EXTERNAL_LIBS}
   fi
-
-# Check that nceplibs and fms libs are built
-  if [ ! -d ${NCEP_DIR}/nceplibs/${compiler} ] && [ ! -d ${NCEP_DIR}/libFMS/${compiler} ] && \
-     [ ! -e ${NCEP_DIR}/libFMS/${compiler}/32bit/libFMS.a ] && [ ! -e ${NCEP_DIR}/libFMS/${compiler}/64bit/libFMS.a ] && \
-     [ ! -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && [ ! -e ${NCEP_DIR}/nceplibs/${compiler}/libsp_d.a ] && \
-     [ ! -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && [ ! -e ${NCEP_DIR}/nceplibs/${compiler}/libw3nco_d.a ] ; then
-     echo "The necessary nceplibs or libFMS libraries are not installed at ${NCEP_DIR}"
-     echo "Set EXTERNAL_LIBS if you intend to use an external location for nceplibs and libFMS"
-     echo "Unset EXTERNAL_LIBS if you intend to use libraries stored in SHiELD_build/Build"
-     exit 3
+#
+# check to make sure libFMS exists
+  if [ -d ${NCEP_DIR}/libFMS/${compiler} ] && [ -e ${NCEP_DIR}/libFMS/${compiler}/32bit/libFMS.a ] && \
+     [ -e ${NCEP_DIR}/libFMS/${compiler}/64bit/libFMS.a ] ; then
+     echo " pre-built ${NCEP_DIR}/libFMS/${compiler} exists"
+  else
+     echo " ${NCEP_DIR}/libFMS/${compiler} does not exist"
+     ./BUILDlibfms ${compiler}
+     if [ $? -ne 0 ] ; then
+        echo ">>> ${NCEP_DIR}/Libfms/${compiler} build failed"
+        exit 2
+     fi
+  fi
+# check to make sure nceplibs exists
+  if [ -d ${NCEP_DIR}/nceplibs/${compiler} ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && \
+     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libsp_d.a ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libw3emc_d.a ] && \
+     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libw3nco_d.a ] ; then
+     echo " pre-built ${NCEP_DIR}/nceplibs/${compiler} exists"
+  else
+     echo " ${NCEP_DIR}/nceplibs/${compiler} does not exist"
+     ./BUILDnceplibs ${compiler}
+     if [ $? -ne 0 ] ; then
+        echo ">>> ${NCEP_DIR}/ncepdir/${compiler} build failed"
+        exit 3
+     fi
   fi
 
 #
