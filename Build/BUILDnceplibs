@@ -59,7 +59,6 @@ if [ -z ${NCEP_DIR} ] ; then
    # load the proper environment for your machine
    . ${BUILD_ROOT}/site/environment.${compiler}.sh
 fi
-module load cmake/3.20.1
 
 nceplibs_dir=${NCEP_DIR}/nceplibs/${compiler}
 \rm -rf $nceplibs_dir
@@ -67,28 +66,28 @@ nceplibs_dir=${NCEP_DIR}/nceplibs/${compiler}
 
 git clone https://github.com/NOAA-EMC/NCEPLIBS-bacio
 pushd NCEPLIBS-bacio
-cmake -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install .
+cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install .
 make -j8
 make install
 popd
 
 git clone https://github.com/NOAA-EMC/NCEPLIBS-sp
 pushd NCEPLIBS-sp
-cmake -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-sp/install .
+cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-sp/install .
 make -j8 sp_d
 make install
 popd
 
 git clone https://github.com/NOAA-EMC/NCEPLIBS-w3emc
 pushd NCEPLIBS-w3emc
-cmake -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install -DCMAKE_PREFIX_PATH=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
+cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install -DCMAKE_PREFIX_PATH=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
 make -j8 w3emc_d
 make install
 popd
 
 git clone https://github.com/NOAA-EMC/NCEPLIBS-w3nco
 pushd NCEPLIBS-w3nco
-cmake -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install .
+cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install .
 make -j8 w3nco_d
 make install
 popd

@@ -93,7 +93,7 @@ if [ ${CONFIG} = 'shield' ] ; then
 fi
 
 mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
-         -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${BUILD_ROOT}/Build/libFMS/${COMPILER}/${BIT}" \
+         -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${NCEP_DIR}/libFMS/${COMPILER}/${BIT}" \
           ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
 ############################
