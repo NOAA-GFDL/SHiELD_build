@@ -1,0 +1,78 @@
+#!/bin/bash
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is and as such is unsupported.
+#
+
+#
+# set default values
+# configure your build parameters
+  compiler="intel"
+#
+# parse arguments
+  for arg in "$@"
+  do
+      case $arg in
+          intel|gnu)
+             compiler="${arg#*=}"
+             shift # Remove "compiler" from processing
+             ;;
+          *)
+          if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
+            echo "option "${arg#}" not found"
+          fi
+          echo -e ' '
+          echo -e "valid options are:"
+          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\n"
+          exit
+          ;;
+      esac
+  done
+
+#
+# set up some default variables if not called from COMPILE
+# NCEP_DIR is set if this script is called from the COMPILE script
+# EXTERNAL_LIBS is set if using external location for storage of libFMS
+if [ -z ${NCEP_DIR} ] ; then
+   export BUILD_ROOT=${PWD%/*}
+   export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
+   export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
+   export NCEP_DIR=${BUILD_ROOT}/Build
+   if [ ! -z ${EXTERNAL_LIBS} ] ; then
+      export NCEP_DIR=${EXTERNAL_LIBS}
+   fi
+  # load the proper environment for your machine
+   . ${BUILD_ROOT}/site/environment.${compiler}.sh
+fi
+
+#
+# build FMS library
+echo " building ${NCEP_DIR}/libFMS/${compiler}"
+MAKE_libFMS ${compiler}  >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
+#
+# test and report on libFMS build success
+if [ $? -ne 0 ] ; then
+  echo ">>> ${NCEPDIR}/libFMS/${compiler} build failed"
+  exit 1
+fi
+echo " libFMS build successful"

@@ -26,12 +26,14 @@
 #
 ## set default values
 CONFIG="shield"
+HYDRO="nh"
 COMP=""
 BIT="32BIT=Y"
 AVX="Y"
 COMPILER="intel"
 
 bit="32bit"
+comp="prod"
 
 #
 ## parse arguments
@@ -42,7 +44,12 @@ do
           CONFIG="${arg#*=}"
           shift # Remove CONFIG from processing
           ;;
+        nh|hydro|sw)
+          HYDRO="${arg#*=}"
+          shift # remove "hydro" from processing
+          ;;
         prod|repro|debug)
+          comp="${arg#*=}"
           if [ ${arg#} = 'repro' ] ; then
             COMP="REPRO=Y"
           elif [ ${arg#} = 'debug' ] ; then
@@ -74,15 +81,15 @@ module list
 
 $FC --version
 
-NCEPLIBS="../../libFMS/${COMPILER}/${bit}/libFMS.a"
+NCEPLIBS="${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a"
 if [ ${CONFIG} = 'shield' ] ; then
   NCEPLIBS+=" ./libgfs.a"
-  NCEPLIBS+=" -L../../nceplibs/${COMPILER}/ -lbacio_4  -lsp_v2.0.2_d  -lw3emc_d  -lw3nco_d"
+  NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
 fi
 
 if [ ${CONFIG} = 'shield' ] ; then
-  (cd exec/${CONFIG}_${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} -f Makefile_gfs)
+  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} -f Makefile_gfs)
 fi
-(cd exec/${CONFIG}_${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
+(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
 
 exit 0

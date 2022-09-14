@@ -1,0 +1,101 @@
+#!/bin/bash
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is and as such is unsupported.
+#
+
+#set default compiler
+compiler="intel"
+
+# parse arguments
+  for arg in "$@"
+  do
+      case $arg in
+          intel|gnu)
+             compiler="${arg#*=}"
+             shift # Remove "compiler" from processing
+             ;;
+	  *)
+          if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
+            echo "option "${arg#}" not found"
+          fi
+          echo -e ' '
+          echo -e "valid options are:"
+          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\n"
+          exit
+          ;;
+      esac
+  done
+
+# set up some default variables if not called from COMPILE
+# NCEP_DIR is set if this script is called from the COMPILE script
+# EXTERNAL_LIBS is set if using external location for storage of nceplibs
+if [ -z ${NCEP_DIR} ] ; then
+   BUILD_ROOT=${PWD%/*}
+   NCEP_DIR=${BUILD_ROOT}/Build
+   if [ ! -z ${EXTERNAL_LIBS} ] ; then
+   NCEP_DIR=${EXTERNAL_LIBS}
+   fi
+   # load the proper environment for your machine
+   . ${BUILD_ROOT}/site/environment.${compiler}.sh
+fi
+
+nceplibs_dir=${NCEP_DIR}/nceplibs/${compiler}
+\rm -rf $nceplibs_dir
+
+
+git clone https://github.com/NOAA-EMC/NCEPLIBS-bacio
+pushd NCEPLIBS-bacio
+cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install .
+make -j8
+make install
+popd
+
+git clone https://github.com/NOAA-EMC/NCEPLIBS-sp
+pushd NCEPLIBS-sp
+cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-sp/install .
+make -j8 sp_d
+make install
+popd
+
+git clone https://github.com/NOAA-EMC/NCEPLIBS-w3emc
+pushd NCEPLIBS-w3emc
+cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install -DCMAKE_PREFIX_PATH=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
+make -j8 w3emc_d
+make install
+popd
+
+git clone https://github.com/NOAA-EMC/NCEPLIBS-w3nco
+pushd NCEPLIBS-w3nco
+cmake -DCMAKE_C_STANDARD=99 -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install .
+make -j8 w3nco_d
+make install
+popd
+
+mkdir -p $nceplibs_dir
+mv ${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/libbacio.a $nceplibs_dir/.
+mv ${BUILD_ROOT}/Build/NCEPLIBS-sp/install/lib64/libsp_d.a $nceplibs_dir/.
+mv ${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install/lib64/libw3emc_d.a $nceplibs_dir/.
+mv ${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install/lib/libw3nco_d.a $nceplibs_dir/.
+
+\rm -rf NCEPLIBS-bacio NCEPLIBS-sp NCEPLIBS-w3emc NCEPLIBS-w3nco
