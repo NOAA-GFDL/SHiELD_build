@@ -370,7 +370,6 @@ cat > input.nml <<EOF
 /
 
  &gfdl_mp_nml
-       sedi_transport = .false.
        do_sedi_heat = .false.
        do_sedi_w = .false.
        prog_ccn = .false.

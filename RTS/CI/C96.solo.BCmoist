@@ -390,7 +390,6 @@ cat > input.nml <<EOF
 
 
  &gfdl_mp_nml
-       sedi_transport = .T.
        do_sedi_heat = .T.
        do_sedi_w = .T.
        rad_snow = .true.
@@ -407,11 +406,9 @@ cat > input.nml <<EOF
        qi_lim = 1.
        prog_ccn = .false.
        do_qa = .true.
-!       fast_sat_adj = .F.
        tau_l2v = 300.
        tau_v2l = 90. ! z7: enabled
        do_cond_timescale = .true. ! z7: enabled
-       tau_g2v = 1200.
        rthresh = 10.e-6  !   10.e-6  ! This is a key parameter for cloud water
       dw_land  = 0.15
       dw_ocean = 0.10
@@ -429,13 +426,8 @@ cat > input.nml <<EOF
        ccn_l = 300.
        ccn_o = 100.
        c_paut =  0.55
-       c_cracw = 0.8
-       mono_prof = .F.
-       use_ppm = .F.
-       use_ccn = .T.
        z_slope_liq  = .T.
        z_slope_ice  = .T.
-!       de_ice = .false.
        fix_negative = .true.
        irain_f = 0
        icloud_f = 0
