@@ -138,10 +138,10 @@ elif [ `hostname | cut -c1-3` = "lsc" ] ; then
    echo " lsc environment "
 
    source $MODULESHOME/init/sh
-   module load oneapi/2022.1
-   module load compiler/2022.0.1
-   module load mpi/2021.5.0
-   module load netcdf/4.8.0
+   module load oneapi/2023.0
+   module load compiler/2023.0.0
+   module load mpi/2021.8.0
+   module load netcdf/4.9.0
    module load hdf5/1.12.0
    module load cmake/3.18.2
 
@@ -154,7 +154,7 @@ elif [ `hostname | cut -c1-3` = "lsc" ] ; then
    export CXX=mpicpc
    export LD=mpiifort
    export TEMPLATE=site/intel.mk
-   export LAUNCHER=mpirun
+   export LAUNCHER="mpirun -prepend-rank"
 
    # highest level of AVX support
    if [ `hostname | cut -c4-6` = "amd" ] ; then

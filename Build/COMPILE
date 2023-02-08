@@ -92,7 +92,7 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
              fi
              shift # remove "avx from processing
              ;;
-          intel|gnu)
+          intel|gnu|nvhpc)
              compiler="${arg#*=}"
              shift # Remove "compiler" from processing
              ;;
@@ -111,7 +111,7 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
           echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
           echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
           echo -e "\t[avx(D) | noavx] \t\t\t use AVX_LEVEL defined in site/environment.<compiler>.sh"
-          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
           echo -e "\n"
           exit

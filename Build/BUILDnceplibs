@@ -30,17 +30,17 @@ compiler="intel"
   for arg in "$@"
   do
       case $arg in
-          intel|gnu)
+          intel|gnu|nvhpc)
              compiler="${arg#*=}"
              shift # Remove "compiler" from processing
              ;;
-	  *)
+          *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
           fi
           echo -e ' '
           echo -e "valid options are:"
-          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\n"
           exit
           ;;

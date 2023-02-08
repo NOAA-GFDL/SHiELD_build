@@ -151,11 +151,14 @@ elif [ `hostname | cut -c1-3` = "lsc" ] ; then
    export CXX=mpicxx
    export LD=mpif90
    export TEMPLATE=site/gnu.mk
-   export LAUNCHER=mpirun
+   export LAUNCHER="mpirun -prepend-rank"
 
    # highest level of AVX support
-   export AVX_LEVEL=-xSKYLAKE-AVX512
-#   export AVX_LEVEL=-march=core-avx2
+   if [ `hostname | cut -c4-6` = "amd" ] ; then
+     export AVX_LEVEL=-march=core-avx2
+   else
+     export AVX_LEVEL=-xSKYLAKE-AVX512
+   fi
 
    echo -e ' '
    module list
