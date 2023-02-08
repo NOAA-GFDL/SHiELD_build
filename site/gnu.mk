@@ -51,6 +51,13 @@ else
 FFLAGS += -fdefault-real-8 -fdefault-double-8
 endif
 
+ifeq ($(AVX),Y)
+FFLAGS += $(AVX_LEVEL)
+CFLAGS += $(AVX_LEVEL)
+else
+FFLAGS += -march=native
+CFLAGS += -march-native
+endif
 
 FFLAGS_OPT = -O2 -fno-range-check
 FFLAGS_REPRO = -O2 -ggdb -fno-range-check
