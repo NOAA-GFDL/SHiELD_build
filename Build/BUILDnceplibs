@@ -66,28 +66,28 @@ nceplibs_dir=${NCEP_DIR}/nceplibs/${compiler}
 #Define common cmake flags
 cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_STANDARD=99"
 
-git clone https://github.com/NOAA-EMC/NCEPLIBS-bacio
+git clone -b v2.6.0 https://github.com/NOAA-EMC/NCEPLIBS-bacio
 pushd NCEPLIBS-bacio
 cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install .
 make -j8
 make install
 popd
 
-git clone https://github.com/NOAA-EMC/NCEPLIBS-sp
+git clone -b v2.4.0 https://github.com/NOAA-EMC/NCEPLIBS-sp
 pushd NCEPLIBS-sp
 cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-sp/install .
 make -j8 sp_d
 make install
 popd
 
-git clone https://github.com/NOAA-EMC/NCEPLIBS-w3emc
+git clone -b v2.9.3 https://github.com/NOAA-EMC/NCEPLIBS-w3emc
 pushd NCEPLIBS-w3emc
 cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install -DCMAKE_PREFIX_PATH=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
 make -j8 w3emc_d
 make install
 popd
 
-git clone https://github.com/NOAA-EMC/NCEPLIBS-w3nco
+git clone -b v2.4.1 https://github.com/NOAA-EMC/NCEPLIBS-w3nco
 pushd NCEPLIBS-w3nco
 cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install .
 make -j8 w3nco_d
