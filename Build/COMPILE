@@ -41,10 +41,6 @@ spin()
 # end function
 
 #
-# start the spinner
-spin &
-SPIN_PID=$!
-trap "kill -9 $SPIN_PID" `seq 0 15`
 #------------------------------------------------------------------------------
 # functional code below this point
 
@@ -95,6 +91,14 @@ trap "kill -9 $SPIN_PID" `seq 0 15`
           intel|gnu|nvhpc)
              compiler="${arg#*=}"
              shift # Remove "compiler" from processing
+             if [ ${compiler} = 'nvhpc' ] ; then
+               echo -e ' '
+               echo -e "The NVidia compiler has only been tested with the CI scripts."
+               echo -e "A runtime bug with v23.1 occurs when deallocating the Atm Fortran derived data type."
+               echo -e "The bug can be worked around by commenting out the offfending line of code."
+               echo -e "\n"
+               sleep 20
+             fi
              ;;
           noclean|clean|cleanall)
              clean="${arg#*=}"
@@ -148,6 +152,24 @@ echo -e "\tcompiler = $compiler"
 echo -e "\tclean    = $clean"
 echo -e "\n"
 sleep 5
+
+#
+# start the spinner
+spin &
+SPIN_PID=$!
+trap "kill -9 $SPIN_PID" `seq 0 15`
+
+#
+# test for mkmf
+if [ ! -f "${BUILD_ROOT}/mkmf/bin/mkmf" ] ; then
+   echo -e ' '
+   echo -e "The mkmf submodule has not been initialized"
+   echo -e "Please run this command in the SHiELD_build base directory:"
+   echo -e "\tgit submodule update --init mkmf"
+   echo -e "\n"
+   exit 0
+fi
+
 
 #
 # conditionally clean the build directory
