@@ -33,12 +33,12 @@ cd ${SHiELD_SRC}
 
 release="main"
 
-fv3_release=main4uwyo
+fv3_release=$release
 phy_release=$release
 fms_release="2022.03"
 drivers_release="2022.02"
 
-git clone -b ${fv3_release}   https://github.com/bensonr/GFDL_atmos_cubed_sphere
+git clone -b ${fv3_release}   https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${phy_release}   https://github.com/NOAA-GFDL/SHiELD_physics
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMSCoupler
