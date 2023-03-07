@@ -68,7 +68,7 @@ do
           AVX="${arg#*=}"
           shift # Remove AVX from processing
           ;;
-        intel|gnu)
+        intel|gnu|nvhpc)
           COMPILER="${arg#*=}"
           shift # Remove COMPILER from processing
           ;;

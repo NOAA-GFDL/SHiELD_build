@@ -26,21 +26,27 @@
 #set default compiler
 compiler="intel"
 
+#define versions to checkout
+version_bacio="v2.6.0"
+version_sp="v2.4.0"
+version_w3emc="v2.9.3"
+version_w3nco="v2.4.1"
+
 # parse arguments
   for arg in "$@"
   do
       case $arg in
-          intel|gnu)
+          intel|gnu|nvhpc)
              compiler="${arg#*=}"
              shift # Remove "compiler" from processing
              ;;
-	  *)
+          *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
           fi
           echo -e ' '
           echo -e "valid options are:"
-          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\n"
           exit
           ;;
@@ -66,28 +72,28 @@ nceplibs_dir=${NCEP_DIR}/nceplibs/${compiler}
 #Define common cmake flags
 cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_STANDARD=99"
 
-git clone https://github.com/NOAA-EMC/NCEPLIBS-bacio
+git clone -b $version_bacio https://github.com/NOAA-EMC/NCEPLIBS-bacio
 pushd NCEPLIBS-bacio
 cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install .
 make -j8
 make install
 popd
 
-git clone https://github.com/NOAA-EMC/NCEPLIBS-sp
+git clone -b $version_sp https://github.com/NOAA-EMC/NCEPLIBS-sp
 pushd NCEPLIBS-sp
 cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-sp/install .
 make -j8 sp_d
 make install
 popd
 
-git clone https://github.com/NOAA-EMC/NCEPLIBS-w3emc
+git clone -b $version_w3emc https://github.com/NOAA-EMC/NCEPLIBS-w3emc
 pushd NCEPLIBS-w3emc
 cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install -DCMAKE_PREFIX_PATH=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
 make -j8 w3emc_d
 make install
 popd
 
-git clone https://github.com/NOAA-EMC/NCEPLIBS-w3nco
+git clone -b $version_w3nco https://github.com/NOAA-EMC/NCEPLIBS-w3nco
 pushd NCEPLIBS-w3nco
 cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install .
 make -j8 w3nco_d
