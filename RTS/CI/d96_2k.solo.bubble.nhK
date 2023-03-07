@@ -181,7 +181,7 @@ if [ ${LAUNCHER} = 'srun' ] ; then
     run_cmd="${LAUNCHER} --label --ntasks=$npes --cpus-per-task=$skip $CONTAINER ./${executable##*/}"
 else
     export MPICH_ENV_DISPLAY=YES
-    run_cmd="${LAUNCHER} -prepend-rank -np $npes $CONTAINER ./${executable##*/}"
+    run_cmd="${LAUNCHER} -np $npes $CONTAINER ./${executable##*/}"
 fi
 
 # set up the run area

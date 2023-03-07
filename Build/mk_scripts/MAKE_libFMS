@@ -35,7 +35,7 @@ COMPILER="intel"
 for arg in "$@"
 do
     case $arg in
-        intel|gnu)
+        intel|gnu|nvhpc)
         COMPILER="${arg#*=}"
         shift # Remove compiler from processing
         ;;

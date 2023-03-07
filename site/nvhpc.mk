@@ -1,4 +1,4 @@
-# template for the GNU fortran compiler
+# template for the Intel fortran compiler
 # typical use with mkmf
 # mkmf -t template.ifc -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
 ############
@@ -40,48 +40,48 @@ else
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
 
-FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
-
-FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace
+FPPFLAGS := $(INCLUDE) -traceback -byteswapio -Mcray=pointer -Mflushz -Mdaz -D_F2000
 
 ifeq ($(32BIT),Y)
-CPPDEFS += -DOVERLOAD_R4 -DOVERLOAD_R8
-FFLAGS +=
+FFLAGS += -DOVERLOAD_R4 -DOVERLOAD_R8 -i4 -r4
 else
-FFLAGS += -fdefault-real-8 -fdefault-double-8
+FFLAGS += -i4 -r8
 endif
 
 ifeq ($(AVX),Y)
 FFLAGS += $(AVX_LEVEL)
 CFLAGS += $(AVX_LEVEL)
 else
-FFLAGS += -march=native
-CFLAGS += -march-native
+FFLAGS += -tp=host
+CFLAGS += -tp=host
 endif
 
-FFLAGS_OPT = -O2 -fno-range-check
-FFLAGS_REPRO = -O2 -ggdb -fno-range-check
-FFLAGS_DEBUG = -O0 -ggdb -fno-unsafe-math-optimizations -frounding-math -fsignaling-nans -ffpe-trap=invalid,zero,overflow -fbounds-check
+FFLAGS_OPT = -g -O3 -Mvect=nosse -Mnoscalarsse -Mallocatable=95
+FFLAGS_REPRO = -g -O2 -Mvect=nosse -Mnoscalarsse
+FFLAGS_DEBUG = -g -O0 -Ktrap=divz
 
-TRANSCENDENTALS :=
-FFLAGS_OPENMP =  -fopenmp
-FFLAGS_VERBOSE = -v
+TRANSCENDENTALS := -fast-transcendentals
+FFLAGS_OPENMP = -mp
+FFLAGS_VERBOSE = -v -V -what -Minform=inform
 
-CFLAGS :=
+CFLAGS := -msse2
+ifeq ($(AVX2),Y)
+#CFLAGS += -tp=host
+endif
 
-CFLAGS_OPT = -O2
-CFLAGS_REPRO = -O2 -ggdb
-CFLAGS_OPENMP = -fopenmp
-CFLAGS_DEBUG = -O0 -ggdb -g
+CFLAGS_OPT = -O3
+CFLAGS_REPRO = -O2
+CFLAGS_OPENMP = -mp
+CFLAGS_DEBUG = -O0 -g -traceback -Ktrap=divz
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
 # *_TEST will match the production if no new option(s) is(are) to be tested.
-FFLAGS_TEST = -O3 -debug minimal -fp-model source -qoverride-limits
+FFLAGS_TEST = -O3
 CFLAGS_TEST = -O2
 
-LDFLAGS := -L/usr/lib
-LDFLAGS_OPENMP := -fopenmp
-LDFLAGS_VERBOSE := --verbose
+LDFLAGS := -traceback -g
+LDFLAGS_OPENMP := -mp
+LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 
 ifneq ($(REPRO),)
 CFLAGS += $(CFLAGS_REPRO)
@@ -121,7 +121,7 @@ ifeq ($(NETCDF),3)
 endif
 
 LIBS +=
-LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib
+LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
 # you should never need to change any lines below.

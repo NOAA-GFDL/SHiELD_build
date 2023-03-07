@@ -23,26 +23,39 @@
 #  DISCLAIMER: This script is provided as-is and as such is unsupported.
 #
 
-. ${MODULESHOME}/init/sh
-module load git
+if [ `hostname | cut -c1-3` = "lsc" ] ; then
+   echo " lsc environment "
 
-export SHiELD_SRC=${PWD%/*}/SHiELD_SRC/
+   source $MODULESHOME/init/sh
+   module load nvhpc/23.1
+   module load netcdf/4.9.0
+   module load hdf5/1.12.0
+   module load cmake/3.18.2
 
-mkdir -p ${SHiELD_SRC}
-cd ${SHiELD_SRC}
+   export CPATH="${NETCDF_ROOT}/include:${CPATH}"
+   export NETCDF_DIR=${NETCDF_ROOT}
 
-release="main"
+   # make your compiler selections here
+   export FC=mpif90
+   export CC=mpicc
+   export CXX=mpicxx
+   export LD=mpif90
+   export TEMPLATE=site/nvhpc.mk
+   export LAUNCHER="mpirun -tag-output"
 
-fv3_release=main4uwyo
-phy_release=$release
-fms_release="2022.03"
-drivers_release="2022.02"
+   # highest level of AVX support
+   if [ `hostname | cut -c4-6` = "amd" ] ; then
+     export AVX_LEVEL=
+   else
+     export AVX_LEVEL=
+   fi
 
-git clone -b ${fv3_release}   https://github.com/bensonr/GFDL_atmos_cubed_sphere
-git clone -b ${phy_release}   https://github.com/NOAA-GFDL/SHiELD_physics
-git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
-git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMSCoupler
-git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
+   echo -e ' '
+   module list
 
-#Automatic release tracking from Matt M.
-echo $release > release
+else
+
+   echo " no environment available based on the hostname "
+
+fi
+

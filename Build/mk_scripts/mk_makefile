@@ -52,7 +52,7 @@ do
         BIT="${arg#*=}"
         shift # Remove *bit from processing
         ;;
-        intel|gnu)
+        intel|gnu|nvhpc)
         COMPILER="${arg#*=}"
         shift # Remove compiler from processing
         ;;

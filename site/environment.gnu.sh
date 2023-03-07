@@ -46,7 +46,7 @@ if [ `hostname | cut -c1-4` = "gaea" ] || [ `hostname | cut -c1-3` = "nid" ] ; t
    export LAUNCHER=srun
 
    # highest level of AVX support
-   export AVX_LEVEL=-xCORE-AVX2
+   export AVX_LEVEL=-march=native
 
    echo -e ' '
    module list
@@ -75,7 +75,7 @@ elif [ `hostname | cut -c1-5` = "Orion" ] ; then
    export LAUNCHER=srun
 
    # highest level of AVX support
-   export AVX_LEVEL=-xSKYLAKE-AVX512
+   export AVX_LEVEL=-march=native
 
    echo -e ' '
    module list
@@ -102,6 +102,9 @@ elif [ `hostname | cut -c1-2` = "fe" ] || [ `hostname | cut -c1` = "x" ] ; then
    export TEMPLATE=site/gnu.mk
    export LAUNCHER=srun
 
+   # highest level of AVX support
+   export AVX_LEVEL=-march=native
+
    echo -e ' '
    module list
 
@@ -127,7 +130,7 @@ elif [ `hostname | cut -c1` = "h" ] ; then
    export LAUNCHER=srun
 
    # highest level of AVX support
-   export AVX_LEVEL=-xSKYLAKE-AVX512
+   export AVX_LEVEL=-march=native
 
    echo -e ' '
    module list
@@ -136,9 +139,9 @@ elif [ `hostname | cut -c1-3` = "lsc" ] ; then
    echo " lsc environment "
 
    source $MODULESHOME/init/sh
-   module load gcc/10.2.0
-   module load impi/2020
-   module load netcdf/4.8.0
+   module load gcc/12.2.0
+   module load openmpi/4.1.4
+   module load netcdf/4.9.0
    module load hdf5/1.12.0
    module load cmake/3.18.2
 
@@ -151,11 +154,10 @@ elif [ `hostname | cut -c1-3` = "lsc" ] ; then
    export CXX=mpicxx
    export LD=mpif90
    export TEMPLATE=site/gnu.mk
-   export LAUNCHER=mpirun
+   export LAUNCHER="mpirun -tag-output"
 
    # highest level of AVX support
-   export AVX_LEVEL=-xSKYLAKE-AVX512
-#   export AVX_LEVEL=-march=core-avx2
+   export AVX_LEVEL=-march=native
 
    echo -e ' '
    module list
