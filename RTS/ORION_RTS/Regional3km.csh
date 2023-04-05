@@ -1,60 +1,52 @@
 #!/bin/tcsh
-#SBATCH --output=/home/jmoualle/ORION_RT/stdout/%x.%j
+#SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=Regional3km
-#SBATCH -A gfdlhires
-#SBATCH --partition=orion
-#SBATCH --time=00:20:00
-#SBATCH --nodes=24
-#SBATCH --exclusive
-#SBATCH --mail-user=joseph.mouallem@noaa.gov
-#SBATCH --mail-type=ALL
-
-source ${MODULESHOME}/init/tcsh
-module load intel/2020
-module load netcdf/
-module load hdf5/
-module load impi/2020
+#SBATCH --account=gfdl_f
+#SBATCH --clusters=c4
+#SBATCH --time=00:30:00
+#SBATCH --nodes=25
 
 set echo
 
-set WORKDIR = "/work/noaa/gfdlscr/${USER}/"
+set BASEDIR    = "${SCRATCH}/${USER}/"
+set INPUT_DATA = "/lustre/f2/dev/Lauren.Chilutti/Alaska_c3072"
+set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
-set BASEDIR    = "$WORKDIR"
-set INPUT_DATA = "/work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA/SHiELD_IC/Alaska_c3072/"
-# from YQS
-set BUILD_AREA = "~${USER}/SHiELD_Lucas/SHiELD_build/"
+# release number for the script
+source fms.csh 
+set RELEASE = "SHiELD_${COMPILER}_${DESCRIPTOR}_${BIT}"
+
+source ${BUILD_AREA}/site/environment.${COMPILER}.sh
+module load python/3.9
 
 #set hires_oro_factor = 12
 set res = 3072
 
-# release number for the script
-set RELEASE = "`cat ${BUILD_AREA}/release`"
-
 # case specific details
 set TYPE = "nh"          # choices:  nh, hydro
-set MODE = "32bit"      # choices:  32bit, 64bit
+set MODE = "${BIT}"      # choices:  32bit, 64bit
 set CASE = "C${res}_alaska"
 set MONO = "non-mono"
 set NAME = "20170114.00Z"
 set MEMO = "$SLURM_JOB_NAME"
 set HYPT = "on"         # choices:  on, off  (controls hyperthreading)
 set COMP = "repro"       # choices:  debug, repro, prod
-set NO_SEND = "send"  # choices:  send, no_send
+set NO_SEND = "no_send"  # choices:  send, no_send
 set EXE = "x"
 # directory structure
 set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
-set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${EXE}
+set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${DESCRIPTOR}.${EXE}
 
 # input filesets
 set ICS  = ${INPUT_DATA}/${NAME}_IC/
-set FIX  = /work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA/fix.v201810
-set GFS  = /work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA/GFS_STD_INPUT.20160311.tar
+set FIX  = /lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/fix.v201810
+set GFS  = /lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
 set GRID = ${INPUT_DATA}/GRID/
 
 # sending file to gfdl
-set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
-set SEND_FILE = /home/${USER}/Util/send_file_slurm.csh
-set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
+#set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
+#set SEND_FILE = /home/${USER}/Util/send_file_slurm.csh
+set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
 
 # changeable parameters
     # dycore definitions
@@ -102,7 +94,7 @@ set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
 
 
     # set various debug options
-    set no_dycore = ".F."
+    set no_dycore = ".T."
     set dycore_only = ".F." # debug
     set chksum_debug = ".false."
     set print_freq = "10" # debug
@@ -214,13 +206,15 @@ cat ${BUILD_AREA}/FV3GFS/RUN/RETRO/diag_table_hwt_simple >> diag_table
 # copy over the other tables and executable
 cp ${BUILD_AREA}/RUN/RETRO/data_table data_table
 cp ${BUILD_AREA}/RUN/RETRO/field_table_6species field_table
+python3 ${BUILD_AREA}/fms_yaml_tools/data_table/data_table_to_yaml.py -f data_table
+python3 ${BUILD_AREA}/fms_yaml_tools/field_table/field_to_yaml.py field_table
 cp $executable .
 
 # GFS standard input data
 tar xf ${GFS} 
 
 # Grid and orography data
-ln -s ${GRID}/* INPUT/. 
+cp -rf ${GRID}/* INPUT/.
 
 #tar xf ${ICS}
 #tar xf /lustre/f1/unswept/Lucas.Harris/FV3_INPUT_DATA//regional/c768regUS/20180628.00Z_IC/GFS_INPUT.tar
@@ -230,19 +224,19 @@ ln -s ${GRID}/* INPUT/.
 #    ln -s $i ${i:r:r}.nest02.tile7.nc
 #end
 
-ln -s ${ICS}/* INPUT/.
+cp -rf ${ICS}/* INPUT/.
 
 mv INPUT/sfc_data.tile7.nc INPUT/sfc_data.nc
 mv INPUT/gfs_data.tile7.nc INPUT/gfs_data.nc
 
 mv INPUT/C${res}_mosaic.nc INPUT/grid_spec.nc
 
-ln -s C${res}_grid.tile7.halo3.nc INPUT/C${res}_grid.tile7.nc
-ln -s C${res}_grid.tile7.halo4.nc INPUT/grid.tile7.halo4.nc
+cp -rf INPUT/C${res}_grid.tile7.halo3.nc INPUT/C${res}_grid.tile7.nc
+cp -rf INPUT/C${res}_grid.tile7.halo4.nc INPUT/grid.tile7.halo4.nc
 
 
-ln -s C${res}_oro_data.tile7.halo0.nc INPUT/oro_data.nc
-ln -s C${res}_oro_data.tile7.halo4.nc INPUT/oro_data.tile7.halo4.nc
+cp -rf INPUT/C${res}_oro_data.tile7.halo0.nc INPUT/oro_data.nc
+cp -rf INPUT/C${res}_oro_data.tile7.halo4.nc INPUT/oro_data.tile7.halo4.nc
 
 
 
@@ -251,6 +245,25 @@ cp INPUT/aerosol.dat .
 cp INPUT/co2historicaldata_201*.txt .
 cp INPUT/sfc_emissivity_idx.txt .
 cp INPUT/solarconstant_noaa_an.txt .
+
+cp $FIX/global_glacier.2x2.grb INPUT/
+cp $FIX/global_maxice.2x2.grb INPUT/
+cp $FIX/RTGSST.1982.2012.monthly.clim.grb INPUT/
+cp $FIX/global_snoclim.1.875.grb INPUT/
+cp $FIX/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb INPUT/
+cp $FIX/global_albedo4.1x1.grb INPUT/
+cp $FIX/CFSR.SEAICE.1982.2012.monthly.clim.grb INPUT/
+cp $FIX/global_tg3clim.2.6x1.5.grb INPUT/
+cp $FIX/global_vegfrac.0.144.decpercent.grb INPUT/
+cp $FIX/global_vegtype.igbp.t1534.3072.1536.rg.grb INPUT/
+cp $FIX/global_soiltype.statsgo.t1534.3072.1536.rg.grb INPUT/
+cp $FIX/global_soilmgldas.t1534.3072.1536.grb INPUT/
+cp $FIX/seaice_newland.grb INPUT/
+cp $FIX/global_shdmin.0.144x0.144.grb INPUT/
+cp $FIX/global_shdmax.0.144x0.144.grb INPUT/
+cp $FIX/global_slope.1x1.grb INPUT/
+cp $FIX/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb INPUT/
+
 set irun = 1
 
 while ( $irun <= $nruns )
@@ -271,6 +284,11 @@ else
    else
     ln -s $restart_file/* INPUT/.
    endif
+  
+   foreach out1 (`ls *_table`)
+     set split = ($out1:as/./ /)
+     mv $out1 $split[2]
+   end
 
    # reset values in input.nml for restart run
    set make_nh = ".F."
@@ -324,6 +342,10 @@ cat >! input.nml <<EOF
        print_memory_usage = .F.
 /
 
+ &fms_affinity_nml
+      affinity=.false.
+/
+
  &fv_grid_nml
        grid_file = 'INPUT/grid_spec.nc' ! This line is IMPORTANT for regional model
 /
@@ -359,7 +381,7 @@ cat >! input.nml <<EOF
        k_split  = $k_split
        n_split  = $n_split
        nwat = 6 
-       na_init = 1
+       na_init =$na_init 
        d_ext = 0.0
        dnats = 2 ! 2019: improved efficiency by not advecting o3
        fv_sg_adj = 1800 ! 2019: full-domain weak 2dz damping
@@ -370,10 +392,10 @@ cat >! input.nml <<EOF
        d4_bg = 0.14
        vtdm4 = 0.02
        do_vort_damp = .T.
-       external_ic = .T.
-       nggps_ic = .T.
+       external_ic = $external_ic
+       nggps_ic = $nggps_ic 
        hrrrv3_ic= .F.
-       mountain = .F.
+       mountain = $mountain 
        ncep_ic = .F.
        d_con = 1.0 ! 2019: Full-strength dissipative heating
        hord_mt = 6
@@ -388,7 +410,7 @@ cat >! input.nml <<EOF
        consv_am = .F.
        dwind_2d = .F.
        print_freq = $print_freq
-       warm_start = .F.
+       warm_start = $warm_start
        no_dycore = $no_dycore
 
        rf_fast = .F.
@@ -414,7 +436,7 @@ cat >! input.nml <<EOF
        dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
-       memuse_verbose = .T.
+       !memuse_verbose = .T.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
 /
@@ -472,7 +494,6 @@ cat >! input.nml <<EOF
        do_deep        = .false.
        do_ocean       = .true. ! 2019: Using an hfvGFS-like setting
        ysupbl         = .true. ! 201907h6: restored YSU
-       satmedmf       = .false.
        do_inline_mp   = .true.
        xkzminv        = 0.0  ! 2019: NO diffusion in inversion layers
        xkzm_h         = 0.2  ! 2019: YSU default (note divided by 2 inside scheme)
@@ -557,7 +578,6 @@ mp_time = $dt_atmos
 
 
  &gfdl_mp_nml
-       sedi_transport = .T.  ! 2019: enabled
        do_sedi_heat = .T.    ! 2019: enabled
        do_sedi_w = .T.       ! 2019: enabled
        rad_snow = .true.
@@ -574,10 +594,8 @@ mp_time = $dt_atmos
        qi_lim = 2.
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .F.
        tau_l2v = 180
        tau_v2l =  22.5 ! 201907d: short timescale introduced
-       tau_g2v = 900. ! 2019: increased
        rthresh = 10.0e-6
        dw_land  = 0.16
        dw_ocean = 0.10
@@ -588,23 +606,23 @@ mp_time = $dt_atmos
        tau_i2s = 1000.
        c_psaci = 0.05 ! 2019: decreased
        c_pgacs = 0.2  ! 2019: increased substantially; improves rainfall coverage
-       c_cracw = 0.75 ! 2019: decreased
        rh_inc = 0.30
        rh_inr = 0.30
        rh_ins = 0.30
        ccn_l = 300.   ! 2019: Increased
        ccn_o = 100.   ! 2019: increased
-       use_ppm = .F.  ! 2019: Disabled
-       use_ccn = .true.
        z_slope_liq  = .true.
        z_slope_ice  = .true.
-       de_ice = .false.
        fix_negative = .true.
        icloud_f = 0     ! 2019: enabled
        do_hail = .true. ! 2019: enabled
        do_cond_timescale = .true. ! 201984zb
 
 /
+
+  &cld_eff_rad_nml
+/
+
 
 
  &cloud_diagnosis_nml
@@ -633,27 +651,27 @@ mp_time = $dt_atmos
 /
 
 &namsfc
-       FNGLAC   = "$FIX/global_glacier.2x2.grb",
-       FNMXIC   = "$FIX/global_maxice.2x2.grb",
-       FNTSFC   = "$FIX/RTGSST.1982.2012.monthly.clim.grb",
-       FNSNOC   = "$FIX/global_snoclim.1.875.grb",
+       FNGLAC   = "INPUT/global_glacier.2x2.grb",
+       FNMXIC   = "INPUT/global_maxice.2x2.grb",
+       FNTSFC   = "INPUT/RTGSST.1982.2012.monthly.clim.grb",
+       FNSNOC   = "INPUT/global_snoclim.1.875.grb",
        FNZORC   = "igbp",
-       FNALBC   = "$FIX/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
-       FNALBC2  = "$FIX/global_albedo4.1x1.grb",
-       FNAISC   = "$FIX/CFSR.SEAICE.1982.2012.monthly.clim.grb",
-       FNTG3C   = "$FIX/global_tg3clim.2.6x1.5.grb",
-       FNVEGC   = "$FIX/global_vegfrac.0.144.decpercent.grb",
-       FNVETC   = "$FIX/global_vegtype.igbp.t1534.3072.1536.rg.grb",
-       FNSOTC   = "$FIX/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
-       FNSMCC   = "$FIX/global_soilmgldas.t1534.3072.1536.grb",
-       FNMSKH   = "$FIX/seaice_newland.grb",
+       FNALBC   = "INPUT/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
+       FNALBC2  = "INPUT/global_albedo4.1x1.grb",
+       FNAISC   = "INPUT/CFSR.SEAICE.1982.2012.monthly.clim.grb",
+       FNTG3C   = "INPUT/global_tg3clim.2.6x1.5.grb",
+       FNVEGC   = "INPUT/global_vegfrac.0.144.decpercent.grb",
+       FNVETC   = "INPUT/global_vegtype.igbp.t1534.3072.1536.rg.grb",
+       FNSOTC   = "INPUT/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
+       FNSMCC   = "INPUT/global_soilmgldas.t1534.3072.1536.grb",
+       FNMSKH   = "INPUT/seaice_newland.grb",
        FNTSFA   = "",
        FNACNA   = "",
        FNSNOA   = "",
-       FNVMNC   = "$FIX/global_shdmin.0.144x0.144.grb",
-       FNVMXC   = "$FIX/global_shdmax.0.144x0.144.grb",
-       FNSLPC   = "$FIX/global_slope.1x1.grb",
-       FNABSC   = "$FIX/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
+       FNVMNC   = "INPUT/global_shdmin.0.144x0.144.grb",
+       FNVMXC   = "INPUT/global_shdmax.0.144x0.144.grb",
+       FNSLPC   = "INPUT/global_slope.1x1.grb",
+       FNABSC   = "INPUT/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
        LDEBUG   =.false.,
        FSMCL(2) = 99999
        FSMCL(3) = 99999
@@ -684,9 +702,9 @@ EOF
    endif
     @ irun++
 
-if ($NO_SEND == "no_send") then
-  continue
-endif
+#if ($NO_SEND == "no_send") then
+#  continue
+#endif
 
 #########################################################################
 # generate date for file names
@@ -718,7 +736,7 @@ endif
 
     tar cvf - *\.out *\.results *\.nml *_table | gzip -c > $WORKDIR/ascii/$begindate.ascii_out.tgz
 
-sbatch --export=source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii --output=$HOME/STDOUT/%x.o%j $SEND_FILE
+#sbatch --export=source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii --output=$HOME/STDOUT/%x.o%j $SEND_FILE
 
 
 ########################################################################
@@ -790,7 +808,7 @@ sbatch --export=source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:
     cd $WORKDIR/rundir
 
 
-    sbatch --export=source=$WORKDIR/history/$begindate,destination=gfdl:$gfdl_archive/history/$begindate,extension=tar,type=history --output=$HOME/STDOUT/%x.o%j $SEND_FILE
+ #   sbatch --export=source=$WORKDIR/history/$begindate,destination=gfdl:$gfdl_archive/history/$begindate,extension=tar,type=history --output=$HOME/STDOUT/%x.o%j $SEND_FILE
 
 
 end # while ( $irun <= $nruns )

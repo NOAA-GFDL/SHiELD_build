@@ -1,0 +1,160 @@
+#output files
+"grid_spec",           -1,  "months",   1, "days",  "time"
+"atmos_4xdaily",        6,  "hours",    1, "days",  "time"
+"atmos_4xuv",           6,  "hours",    1, "days",  "time"
+"atmos_4xtq",           6,  "hours",    1, "days",  "time"
+"atmos_static",        -1,  "hours",    1, "hours", "time"
+"atmos_sos",           30,  "minutes",    1, "days",  "time"
+"nggps2d",              0,  "hours",    1, "hours", "time"
+#
+#=======================
+# ATMOSPHERE DIAGNOSTICS
+#=======================
+###
+# grid_spec
+###
+ "dynamics", "grid_lon", "grid_lon", "grid_spec", "all", .false.,  "none", 2,
+ "dynamics", "grid_lat", "grid_lat", "grid_spec", "all", .false.,  "none", 2,
+ "dynamics", "grid_lont", "grid_lont", "grid_spec", "all", .false.,  "none", 2,
+ "dynamics", "grid_latt", "grid_latt", "grid_spec", "all", .false.,  "none", 2,
+ "dynamics", "area",     "area",     "grid_spec", "all", .false.,  "none", 2,
+###
+# 4x daily output
+###
+ "dynamics",  "slp",         "slp",        "atmos_4xdaily", "all", .false.,  "none", 2
+#"dynamics",  "vort850",     "vort850",    "atmos_4xdaily", "all", .false.,  "none", 2
+#"dynamics",  "w200",        "w200",       "atmos_4xdaily", "all", .false.,  "none", 2
+#"dynamics",  "w500",        "w500",       "atmos_4xdaily", "all", .false.,  "none", 2
+#"dynamics",  "w850",        "w850",       "atmos_4xdaily", "all", .false.,  "none", 2
+###
+#"dynamics",  "z1000",       "h1000",      "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "z925",        "h925",       "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "z850",        "h850",       "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "z700",        "h700",       "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "z500",        "h500",       "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "z300",        "h300",       "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "z200",        "h200",       "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "z100",        "h100",       "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "z50",         "h50",        "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "z10",         "h10",        "atmos_4xdaily", "all", .false.,  "none", 2
+####
+#"dynamics",  "omg1000",     "omg1000",    "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "omg925",      "omg925",     "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "omg850",      "omg850",     "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "omg700",      "omg700",     "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "omg500",      "omg500",     "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "omg300",      "omg300",     "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "omg200",      "omg200",     "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "omg100",      "omg100",     "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "omg50",       "omg50",      "atmos_4xdaily", "all", .false.,  "none", 2
+ "dynamics",  "omg10",       "omg10",      "atmos_4xdaily", "all", .false.,  "none", 2
+###
+
+#"dynamics",  "u1000",       "u1000",      "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "u925",        "u925",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "u850",        "u850",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "u700",        "u700",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "u500",        "u500",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "u300",        "u300",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "u200",        "u200",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "u100",        "u100",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "u50",         "u50",        "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "u10",         "u10",        "atmos_4xuv", "all", .false.,  "none", 2
+
+#"dynamics",  "v1000",       "v1000",      "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "v925",        "v925",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "v850",        "v850",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "v700",        "v700",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "v500",        "v500",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "v300",        "v300",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "v200",        "v200",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "v100",        "v100",       "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "v50",         "v50",        "atmos_4xuv", "all", .false.,  "none", 2
+ "dynamics",  "v10",         "v10",        "atmos_4xuv", "all", .false.,  "none", 2
+
+#"dynamics",  "t1000",       "t1000",      "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "t925",        "t925",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "t850",        "t850",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "t700",        "t700",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "t500",        "t500",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "t300",        "t300",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "t200",        "t200",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "t100",        "t100",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "t50",         "t50",        "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "t10",         "t10",        "atmos_4xtq", "all", .false.,  "none", 2
+
+#"dynamics",  "q1000",       "q1000",      "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "q925",        "q925",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "q850",        "q850",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "q700",        "q700",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "q500",        "q500",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "q300",        "q300",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "q200",        "q200",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "q100",        "q100",       "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "q50",         "q50",        "atmos_4xtq", "all", .false.,  "none", 2
+ "dynamics",  "q10",         "q10",        "atmos_4xtq", "all", .false.,  "none", 2
+# gfs static data
+#"dynamics",      "pk",          "pk",           "atmos_static",      "all", .false.,  "none", 2
+#"dynamics",      "bk",          "bk",           "atmos_static",      "all", .false.,  "none", 2
+ "dynamics",      "hyam",        "hyam",         "atmos_static",      "all", .false.,  "none", 2
+ "dynamics",      "hybm",        "hybm",         "atmos_static",      "all", .false.,  "none", 2
+ "dynamics",      "zsurf",       "zsurf",        "atmos_static",      "all", .false.,  "none", 2
+###
+# GFS variabls needed for NGGPS evaluation
+###
+ "gfs_phys",  "cnvprcp"        "CPRATsfc"   "nggps2d",         "all",  .false.,  "none",  2
+ "gfs_phys",  "totprcp"        "PRATEsfc"   "nggps2d",         "all",  .false.,  "none",  2
+#"gfs_sfc",   "HGTsfc"         "HGTsfc"     "nggps2d",         "all",  .false.,  "none",  2
+#"gfs_phys",  "hpbl"           "HPBLsfc"    "nggps2d",         "all",  .false.,  "none",  2
+ "gfs_sfc",   "tsfc"           "TMPsfc"     "nggps2d",         "all",  .false.,  "none",  2
+#"gfs_sfc",   "q2m"            "SPFH2m"     "nggps2d",         "all",  .false.,  "none",  2
+ "gfs_sfc",   "t2m"            "TMP2m"      "nggps2d",         "all",  .false.,  "none",  2
+ "gfs_phys",  "u10m"           "UGRD10m"    "nggps2d",         "all",  .false.,  "none",  2
+ "gfs_phys",  "v10m"           "VGRD10m"    "nggps2d",         "all",  .false.,  "none",  2
+ "gfs_phys",  "USWRFtoa"       "USWRFtoa"   "nggps2d",         "all",  .false.,  "none",  2
+ "gfs_phys",  "DSWRFtoa"       "DSWRFtoa"   "nggps2d",         "all",  .false.,  "none",  2
+ "gfs_phys",  "ULWRFtoa"       "ULWRFtoa"   "nggps2d",         "all",  .false.,  "none",  2
+#"gfs_sfc",   "snowd"          "SNODsfc"    "nggps2d",         "all",  .false.,  "none",  2
+####
+## SOS high-frequency
+####
+#"dynamics",  "tq",          "tq",          "atmos_sos", "all", .false., "none", 2
+ "dynamics",  "lw",          "lw",          "atmos_sos", "all", .false., "none", 2
+ "dynamics",  "iw",          "iw",          "atmos_sos", "all", .false., "none", 2
+ "dynamics", "max_reflectivity", "max_reflectivity", "atmos_sos","all",.false., "none", 2
+ "dynamics",  "ctt",         "ctt",         "atmos_sos", "all", .false., "none", 2
+#"gfs_phys",  "USWRFtoa"     "USWRFtoa"   "atmos_sos",   "all",  .false.,  "none",  2
+####
+#=============================================================================================
+#
+#====> This file can be used with diag_manager/v2.0a (or higher) <====
+#
+#
+#  FORMATS FOR FILE ENTRIES (not all input values are used)
+#  ------------------------
+#
+#"file_name", output_freq, "output_units", format, "time_units", "long_name",
+#
+#
+#output_freq:  > 0  output frequency in "output_units"
+#              = 0  output frequency every time step
+#              =-1  output frequency at end of run
+#
+#output_units = units used for output frequency
+#               (years, months, days, minutes, hours, seconds)
+#
+#time_units   = units used to label the time axis
+#               (days, minutes, hours, seconds)
+#
+#
+#  FORMAT FOR FIELD ENTRIES (not all input values are used)
+#  ------------------------
+#
+#"module_name", "field_name", "output_name", "file_name" "time_sampling", time_avg, "other_opts", packing
+#
+#time_avg = .true. or .false.
+#
+#packing  = 1  double precision
+#         = 2  float
+#         = 4  packed 16-bit integers
+#         = 8  packed 1-byte (not tested?)

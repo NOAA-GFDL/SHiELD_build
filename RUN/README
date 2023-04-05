@@ -1,0 +1,24 @@
+
+
+
+# sample run scripts for SHiELD system on Orion
+
+# build the system first.
+cd Build
+git submodule update --init
+git submodule update --remote
+./COMP_dev clean   or   ./COMP_all clean
+
+
+
+Loation of the Scripts:
+./RUN/RETRO/Orion/*
+
+1. these scripts are ready to run through SLURM on Orion
+   a. modify stdout in the script
+   b. sbatch $SCRIPT_NAME
+
+2. The scripts are similar to previous Gaea ones. It should be easy
+   to modify them and make your own versions.
+
+

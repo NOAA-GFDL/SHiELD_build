@@ -1,29 +1,23 @@
 #!/bin/tcsh
-#SBATCH --output=/home/jmoualle/ORION_RT/stdout/%x.%j
+#SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C48_res
-#SBATCH --partition=orion
+#SBATCH --account=gfdl_f
+#SBATCH --clusters=c4
 #SBATCH --time=00:10:00
-#SBATCH --nodes=5
-#SBATCH --exclusive
-#SBATCH --mail-user=joseph.mouallem@noaa.gov
-#SBATCH --mail-type=ALL
-
-source ${MODULESHOME}/init/tcsh
-module load intel/2020
-module load netcdf/
-module load hdf5/
-module load impi/2020
+#SBATCH --nodes=6
 
 set echo
 
-set BASEDIR    = "/work/noaa/gfdlscr/${USER}/"
-set INPUT_DATA = "/work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA/"
-# from YQS
-set BUILD_AREA = "/home/jmoualle/SHiELD_Lucas/SHiELD_build/"
-
+set BASEDIR    = "${SCRATCH}/${USER}/"
+set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA"
+set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
 # release number for the script
-set RELEASE = "SHiELD_FMS2020.02"
+source fms.csh
+set RELEASE = "SHiELD_${COMPILER}_${DESCRIPTOR}_${BIT}"
+
+source ${BUILD_AREA}/site/environment.${COMPILER}.sh
+module load python/3.9
 
 #set hires_oro_factor = 3
 set res = 48
@@ -31,7 +25,7 @@ set res = 48
 set CPN = 40
 # case specific details
 set TYPE = "nh"         # choices:  nh, hydro
-set MODE = "32bit"      # choices:  32bit, 64bit
+set MODE = "${BIT}"      # choices:  32bit, 64bit
 set MONO = "non-mono"   # choices:  mono, non-mono
 set GRID = "C$res"
 set MEMO = "$SLURM_JOB_NAME" # trying prod executable
@@ -50,12 +44,12 @@ set EXE = "x"
 
 # directory structure
 set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}.${MEMO}/
-set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${EXE}
+set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${DESCRIPTOR}.${EXE}
 
 # sending file to gfdl
-set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MEMO}/
-set SEND_FILE = /home/jmoualle/Util/send_file_slurm.csh
-set TIME_STAMP = /home/jmoualle/Util/time_stamp.csh
+#set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MEMO}/
+#set SEND_FILE = ~${USER}/Util/send_file_slurm.csh
+set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
 
 # input filesets
 set ICDIR   = ${INPUT_DATA}/global.v201810/${CASE}/${NAME}_IC/  #CHECK
@@ -204,13 +198,7 @@ if (${RESTART_RUN} == "F") then
   mkdir -p INPUT
 
   # Date specific ICs
-  #tar xf ${ICS}
-  #if ( -e ${ICS} ) then
-  if ( -e ${ICDIR}/gfs_data.tile1.nc ) then
-    ln -s ${ICDIR}/* INPUT/
-  else
-    tar xf ${ICS}
-  endif
+  cp -rf ${ICDIR}/* INPUT/
 
   # set variables in input.nml for initial run
   set ecmwf_ic = ".F." 
@@ -227,7 +215,7 @@ else
 
   # move the restart data into INPUT/
   #mv RESTART/* INPUT/.
-  ln -s ${restart_dir}/coupler.res ${restart_dir}/[^0-9]*.nc ${restart_dir}/[^0-9]*.nc.???? INPUT/.
+  cp -rf ${restart_dir}/coupler.res ${restart_dir}/[^0-9]*.nc ${restart_dir}/[^0-9]*.nc.???? INPUT/.
 
   # reset values in input.nml for restart run
   set make_nh = ".F."
@@ -246,13 +234,15 @@ ls RESTART/
 cp ${BUILD_AREA}/RUN/RETRO/data_table data_table
 cp ${BUILD_AREA}/RUN/RETRO/diag_table_no3d diag_table
 cp ${BUILD_AREA}/RUN/RETRO/field_table_6species field_table
+python3 ${BUILD_AREA}/fms_yaml_tools/data_table/data_table_to_yaml.py -f data_table
+python3 ${BUILD_AREA}/fms_yaml_tools/field_table/field_to_yaml.py field_table
 cp $executable .
 
 # GFS standard input data
 tar xf ${GFS_STD_INPUT}
 
 # Grid and orography data
- ln -sf ${GRIDDIR}/* INPUT/
+ cp -rf ${GRIDDIR}/* INPUT/
 
 # build the date for curr_date from DATE
 set y = `echo ${DATE} | cut -c1-4`
@@ -274,6 +264,26 @@ cp INPUT/aerosol.dat .
 cp INPUT/co2historicaldata_*.txt .
 cp INPUT/sfc_emissivity_idx.txt .
 cp INPUT/solarconstant_noaa_an.txt .
+
+cp $FIXDIR/global_glacier.2x2.grb INPUT/
+cp $FIXDIR/global_maxice.2x2.grb INPUT/
+cp $FIXDIR/RTGSST.1982.2012.monthly.clim.grb INPUT/
+cp $FIXDIR/global_snoclim.1.875.grb INPUT/
+cp $CLIMO_DATA/mld/mld_DR003_c1m_reg2.0.grb INPUT/
+cp $FIXDIR/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb INPUT/
+cp $FIXDIR/global_albedo4.1x1.grb INPUT/
+cp $FIXDIR/CFSR.SEAICE.1982.2012.monthly.clim.grb INPUT/
+cp $FIXDIR/global_tg3clim.2.6x1.5.grb INPUT/
+cp $FIXDIR/global_vegfrac.0.144.decpercent.grb INPUT/
+cp $FIXDIR/global_vegtype.igbp.t1534.3072.1536.rg.grb INPUT/
+cp $FIXDIR/global_soiltype.statsgo.t1534.3072.1536.rg.grb INPUT/
+cp $FIXDIR/global_soilmgldas.t1534.3072.1536.grb INPUT/
+cp $FIXDIR/seaice_newland.grb INPUT/
+cp $FIXDIR/global_shdmin.0.144x0.144.grb INPUT/
+cp $FIXDIR/global_shdmax.0.144x0.144.grb INPUT/
+cp $FIXDIR/global_slope.1x1.grb INPUT/
+cp $FIXDIR/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb INPUT/
+
 
 unset echo
 cat >! input.nml <<EOF
@@ -304,6 +314,10 @@ cat >! input.nml <<EOF
        clock_grain = 'ROUTINE',
        domains_stack_size = 3000000,
        print_memory_usage = .false.
+/
+
+ &fms_affinity_nml
+      affinity=.false.
 /
 
  &fv_grid_nml
@@ -406,7 +420,7 @@ cat >! input.nml <<EOF
        dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
-       memuse_verbose = .false.
+       !memuse_verbose = .false.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
 !       ncores_per_node = $cores_per_node
@@ -541,7 +555,6 @@ cat >! input.nml <<EOF
 
 
  &gfdl_mp_nml
-       sedi_transport = .true.
        do_sedi_heat = .true.
        rad_snow = .true.
        rad_graupel = .true.
@@ -561,10 +574,8 @@ cat >! input.nml <<EOF
        qi_lim = 1.
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .false.
        tau_l2v = 225.
        tau_v2l = 150.
-       tau_g2v = 900.
        rthresh = 10.e-6  ! This is a key parameter for cloud water
        dw_land  = 0.16
        dw_ocean = 0.10
@@ -581,13 +592,8 @@ cat >! input.nml <<EOF
        ccn_l = 300.
        ccn_o = 100.
        c_paut = 0.5
-       c_cracw = 0.8
-       use_ppm = .false.
-       use_ccn = .true.
-       mono_prof = .false.
        z_slope_liq  = .true.
        z_slope_ice  = .true.
-       de_ice = .false.
        fix_negative = .false.
        icloud_f = 0
 /
@@ -617,28 +623,28 @@ cat >! input.nml <<EOF
 /
 
 &namsfc
-       FNGLAC   = "$FIXDIR/global_glacier.2x2.grb",
-       FNMXIC   = "$FIXDIR/global_maxice.2x2.grb",
-       FNTSFC   = "$FIXDIR/RTGSST.1982.2012.monthly.clim.grb",
-       FNSNOC   = "$FIXDIR/global_snoclim.1.875.grb",
-       FNMLDC   = "$CLIMO_DATA/mld/mld_DR003_c1m_reg2.0.grb",
+       FNGLAC   = "INPUT/global_glacier.2x2.grb",
+       FNMXIC   = "INPUT/global_maxice.2x2.grb",
+       FNTSFC   = "INPUT/RTGSST.1982.2012.monthly.clim.grb",
+       FNSNOC   = "INPUT/global_snoclim.1.875.grb",
+       FNMLDC   = "INPUT/mld_DR003_c1m_reg2.0.grb",
        FNZORC   = "igbp",
-       FNALBC   = "$FIXDIR/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
-       FNALBC2  = "$FIXDIR/global_albedo4.1x1.grb",
-       FNAISC   = "$FIXDIR/CFSR.SEAICE.1982.2012.monthly.clim.grb",
-       FNTG3C   = "$FIXDIR/global_tg3clim.2.6x1.5.grb",
-       FNVEGC   = "$FIXDIR/global_vegfrac.0.144.decpercent.grb",
-       FNVETC   = "$FIXDIR/global_vegtype.igbp.t1534.3072.1536.rg.grb",
-       FNSOTC   = "$FIXDIR/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
-       FNSMCC   = "$FIXDIR/global_soilmgldas.t1534.3072.1536.grb",
-       FNMSKH   = "$FIXDIR/seaice_newland.grb",
+       FNALBC   = "INPUT/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
+       FNALBC2  = "INPUT/global_albedo4.1x1.grb",
+       FNAISC   = "INPUT/CFSR.SEAICE.1982.2012.monthly.clim.grb",
+       FNTG3C   = "INPUT/global_tg3clim.2.6x1.5.grb",
+       FNVEGC   = "INPUT/global_vegfrac.0.144.decpercent.grb",
+       FNVETC   = "INPUT/global_vegtype.igbp.t1534.3072.1536.rg.grb",
+       FNSOTC   = "INPUT/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
+       FNSMCC   = "INPUT/global_soilmgldas.t1534.3072.1536.grb",
+       FNMSKH   = "INPUT/seaice_newland.grb",
        FNTSFA   = "",
        FNACNA   = "",
        FNSNOA   = "",
-       FNVMNC   = "$FIXDIR/global_shdmin.0.144x0.144.grb",
-       FNVMXC   = "$FIXDIR/global_shdmax.0.144x0.144.grb",
-       FNSLPC   = "$FIXDIR/global_slope.1x1.grb",
-       FNABSC   = "$FIXDIR/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
+       FNVMNC   = "INPUT/global_shdmin.0.144x0.144.grb",
+       FNVMXC   = "INPUT/global_shdmax.0.144x0.144.grb",
+       FNSLPC   = "INPUT/global_slope.1x1.grb",
+       FNABSC   = "INPUT/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
        LDEBUG   =.false.,
        FSMCL(2) = 99999
        FSMCL(3) = 99999
@@ -658,6 +664,10 @@ cat >! input.nml <<EOF
        FSNOS    = 99999,
        FSICS    = 99999,
 /
+
+  &cld_eff_rad_nml
+/
+
 EOF
 
 # run the executable
@@ -697,7 +707,7 @@ end
 cd $WORKDIR/ascii/$begindate
 tar cvf - *\.out *\.results | gzip -c > $WORKDIR/ascii/$begindate.ascii_out.tgz
 
-if ($NO_SEND == "send") sbatch --export=source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii $SEND_FILE
+#if ($NO_SEND == "send") sbatch --export=source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii $SEND_FILE
 
 ########################################################################
 # move restart files
@@ -732,7 +742,7 @@ if ( $resfiles > 0 ) then
   xargs mv -t $restart_dir < $resfile_list
   echo "set restart_dir = $restart_dir" >> $RST_COUNT
 
-  if ($NO_SEND == "send") sbatch --export=source=$WORKDIR/restart/$enddate,destination=gfdl:$gfdl_archive/restart/$enddate,extension=tar,type=restart $SEND_FILE
+#  if ($NO_SEND == "send") sbatch --export=source=$WORKDIR/restart/$enddate,destination=gfdl:$gfdl_archive/restart/$enddate,extension=tar,type=restart $SEND_FILE
 
 endif
 

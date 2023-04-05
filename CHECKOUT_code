@@ -35,8 +35,8 @@ release="main"
 
 fv3_release=$release
 phy_release=$release
-fms_release="2022.03"
-drivers_release="2022.02"
+fms_release="2023.01"
+drivers_release="2023.01"
 
 git clone -b ${fv3_release}   https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${phy_release}   https://github.com/NOAA-GFDL/SHiELD_physics
