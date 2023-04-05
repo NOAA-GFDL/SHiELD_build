@@ -242,6 +242,8 @@ cat > field_table <<EOF
        "profile_type", "fixed", "surface_value=1.e30" /
 EOF
 
+data-table-to-yaml -f data_table
+field-table-to-yaml -f field_table
 
 #
 # build the input.nml

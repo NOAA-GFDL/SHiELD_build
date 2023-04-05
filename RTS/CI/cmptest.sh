@@ -6,7 +6,7 @@
 module load fre/bronx-20
 
 set run1 = "/lustre/f2/dev/Lauren.Chilutti/BASELINES"
-set run2 = "/lustre/f2/scratch/Lauren.Chilutti/SHiELDCI_2022.04_330/CI/BATCH-CI"
+set run2 = "/lustre/f2/scratch/Lauren.Chilutti/SHiELDCI_2023.01/CI/BATCH-CI"
 
 cd $run1
 foreach TEST ( C* d* )

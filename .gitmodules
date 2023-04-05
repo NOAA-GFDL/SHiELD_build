@@ -1,6 +1,3 @@
 [submodule "mkmf"]
 	path = mkmf
 	url = https://github.com/NOAA-GFDL/mkmf.git
-[submodule "fms_yaml_tools"]
-	path = fms_yaml_tools
-	url = https://github.com/NOAA-GFDL/fms_yaml_tools.git

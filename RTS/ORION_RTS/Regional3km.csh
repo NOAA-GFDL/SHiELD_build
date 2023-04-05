@@ -6,6 +6,8 @@
 #SBATCH --time=00:30:00
 #SBATCH --nodes=25
 
+#change clusters to c5 and nodes to 8 to run on gaea c5
+
 set echo
 
 set BASEDIR    = "${SCRATCH}/${USER}/"

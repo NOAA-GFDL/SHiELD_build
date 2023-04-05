@@ -6,6 +6,7 @@
 #SBATCH --time=00:10:00
 #SBATCH --nodes=6
 
+# change c4 to c5 and set nodes to 2 for c5
 set echo
 
 set BASEDIR    = "${SCRATCH}/${USER}/"
