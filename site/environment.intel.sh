@@ -80,7 +80,7 @@ case $hostname in
       echo -e ' '
       module list
       ;;
-   Orion? )
+   Orion* )
       echo " Orion environment "
  
       . ${MODULESHOME}/init/sh
@@ -108,7 +108,7 @@ case $hostname in
       echo -e ' '
       module list
       ;;
-   fe? | x? )
+   fe* | x* )
       echo " jet environment "
 
       . ${MODULESHOME}/init/sh
@@ -134,7 +134,7 @@ case $hostname in
       echo -e ' '
       module list
       ;;
-   h? )
+   h* )
       echo " hera environment "
 
       source $MODULESHOME/init/sh
@@ -159,7 +159,7 @@ case $hostname in
       echo -e ' '
       module list
       ;;
-   lsc? )
+   lsc* )
       echo " lsc environment "
 
       source $MODULESHOME/init/sh
@@ -190,7 +190,7 @@ case $hostname in
       echo -e ' '
       module list
       ;;
-   lsc? )
+   * )
       echo " no environment available based on the hostname "
       ;;
 esac
