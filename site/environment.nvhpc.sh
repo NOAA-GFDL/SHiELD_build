@@ -23,39 +23,40 @@
 #  DISCLAIMER: This script is provided as-is and as such is unsupported.
 #
 
-if [ `hostname | cut -c1-3` = "lsc" ] ; then
-   echo " lsc environment "
+hostname=`hostname`
 
-   source $MODULESHOME/init/sh
-   module load nvhpc/23.1
-   module load netcdf/4.9.0
-   module load hdf5/1.12.0
-   module load cmake/3.18.2
+case $hostname in
+   lsc* )
+      echo " lsc environment "
 
-   export CPATH="${NETCDF_ROOT}/include:${CPATH}"
-   export NETCDF_DIR=${NETCDF_ROOT}
+      source $MODULESHOME/init/sh
+      module load nvhpc/23.1
+      module load netcdf/4.9.0
+      module load hdf5/1.12.0
+      module load cmake/3.18.2
 
-   # make your compiler selections here
-   export FC=mpif90
-   export CC=mpicc
-   export CXX=mpicxx
-   export LD=mpif90
-   export TEMPLATE=site/nvhpc.mk
-   export LAUNCHER="mpirun -tag-output"
+      export CPATH="${NETCDF_ROOT}/include:${CPATH}"
+      export NETCDF_DIR=${NETCDF_ROOT}
 
-   # highest level of AVX support
-   if [ `hostname | cut -c4-6` = "amd" ] ; then
-     export AVX_LEVEL=
-   else
-     export AVX_LEVEL=
-   fi
+      # make your compiler selections here
+      export FC=mpif90
+      export CC=mpicc
+      export CXX=mpicxx
+      export LD=mpif90
+      export TEMPLATE=site/nvhpc.mk
+      export LAUNCHER="mpirun -tag-output"
 
-   echo -e ' '
-   module list
+      # highest level of AVX support
+      if [ `hostname | cut -c4-6` = "amd" ] ; then
+        export AVX_LEVEL=
+      else
+        export AVX_LEVEL=
+      fi
 
-else
-
-   echo " no environment available based on the hostname "
-
-fi
-
+      echo -e ' '
+      module list
+      ;;
+   * )
+      echo " no environment available based on the hostname "
+      ;;
+esac

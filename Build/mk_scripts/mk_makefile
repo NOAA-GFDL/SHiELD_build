@@ -108,14 +108,6 @@ mv OUT Makefile_fv3
 ############################
 if [ ${CONFIG} = 'shield' ] ; then
   sed -i 's"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c\t$(SRCROOT)SHiELD_physics/GFS_layer/GFS_diagnostics.F90" $(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -O0 -c\t$(SRCROOT)SHiELD_physics/GFS_layer/GFS_diagnostics.F90" ' Makefile_gfs
-
-############################
-#---COMPILE -xCORE-AVX-I
-#---radiation_aerosols.f
-############################
-  if [ ${COMPILER} = 'intel' ]; then
-    sed -i 's"$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c\t$(SRCROOT)SHiELD_physics/gsmphys/radiation_aerosols.f"$(FC) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -xCORE-AVX-I -c\t$(SRCROOT)SHiELD_physics/gsmphys/radiation_aerosols.f"' Makefile_gfs
-  fi
 fi
 
 ############################
