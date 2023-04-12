@@ -29,6 +29,7 @@ BUILD_ROOT=${PWD%/*}
 SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC
 PATH="${BUILD_ROOT}/mkmf/bin:${PATH}"
 COMPILER="intel"
+USE_YAML=""
 
 #
 ## parse arguments
@@ -39,6 +40,10 @@ do
         COMPILER="${arg#*=}"
         shift # Remove compiler from processing
         ;;
+        yaml)
+        USE_YAML=-Duse_yaml
+	shift # Remove yaml from processing
+	;;
     esac
 done
 
@@ -48,7 +53,7 @@ done
 
 #
 # CPPDEFS needed to build libFMS
-cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS -DGFS_CONSTANTS -Duse_yaml"
+cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS -DGFS_CONSTANTS ${USE_YAML}"
 
 #
 # clean up and create the FMS library directory

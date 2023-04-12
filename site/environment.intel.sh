@@ -41,6 +41,7 @@ case $hostname in
       module load craype-hugepages4M
       module load cmake/3.23.1
       module load python/3.9
+      module load libyaml/0.2.5
 
       # make your compiler selections here
       export FC=ftn
@@ -68,6 +69,7 @@ case $hostname in
       module load craype-hugepages4M
       module load cmake/3.20.1
       module load python/3.9
+      module load libyaml/0.2.5
 
       # make your compiler selections here
       export FC=ftn
@@ -196,5 +198,4 @@ case $hostname in
       echo " no environment available based on the hostname "
       ;;
 esac
->>>>>>> noaa/main
 

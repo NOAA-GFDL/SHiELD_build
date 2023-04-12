@@ -27,6 +27,7 @@
 # set default values
 # configure your build parameters
   compiler="intel"
+  yaml=""
 #
 # parse arguments
   for arg in "$@"
@@ -35,6 +36,10 @@
           intel|gnu|nvhpc)
              compiler="${arg#*=}"
              shift # Remove "compiler" from processing
+             ;;
+	  yaml)
+             yaml="${arg#*=}"
+             shift # Remove "yaml" from processing
              ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
@@ -68,7 +73,7 @@ fi
 #
 # build FMS library
 echo " building ${NCEP_DIR}/libFMS/${compiler}"
-MAKE_libFMS ${compiler}  >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
+MAKE_libFMS ${compiler} ${yaml} >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
 #
 # test and report on libFMS build success
 if [ $? -ne 0 ] ; then
