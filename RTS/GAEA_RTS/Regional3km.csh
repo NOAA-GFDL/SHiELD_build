@@ -1,49 +1,54 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
-#SBATCH --job-name=C768
-#SBATCH --account=gfdl_f
+#SBATCH --job-name=Regional3km
 #SBATCH --clusters=c4
-#SBATCH --time=00:20:00
-#SBATCH --nodes=54
+#SBATCH --time=00:30:00
+#SBATCH --nodes=25
 
-\# change c4 to c5 and nodes to 16 for c5
+# change clusters to c5 and nodes to 8 to run on gaea c5
+# see run_tests.sh for an example of how to run these tests
+
 set echo
 
 set BASEDIR    = "${SCRATCH}/${USER}/"
-set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA"
+set INPUT_DATA = "/lustre/f2/dev/Lauren.Chilutti/Alaska_c3072"
 set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
-# release number for the script
-source fms.csh
-set RELEASE = "SHiELD_${COMPILER}_${DESCRIPTOR}_${BIT}"
+if ( ! $?COMPILER ) then
+  set COMPILER = "intel"
+endif
+
+set RELEASE = "`cat ${BUILD_AREA}/release`"
 
 source ${BUILD_AREA}/site/environment.${COMPILER}.sh
-module load python/3.9
+
+#set hires_oro_factor = 12
+set res = 3072
 
 # case specific details
-set TYPE = "nh"         # choices:  nh, hydro
-set MODE = "${BIT}"      # choices:  32bit, 64bit
-set MONO = "non-mono"   # choices:  mono, non-mono
-set CASE = "C768"
-set NAME = "20160801.00Z"
+set TYPE = "nh"          # choices:  nh, hydro
+if ( ! $?MODE ) then
+  set MODE = "32bit"      # choices:  32bit, 64bit
+endif
+set CASE = "C${res}_alaska"
+set MONO = "non-mono"
+set NAME = "20170114.00Z"
 set MEMO = "$SLURM_JOB_NAME"
-set EXE = "x"
 set HYPT = "on"         # choices:  on, off  (controls hyperthreading)
-set COMP = "repro"       # choices:  debug, repro, prod
-set NO_SEND = "no_send"  # choices:  send, no_send  # send option not available now
-
-set CPN = 40
+if ( ! $?COMP ) then
+  set COMP = "repro"       # choices:  debug, repro, prod
+endif
+set NO_SEND = "no_send"  # choices:  send, no_send
+set EXE = "x"
 # directory structure
-set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}.${MEMO}/
-set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${DESCRIPTOR}.${EXE}
+set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${COMP}.${MODE}.${COMPILER}.${MONO}.${MEMO}/
+set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${EXE}
 
 # input filesets
-set ICS  = ${INPUT_DATA}/global.v201810/${CASE}/${NAME}_IC/GFS_INPUT.tar
-set FIX  = ${INPUT_DATA}/fix.v201810/
-set GFS  = ${INPUT_DATA}/GFS_STD_INPUT.20160311.tar
-set GRID = ${INPUT_DATA}/global.v201810/${CASE}/GRID/
-set FIX_bqx  = ${INPUT_DATA}/climo_data.v201807
-
+set ICS  = ${INPUT_DATA}/${NAME}_IC/
+set FIX  = /lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/fix.v201810
+set GFS  = /lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
+set GRID = ${INPUT_DATA}/GRID/
 
 # sending file to gfdl
 #set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
@@ -52,11 +57,11 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
 
 # changeable parameters
     # dycore definitions
-    set npx = "769"
-    set npy = "769"
-    set npz = "91"
-    set layout_x = "18" 
-    set layout_y = "18" 
+    set npx = "325" #325
+    set npy = "193" #193
+    set npz = "63"
+    set layout_x = "39" #18
+    set layout_y = "23" #16
     set io_layout = "1,1"
     set nthreads = "2"
 
@@ -65,10 +70,12 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
 
     # run length
     set months = "0"
-    set days = "0"
-    set hours = "1"
-    set seconds = "300"
-    set dt_atmos = "150"
+    set days = "1"
+    set hours = "0" 
+    set minutes = "0"
+    set seconds = "0"
+    set dt_atmos = "60"
+    set nruns = "1"
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -78,37 +85,37 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
 
     # variables for controlling initialization of NCEP/NGGPS ICs
     set filtered_terrain = ".true."
+    set ncep_plevels = ".false."
     set ncep_levs = "64"
     set gfs_dwinds = ".true."
+    set n_zs_filter_nest = "1"
 
     # variables for gfs diagnostic output intervals and time to zero out time-accumulated data
 #    set fdiag = "6.,12.,18.,24.,30.,36.,42.,48.,54.,60.,66.,72.,78.,84.,90.,96.,102.,108.,114.,120.,126.,132.,138.,144.,150.,156.,162.,168.,174.,180.,186.,192.,198.,204.,210.,216.,222.,228.,234.,240."
-    set fdiag = "6."
-    set fhzer = "6."
-    set fhcyc = "0."
+    set fdiag = "1."
+    set fhzer = "1."
+    set fhcyc = "24."
 
     # determines whether FV3 or GFS physics calculate geopotential
     set gfs_phil = ".false."
 
-    # determine whether ozone production occurs in GFS physics
-    set ozcalc = ".true."
 
     # set various debug options
-    set no_dycore = ".false."
-    set dycore_only = ".false."
+    set no_dycore = ".T."
+    set dycore_only = ".F." # debug
     set chksum_debug = ".false."
-    set print_freq = "6"
+    set print_freq = "10" # debug
 
     if (${TYPE} == "nh") then
       # non-hydrostatic options
-      set make_nh = ".T."
+      set make_nh = ".F."
       set hydrostatic = ".F."
       set phys_hydrostatic = ".F."     # can be tested
       set use_hydro_pressure = ".F."   # can be tested
       set consv_te = "1."
         # time step parameters in FV3
-      set k_split = "1"
-      set n_split = "8"
+      set k_split = "4"
+      set n_split = "5"
     else
       # hydrostatic options
       set make_nh = ".F."
@@ -125,30 +132,52 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
       # monotonic options
       set d_con = "1."
       set do_vort_damp = ".false."
+      if (${TYPE} == "nh") then
+        # non-hydrostatic
+        set hord_mt = " 10"
+        set hord_xx = " 10"
+      else
+        # hydrostatic
+        set hord_mt = " 10"
+        set hord_xx = " 10"
+      endif
     else
       # non-monotonic options
       set d_con = "1."
       set do_vort_damp = ".true."
+      if (${TYPE} == "nh") then
+        # non-hydrostatic
+        set hord_mt = " 6"
+        set hord_xx = " 6"
+      else
+        # hydrostatic
+        set hord_mt = " 10"
+        set hord_xx = " 10"
+      endif
     endif
 
-
+    if (${MONO} == "non-mono" && ${TYPE} == "nh" ) then
+      set vtdm4 = "0.06"
+    else
+      set vtdm4 = "0.05"
+    endif
 
     # variables for hyperthreading
-    set cores_per_node = $CPN
     if (${HYPT} == "on") then
       set hyperthread = ".true."
-      set j_opt = "-j2"
       set div = 2
     else
       set hyperthread = ".false."
-      set j_opt = "-j1"
       set div = 1
     endif
 
-# when running with threads, need to use the following command
-    @ npes = ${layout_x} * ${layout_y} * 6
     @ skip = ${nthreads} / ${div}
+
+# when running with threads, need to use the following command
+    @ npes = ${layout_x} * ${layout_y}
     set run_cmd = "srun --ntasks=$npes --cpus-per-task=$skip ./$executable:t"
+
+
 
     setenv MPICH_ENV_DISPLAY
     setenv MPICH_MPIIO_CB_ALIGN 2
@@ -175,28 +204,49 @@ set echo
 set curr_date = "${y},${m},${d},${h},0,0"
 
 # build the diag_table with the experiment name and date stamp
-cat > diag_table << EOF
+cat >! diag_table << EOF
 ${NAME}.${CASE}.${MODE}.${MONO}
 $y $m $d $h 0 0 
 EOF
-#cat ${BUILD_AREA}/RUN/RETRO/diag_table_no3d >> diag_table
+#this file does not exist so no diag table is being used
+cat ${BUILD_AREA}/tables/diag_table_hwt_simple >> diag_table
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/RUN/RETRO/data_table data_table
-cp ${BUILD_AREA}/RUN/RETRO/diag_table_hwt_test diag_table
-cp ${BUILD_AREA}/RUN/RETRO/field_table_6species field_table
-python3 ${BUILD_AREA}/fms_yaml_tools/data_table/data_table_to_yaml.py -f data_table
-python3 ${BUILD_AREA}/fms_yaml_tools/field_table/field_to_yaml.py field_table
+cp ${BUILD_AREA}/tables/data_table data_table
+cp ${BUILD_AREA}/tables/field_table_6species field_table
+data-table-to-yaml -f data_table
+field-table-to-yaml -f field_table
 cp $executable .
 
 # GFS standard input data
-tar xf ${GFS}
+tar xf ${GFS} 
 
 # Grid and orography data
 cp -rf ${GRID}/* INPUT/.
 
-# Date specific ICs
-tar xf ${ICS}
+#tar xf ${ICS}
+#tar xf /lustre/f1/unswept/Lucas.Harris/FV3_INPUT_DATA//regional/c768regUS/20180628.00Z_IC/GFS_INPUT.tar
+
+#Nested grid fix for new files
+#foreach i ( $PWD/INPUT/*.tile7.nc )
+#    ln -s $i ${i:r:r}.nest02.tile7.nc
+#end
+
+cp -rf ${ICS}/* INPUT/.
+
+mv INPUT/sfc_data.tile7.nc INPUT/sfc_data.nc
+mv INPUT/gfs_data.tile7.nc INPUT/gfs_data.nc
+
+mv INPUT/C${res}_mosaic.nc INPUT/grid_spec.nc
+
+cp -rf INPUT/C${res}_grid.tile7.halo3.nc INPUT/C${res}_grid.tile7.nc
+cp -rf INPUT/C${res}_grid.tile7.halo4.nc INPUT/grid.tile7.halo4.nc
+
+
+cp -rf INPUT/C${res}_oro_data.tile7.halo0.nc INPUT/oro_data.nc
+cp -rf INPUT/C${res}_oro_data.tile7.halo4.nc INPUT/oro_data.tile7.halo4.nc
+
+
 
 cp $FIX/global_sfc_emissivity_idx.txt INPUT/sfc_emissivity_idx.txt
 cp INPUT/aerosol.dat .
@@ -207,7 +257,6 @@ cp INPUT/solarconstant_noaa_an.txt .
 cp $FIX/global_glacier.2x2.grb INPUT/
 cp $FIX/global_maxice.2x2.grb INPUT/
 cp $FIX/RTGSST.1982.2012.monthly.clim.grb INPUT/
-cp $FIX_bqx/mld/mld_DR003_c1m_reg2.0.grb INPUT/
 cp $FIX/global_snoclim.1.875.grb INPUT/
 cp $FIX/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb INPUT/
 cp $FIX/global_albedo4.1x1.grb INPUT/
@@ -223,7 +272,45 @@ cp $FIX/global_shdmax.0.144x0.144.grb INPUT/
 cp $FIX/global_slope.1x1.grb INPUT/
 cp $FIX/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb INPUT/
 
-cat > input.nml <<EOF
+set irun = 1
+
+while ( $irun <= $nruns )
+
+
+if ( $irun == 1 ) then
+
+   set nggps_ic = ".T."
+   set mountain = ".F."
+   set external_ic = ".T."
+   set warm_start = ".F."
+
+else
+
+   # move the restart data into INPUT/
+   if ($NO_SEND == "no_send") then
+    mv RESTART/* INPUT/.
+   else
+    ln -s $restart_file/* INPUT/.
+   endif
+  
+   foreach out1 (`ls *_table`)
+     set split = ($out1:as/./ /)
+     mv $out1 $split[2]
+   end
+
+   # reset values in input.nml for restart run
+   set make_nh = ".F."
+   set nggps_ic = ".F."
+   set mountain = ".T."
+   set external_ic = ".F."
+   set warm_start = ".T."
+   set n_zs_filter_nest = "0"
+   set na_init = 0
+
+endif
+
+
+cat >! input.nml <<EOF
  &amip_interp_nml
      interp_oi_sst = .true.
      use_ncep_sst = .true.
@@ -237,8 +324,18 @@ cat > input.nml <<EOF
      blocksize = $blocksize
      chksum_debug = $chksum_debug
      dycore_only = $dycore_only
-     fdiag = $fdiag
-     first_time_step = .false.
+       fdiag = $fdiag
+/
+
+&diag_manager_nml
+!conserve_water = .false.
+           prepend_date = .F.
+! this diag table creates a lot of files
+! next three lines are necessary
+    max_num_axis_sets = 100 
+    max_files = 100
+    max_axes = 240
+   !diag_manager_forecast_mode = .T.
 /
 
  &fms_io_nml
@@ -247,14 +344,10 @@ cat > input.nml <<EOF
        max_files_w = 100,
 /
 
-# &fms2_io_nml
-#       ncchksz = 1048576
-#/
-
  &fms_nml
        clock_grain = 'ROUTINE',
        domains_stack_size = 3000000,
-       print_memory_usage = .false.
+       print_memory_usage = .F.
 /
 
  &fms_affinity_nml
@@ -262,86 +355,96 @@ cat > input.nml <<EOF
 /
 
  &fv_grid_nml
-       grid_file = 'INPUT/grid_spec.nc'
+       grid_file = 'INPUT/grid_spec.nc' ! This line is IMPORTANT for regional model
 /
+
 
  &fv_core_nml
        layout   = $layout_x,$layout_y
        io_layout = $io_layout
-       npx      = $npx
-       npy      = $npy
-       ntiles   = 6
+       npx      = $npx ! 211
+       npy      = $npy ! 193
+       ntiles   = 1,
        npz    = $npz
-       grid_type = -1
-       make_nh = $make_nh
+       grid_type = 5
+       make_nh =  .F.
        fv_debug = .F.
-       range_warn = .F.
+       range_warn = .T.
        reset_eta = .F.
-       n_sponge = 30
        nudge_qv = .T.
-       rf_fast = .F.
-       tau = 5.
-       rf_cutoff = 7.5e2
-       d2_bg_k1 = 0.15
-       d2_bg_k2 = 0.02
-       kord_tm = -9
-       kord_mt =  9
-       kord_wz =  9
-       kord_tr =  9
-       hydrostatic = $hydrostatic
-       phys_hydrostatic = $phys_hydrostatic
-       use_hydro_pressure = $use_hydro_pressure
+       d2_bg_k1 = 0.20
+       d2_bg_k2 = 0.15
+       kord_tm = -11 ! 2019: slightly better inversion structures
+       kord_mt =  11
+       kord_wz =  11
+       kord_tr =  11
+       fill = .T.     ! 2019: enabled filling negatives from remapping
+       fill_gfs = .F. !2019: disabled filling negatives from GFS physics
+       hydrostatic = .F.
+       phys_hydrostatic = .F.
+       use_hydro_pressure = .F.
        beta = 0.
        a_imp = 1.
        p_fac = 0.1
        k_split  = $k_split
        n_split  = $n_split
        nwat = 6 
-       na_init = $na_init
+       na_init =$na_init 
        d_ext = 0.0
-       dnats = 1
-       fv_sg_adj = 600
+       dnats = 2 ! 2019: improved efficiency by not advecting o3
+       fv_sg_adj = 1800 ! 2019: full-domain weak 2dz damping
+       n_sponge = $npz
        d2_bg = 0.
-       nord =  3
-       dddmp = 0.2
-       d4_bg = 0.15
-       vtdm4 = 0.03
-       delt_max = 0.002
-       ke_bg = 0.
-       do_vort_damp = $do_vort_damp
-       external_ic = .T.
-       gfs_phil = $gfs_phil
-       nggps_ic = .T.
-       mountain = .F.
+       nord =  3  
+       dddmp = 0.1
+       d4_bg = 0.14
+       vtdm4 = 0.02
+       do_vort_damp = .T.
+       external_ic = $external_ic
+       nggps_ic = $nggps_ic 
+       hrrrv3_ic= .F.
+       mountain = $mountain 
        ncep_ic = .F.
-       d_con = $d_con
-       hord_mt = 5
-       hord_vt = 5
-       hord_tm = 5
-       hord_dp = -5
-       hord_tr = -5
+       d_con = 1.0 ! 2019: Full-strength dissipative heating
+       hord_mt = 6
+       hord_vt = 6
+       hord_tm = 6
+       hord_dp = 6
+       hord_tr = -5 
        adjust_dry_mass = .F.
-       consv_te = $consv_te
+       consv_te = 0.
        do_sat_adj = .F.
+       do_inline_mp = .T.
        consv_am = .F.
-       fill = .T.
        dwind_2d = .F.
        print_freq = $print_freq
-       warm_start = .F.
+       warm_start = $warm_start
        no_dycore = $no_dycore
-       z_tracer = .T.
-       do_inline_mp = .T.
+
+       rf_fast = .F.
+       tau = 5.
+       rf_cutoff = 50.e2
+
+       delt_max = 0.002
+
+       regional = .true.
+       bc_update_interval = 6
+
 /
+
+
 
  &coupler_nml
        months = $months
        days  = $days
        hours = $hours
+       minutes = $minutes
+       seconds = $seconds
        dt_atmos = $dt_atmos
        dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
-       !memuse_verbose = .false.
+       !memuse_verbose = .T.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
 /
@@ -354,18 +457,20 @@ cat > input.nml <<EOF
        nt_checker = 0
 /
 
+
  &gfs_physics_nml
        fhzero         = $fhzer
-       ldiag3d        = .false.
+       ldiag3d        = .true. !2019 enabled but not used in diagnostics
        fhcyc          = $fhcyc
        nst_anl        = .true.
        use_ufo        = .true.
        pre_rad        = .false.
        ncld           = 5
        zhao_mic       = .false.
-       pdfcld         = .true.
-       fhswr          = 3600.
-       fhlwr          = 3600.
+       pdfcld         = .true. !2019 enabled for new cloud-rad interactions (LJZ)
+       cloud_gfdl     = .true. !2019 enabled for new cloud-rad interactions (LJZ)
+       fhswr          = 1200. ! 201907: reduced
+       fhlwr          = 1200. ! 201907: reduced
        ialb           = 1
        iems           = 1
        IAER           = 111
@@ -375,12 +480,14 @@ cat > input.nml <<EOF
        isol           = 2
        lwhtr          = .true.
        swhtr          = .true.
-       cnvgwd         = .true.
-       do_deep        = .true.
-       shal_cnv       = .true.
+       cnvgwd         = .false.
+       shal_cnv       = .true. !2019 enabled with hfvGFS tuning
+       clam_shal      = 0.1
+       c0s_shal       = 0.01
+       c1_shal        = 1.
        cal_pre        = .false.
        redrag         = .true.
-       dspheat        = .true.
+       dspheat        = .true. !2019 enabled
        hybedmf        = .false.
        random_clds    = .false.
        trans_trac     = .true.
@@ -391,18 +498,27 @@ cat > input.nml <<EOF
        prslrd0        = 0.
        ivegsrc        = 1
        isot           = 1
-       ysupbl         = .true.
-       xkzminv        = 1.0
-	   xkzm_m         = 0.001
-       xkzm_h         = 0.001
-       cloud_gfdl     = .true.
+       debug          = .false.
+       do_deep        = .false.
+       do_ocean       = .true. ! 2019: Using an hfvGFS-like setting
+       ysupbl         = .true. ! 201907h6: restored YSU
        do_inline_mp   = .true.
-       do_ocean       = .false.
+       xkzminv        = 0.0  ! 2019: NO diffusion in inversion layers
+       xkzm_h         = 0.2  ! 2019: YSU default (note divided by 2 inside scheme)
+       xkzm_m         = 0.02 ! 2019: YSU default (note divided by 2 inside scheme)
+       gwd_p_crit     = 50.e2
+       do_z0_hwrf17_hwonly = .true. ! 201907
+       !czil_sfc       = 1.0 ! 201907: increased to warm and dry clear-sky surface (delayed for now)
+       lheatstrg = .true. ! 201907b: enable canopy heat storage
+
+
+
 /
 
- &ocean_nml
+
+ &ocean_nml ! 201907: from SHiELD 2019 RT
      mld_option       = "obs"
-     ocean_option     = "MLM"
+     ocean_option     = "MLM" ! Ocean mixed layer model or SOM
      restore_method   = 2
      mld_obs_ratio    = 1.
      use_rain_flux    = .true.
@@ -412,132 +528,131 @@ cat > input.nml <<EOF
      Gam              = 0.2
      use_old_mlm      = .true.
      do_mld_restore   = .true.
-	 mld_restore_tscale = 2.
+         mld_restore_tscale = 2.
      stress_ratio     = 1.
      eps_day          = 10.
 /
 
+
  &gfdl_cloud_microphysics_nml
-       sedi_transport = .true.
-       do_sedi_heat = .true.
+       sedi_transport = .T.  ! 2019: enabled
+       do_sedi_heat = .T.    ! 2019: enabled
+       do_sedi_w = .T.       ! 2019: enabled
        rad_snow = .true.
        rad_graupel = .true.
        rad_rain = .true.
-       const_vi = .false.
-       const_vs = .false.
-       const_vg = .false.
-       const_vr = .false.
-       vi_fac = 1.
-       vs_fac = 1.
-       vg_fac = 1.
-       vr_fac = 1.
-       vi_max = 1.
-       vs_max = 2.
+       const_vi = .F.
+       const_vs = .F.
+       const_vg = .F.
+       const_vr = .F.
+       vi_max = 1.0
+       vs_max = 6.
        vg_max = 12.
        vr_max = 12.
-       qi_lim = 1.
+       qi_lim = 2.
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .false.
-       tau_l2v = 300.
-       tau_l2v = 225.
-       tau_v2l = 150.
-       tau_g2v = 900.
-       rthresh = 10.e-6  ! This is a key parameter for cloud water
+       fast_sat_adj = .F.
+       tau_l2v = 180
+       tau_v2l =  22.5 ! 201907d: short timescale introduced
+       tau_g2v = 900. ! 2019: increased
+       rthresh = 10.0e-6
        dw_land  = 0.16
        dw_ocean = 0.10
        ql_gen = 1.0e-3
-       ql_mlt = 1.0e-3
-       qi0_crt = 8.0E-5
-       qs0_crt = 1.0e-3
+       ql_mlt = 1.0e-3 ! 2019: added
+       qi0_crt = 7.5e-5 ! 2019: decreased
+       qs0_crt = 1.0e-3 ! 2019: decreased
        tau_i2s = 1000.
-       c_psaci = 0.05
-       c_pgacs = 0.01
+       c_psaci = 0.05 ! 2019: decreased
+       c_pgacs = 0.2  ! 2019: increased substantially; improves rainfall coverage
+       c_cracw = 0.75 ! 2019: decreased
        rh_inc = 0.30
        rh_inr = 0.30
        rh_ins = 0.30
-       ccn_l = 300.
-       ccn_o = 100.
-       c_paut = 0.5
-       c_cracw = 0.8
-       use_ppm = .false.
+       ccn_l = 300.   ! 2019: Increased
+       ccn_o = 100.   ! 2019: increased
+       use_ppm = .F.  ! 2019: Disabled
        use_ccn = .true.
-       mono_prof = .true.
        z_slope_liq  = .true.
        z_slope_ice  = .true.
        de_ice = .false.
        fix_negative = .true.
-       icloud_f = 0
-       mp_time = 150.
+       icloud_f = 0     ! 2019: enabled
+       do_hail = .true. ! 2019: enabled
+       do_cond_timescale = .true. ! 201984zb
+mp_time = $dt_atmos
 /
 
+
  &gfdl_mp_nml
-       do_sedi_heat = .true.
+       do_sedi_heat = .T.    ! 2019: enabled
+       do_sedi_w = .T.       ! 2019: enabled
        rad_snow = .true.
        rad_graupel = .true.
        rad_rain = .true.
-       const_vi = .false.
-       const_vs = .false.
-       const_vg = .false.
-       const_vr = .false.
-       vi_fac = 1.
-       vs_fac = 1.
-       vg_fac = 1.
-       vr_fac = 1.
-       vi_max = 1.
-       vs_max = 2.
+       const_vi = .F.
+       const_vs = .F.
+       const_vg = .F.
+       const_vr = .F.
+       vi_max = 1.0
+       vs_max = 6.
        vg_max = 12.
        vr_max = 12.
-       qi_lim = 1.
+       qi_lim = 2.
        prog_ccn = .false.
        do_qa = .true.
-       tau_l2v = 300.
-       tau_l2v = 225.
-       tau_v2l = 150.
-       rthresh = 10.e-6  ! This is a key parameter for cloud water
+       tau_l2v = 180
+       tau_v2l =  22.5 ! 201907d: short timescale introduced
+       rthresh = 10.0e-6
        dw_land  = 0.16
        dw_ocean = 0.10
        ql_gen = 1.0e-3
-       ql_mlt = 1.0e-3
-       qi0_crt = 8.0E-5
-       qs0_crt = 1.0e-3
+       ql_mlt = 1.0e-3 ! 2019: added
+       qi0_crt = 7.5e-5 ! 2019: decreased
+       qs0_crt = 1.0e-3 ! 2019: decreased
        tau_i2s = 1000.
-       c_psaci = 0.05
-       c_pgacs = 0.01
+       c_psaci = 0.05 ! 2019: decreased
+       c_pgacs = 0.2  ! 2019: increased substantially; improves rainfall coverage
        rh_inc = 0.30
        rh_inr = 0.30
        rh_ins = 0.30
-       ccn_l = 300.
-       ccn_o = 100.
-       c_paut = 0.5
+       ccn_l = 300.   ! 2019: Increased
+       ccn_o = 100.   ! 2019: increased
        z_slope_liq  = .true.
        z_slope_ice  = .true.
        fix_negative = .true.
-       icloud_f = 0
+       icloud_f = 0     ! 2019: enabled
+       do_hail = .true. ! 2019: enabled
+       do_cond_timescale = .true. ! 201984zb
+
 /
 
- &cld_eff_rad_nml
+  &cld_eff_rad_nml
 /
+
+
 
  &cloud_diagnosis_nml
        ql0_max = 2.0e-3
-       qi0_max = 2.0e-4
+       qi0_max = 1.0e-4
        ccn_o = 100.
        ccn_l = 300.
        qmin = 1.0e-12
        beta = 1.22
        rewflag = 1
-       reiflag = 4
+       reiflag = 1
        rewmin = 5.0
        rewmax = 10.0
        reimin = 10.0
        reimax = 150.0
-       liq_ice_combine = .true.
+       rermin = 10.0
+       rermax = 10000.0
+       resmin = 150.0
+       resmax = 10000.0
+       liq_ice_combine = .false.
 /
 
- &diag_manager_nml 
-       prepend_date = .F.
-/
 
   &interpolator_nml
        interp_method = 'conserve_great_circle'
@@ -547,7 +662,6 @@ cat > input.nml <<EOF
        FNGLAC   = "INPUT/global_glacier.2x2.grb",
        FNMXIC   = "INPUT/global_maxice.2x2.grb",
        FNTSFC   = "INPUT/RTGSST.1982.2012.monthly.clim.grb",
-       FNMLDC   = "INPUT/mld_DR003_c1m_reg2.0.grb",
        FNSNOC   = "INPUT/global_snoclim.1.875.grb",
        FNZORC   = "igbp",
        FNALBC   = "INPUT/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
@@ -588,13 +702,16 @@ cat > input.nml <<EOF
 EOF
 
 # run the executable
+
+   sleep 1
    ${run_cmd} | tee fms.out
    if ( $? != 0 ) then
-     exit
+	exit
    endif
+    @ irun++
 
 #if ($NO_SEND == "no_send") then
-#  exit
+#  continue
 #endif
 
 #########################################################################
@@ -621,13 +738,14 @@ EOF
      exit 1
     endif
 
-    foreach out (`ls *.out *.results input*.nml *_table`)
+    foreach out (`ls *.out *.results *.nml *_table`)
       mv $out $begindate.$out
     end
 
-    tar cvf - *\.out *\.results | gzip -c > $WORKDIR/ascii/$begindate.ascii_out.tgz
+    tar cvf - *\.out *\.results *\.nml *_table | gzip -c > $WORKDIR/ascii/$begindate.ascii_out.tgz
 
-#    msub -v source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii $SEND_FILE
+#sbatch --export=source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii --output=$HOME/STDOUT/%x.o%j $SEND_FILE
+
 
 ########################################################################
 # move restart files
@@ -643,7 +761,6 @@ EOF
     endif
 
     find $WORKDIR/rundir/RESTART -iname '*.res*' > $WORKDIR/rundir/file.restart.list.txt
-    find $WORKDIR/rundir/RESTART -iname '*_data*' >> $WORKDIR/rundir/file.restart.list.txt
     set resfiles     = `wc -l $WORKDIR/rundir/file.restart.list.txt | awk '{print $1}'`
 
    if ( $resfiles > 0 ) then
@@ -670,7 +787,6 @@ EOF
         mv $WORKDIR/rundir/RESTART/$index $restart_file/$index
       end
 
-#      msub -v source=$WORKDIR/restart/$enddate,destination=gfdl:$gfdl_archive/restart/$enddate,extension=tar,type=restart $SEND_FILE
 
    endif
 
@@ -697,24 +813,10 @@ EOF
     find $WORKDIR/rundir -maxdepth 1 -type f -regex '.*.nc'      -exec mv {} $dateDir \;
     find $WORKDIR/rundir -maxdepth 1 -type f -regex '.*.nc.....' -exec mv {} $dateDir \;
 
-    cd $dateDir
-      if ( ! -d ${begindate}_nggps3d ) mkdir -p ${begindate}_nggps3d
-      mv nggps3d*.nc ${begindate}_nggps3d
-      mv ${begindate}_nggps3d ../.
-      if ( ! -d ${begindate}_tracer3d ) mkdir -p ${begindate}_tracer3d
-      mv tracer3d*.nc ${begindate}_tracer3d
-      mv ${begindate}_tracer3d ../.
-      if ( ! -d ${begindate}_gfs_physics ) mkdir -p ${begindate}_gfs_physics
-      mv gfs_physics*.nc ${begindate}_gfs_physics
-      mv ${begindate}_gfs_physics ../.
-      if ( ! -d ${begindate}_cloud3d ) mkdir -p ${begindate}_cloud3d
-      mv cloud3d*.nc ${begindate}_cloud3d
-      mv ${begindate}_cloud3d ../.
-
     cd $WORKDIR/rundir
 
-#    msub -v source=$WORKDIR/history/$begindate,destination=gfdl:$gfdl_archive/history/$begindate,extension=tar,type=history $SEND_FILE
-    #msub -v source=$WORKDIR/history/${begindate}_nggps3d,destination=gfdl:$gfdl_archive/history/${begindate}_nggps3d,extension=tar,type=history $SEND_FILE
-    #msub -v source=$WORKDIR/history/${begindate}_tracer3d,destination=gfdl:$gfdl_archive/history/${begindate}_tracer3d,extension=tar,type=history $SEND_FILE
-    #msub -v source=$WORKDIR/history/${begindate}_gfs_physics,destination=gfdl:$gfdl_archive/history/${begindate}_gfs_physics,extension=tar,type=history $SEND_FILE
-    #msub -v source=$WORKDIR/history/${begindate}_cloud3d,destination=gfdl:$gfdl_archive/history/${begindate}_cloud3d,extension=tar,type=history $SEND_FILE
+
+ #   sbatch --export=source=$WORKDIR/history/$begindate,destination=gfdl:$gfdl_archive/history/$begindate,extension=tar,type=history --output=$HOME/STDOUT/%x.o%j $SEND_FILE
+
+
+end # while ( $irun <= $nruns )

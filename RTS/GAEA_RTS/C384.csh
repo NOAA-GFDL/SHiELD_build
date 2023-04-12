@@ -1,82 +1,84 @@
 #!/bin/tcsh
-#SBATCH --output=/home/ysun/stdout/%x.4t_ht.o%j
-#SBATCH --job-name=SHiELD_C48
-#SBATCH -A gfdlhires
-#SBATCH --partition=orion
+#SBATCH --output=./stdout/%x.%j
+#SBATCH --job-name=C384
+#SBATCH --clusters=c4
 #SBATCH --time=00:20:00
-#SBATCH --nodes=2
+#SBATCH --nodes=72
 #SBATCH --exclusive
 
-source ${MODULESHOME}/init/tcsh
-module load intel/2020
-module load netcdf/4.7.2-parallel
-module load hdf5/1.10.5-parallel
-module load impi/2020
-
-
+# change clusters to c5 and nodes to 21 to run on gaea c5
+# see run_tests.sh for an example of how to run these tests
 
 set echo
 
-set WORKDIR = "/work/noaa/gfdlscr/${USER}/"
+set BASEDIR    = "${SCRATCH}/${USER}/"
+set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA"
+set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
-set BASEDIR    = "$WORKDIR"
-set INPUT_DATA = "/work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA/"
-# from YQS
-set BUILD_AREA = "/home/${USER}/SHiELD/Rusty/SHiELD_build/"
+if ( ! $?COMPILER ) then
+  set COMPILER = "intel"
+endif
 
+set RELEASE = "`cat ${BUILD_AREA}/release`"
 
+source ${BUILD_AREA}/site/environment.${COMPILER}.sh
 
-# release number for the script
-#set RELEASE = "`cat ${BUILD_AREA}/release`"
-set RELEASE = "SHiELD_FMS2020.02"
-
+#set hires_oro_factor = 12
+set res = 384
 
 # case specific details
 set TYPE = "nh"         # choices:  nh, hydro
-set MODE = "32bit"      # choices:  32bit, 64bit
+if ( ! $?MODE ) then
+  set MODE = "32bit"      # choices:  32bit, 64bit
+endif
 set MONO = "non-mono"   # choices:  mono, non-mono
-set CASE = "C48"
+set CASE = "C$res"
 set NAME = "20160801.00Z"
-set MEMO = "_RT2018"
+set MEMO = "$SLURM_JOB_NAME"
 set EXE = "x"
 set HYPT = "on"         # choices:  on, off  (controls hyperthreading)
-set COMP = "repro"       # choices:  debug, repro, prod
-set NO_SEND = "no_send"    # choices:  send, no_send   # send option not finished yet
+if ( ! $?COMP ) then
+  set COMP = "repro"       # choices:  debug, repro, prod
+endif
+set NO_SEND = "no_send"    # choices:  send, no_send # send option not available yet
+set RESTART_RUN = "F"
+set CPN = 40
 
 # directory structure
-set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
-set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${EXE}
+set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${COMP}.${MODE}.${COMPILER}.${MONO}.${MEMO}/
+set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${EXE}
 
 # input filesets
-set ICS  = ${INPUT_DATA}/global.v201810/${CASE}/${NAME}_IC/
+set ICS  = ${INPUT_DATA}/global.v201810/${CASE}/${NAME}_IC/GFS_INPUT.tar
 set FIX  = ${INPUT_DATA}/fix.v201810/
 set GFS  = ${INPUT_DATA}/GFS_STD_INPUT.20160311.tar
 set GRID = ${INPUT_DATA}/global.v201810/${CASE}/GRID/
 set FIX_bqx  = ${INPUT_DATA}/climo_data.v201807
 
 # sending file to gfdl
-set gfdl_archive = /archive/${USER}/NGGPS/${RELEASE}/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
-set SEND_FILE =  /home/ysun/Util/send_file_c3.csh
-set TIME_STAMP = /home/ysun/Util/time_stamp.csh
+set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
+set SEND_FILE = /home/${USER}/Util/send_file_slurm.csh
+set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
 
 # changeable parameters
     # dycore definitions
-    set npx = "49"
-    set npy = "49"
-    set npz = "79"
-    set layout_x = "3" 
-    set layout_y = "3" 
-    set io_layout = "1,1"
-    set nthreads = "2"
+    set npx = "385"
+    set npy = "385"
+    set npz = "63"
+    set layout_x = "18"
+    set layout_y = "12"
+    set io_layout = "2,2"
+    set nthreads = "4"
 
     # blocking factor used for threading and general physics performance
-    set blocksize = "32"
+    set blocksize = "31"
 
     # run length
     set months = "0"
     set days = "1"
     set hours = "0"
-    set dt_atmos = "450"
+    set seconds = "0"
+    set dt_atmos = "225"
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -91,8 +93,8 @@ set TIME_STAMP = /home/ysun/Util/time_stamp.csh
 
     # variables for gfs diagnostic output intervals and time to zero out time-accumulated data
 #    set fdiag = "6.,12.,18.,24.,30.,36.,42.,48.,54.,60.,66.,72.,78.,84.,90.,96.,102.,108.,114.,120.,126.,132.,138.,144.,150.,156.,162.,168.,174.,180.,186.,192.,198.,204.,210.,216.,222.,228.,234.,240."
-    set fdiag = "6."
-    set fhzer = "6."
+    set fdiag = "3."
+    set fhzer = "3."
     set fhcyc = "24."
 
     # determines whether FV3 or GFS physics calculate geopotential
@@ -115,8 +117,8 @@ set TIME_STAMP = /home/ysun/Util/time_stamp.csh
       set use_hydro_pressure = ".F."   # can be tested
       set consv_te = "1."
         # time step parameters in FV3
-      set k_split = "2"
-      set n_split = "6"
+      set k_split = "1"
+      set n_split = "8"
     else
       # hydrostatic options
       set make_nh = ".F."
@@ -140,7 +142,7 @@ set TIME_STAMP = /home/ysun/Util/time_stamp.csh
     endif
 
     # variables for hyperthreading
-    set cores_per_node = "40"
+    set cores_per_node = $CPN
     if (${HYPT} == "on") then
       set hyperthread = ".true."
       set j_opt = "-j2"
@@ -153,28 +155,69 @@ set TIME_STAMP = /home/ysun/Util/time_stamp.csh
 
 # when running with threads, need to use the following command
     @ npes = ${layout_x} * ${layout_y} * 6
-#    set run_cmd = "aprun -n $npes -d $nthreads $j_opt ./$executable:t"
-# when running with threads, need to use the following command
     @ skip = ${nthreads} / ${div}
     set run_cmd = "srun --ntasks=$npes --cpus-per-task=$skip ./$executable:t"
 
+    setenv SLURM_CPU_BIND verbose
 
-    setenv MPICH_ENV_DISPLAY
-    setenv MPICH_MPIIO_CB_ALIGN 2
     setenv MALLOC_MMAP_MAX_ 0
     setenv MALLOC_TRIM_THRESHOLD_ 536870912
     setenv NC_BLKSZ 1M
 # necessary for OpenMP when using Intel
     setenv KMP_STACKSIZE 256m
 
-\rm -rf $WORKDIR/rundir
+if (${RESTART_RUN} == "F") then
 
-mkdir -p $WORKDIR/rundir
-cd $WORKDIR/rundir
+  \rm -rf $WORKDIR/rundir
 
-mkdir -p RESTART
+  mkdir -p $WORKDIR/rundir
+  cd $WORKDIR/rundir
 
-# build the date for curr_date and diag_table from NAME
+  mkdir -p RESTART
+
+  # Date specific ICs
+  tar xf ${ICS}
+
+  # set variables in input.nml for initial run
+  set nggps_ic = ".T."
+  set mountain = ".F."
+  set external_ic = ".T."
+  set warm_start = ".F."
+
+else
+
+  cd $WORKDIR/rundir
+  \rm -rf INPUT/*
+
+  # move the restart data into INPUT/
+  mv ${RESTART}/* INPUT/.
+
+  # reset values in input.nml for restart run
+  set make_nh = ".F."
+  set nggps_ic = ".F."
+  set mountain = ".T."
+  set external_ic = ".F."
+  set warm_start = ".T."
+  set na_init = 0
+
+endif
+
+# copy over the other tables and executable
+cp ${BUILD_AREA}/tables/data_table data_table
+cp ${BUILD_AREA}/tables/diag_table_no3d diag_table
+cp ${BUILD_AREA}/tables/field_table_6species field_table
+data-table-to-yaml -f data_table
+field-table-to-yaml -f field_table
+cp $executable .
+
+# GFS standard input data
+tar xf ${GFS}
+
+# Grid and orography data
+ln -sf ${GRID}/* INPUT/.
+
+# build the date for curr_date from NAME
+
 unset echo
 set y = `echo ${NAME} | cut -c1-4`
 set m = `echo ${NAME} | cut -c5-6`
@@ -184,35 +227,20 @@ set echo
 set curr_date = "${y},${m},${d},${h},0,0"
 
 # build the diag_table with the experiment name and date stamp
-cat > diag_table << EOF
+cat >! diag_table << EOF
 ${NAME}.${CASE}.${MODE}.${MONO}
-$y $m $d $h 0 0 
+$y $m $d $h 0 0
 EOF
-cat ${BUILD_AREA}/RUN/RETRO/diag_table_no3d >> diag_table
 
-# copy over the other tables and executable
-cp ${BUILD_AREA}/RUN/RETRO/data_table data_table
-cp ${BUILD_AREA}/RUN/RETRO/field_table_6species field_table
-cp $executable .
-
-# GFS standard input data
-tar xf ${GFS}
-
-# Grid and orography data
-#tar xf ${GRID}
-ln -sf ${GRID}/* INPUT/.
-
-# Date specific ICs
-#tar xf ${ICS}
-ln -sf ${ICS}/* INPUT/.
 
 cp $FIX/global_sfc_emissivity_idx.txt INPUT/sfc_emissivity_idx.txt
 cp INPUT/aerosol.dat .
-cp INPUT/co2historicaldata_201*.txt .
+cp INPUT/co2historicaldata_*.txt .
 cp INPUT/sfc_emissivity_idx.txt .
 cp INPUT/solarconstant_noaa_an.txt .
 
-cat > input.nml <<EOF
+
+cat >! input.nml <<EOF
  &amip_interp_nml
      interp_oi_sst = .true.
      use_ncep_sst = .true.
@@ -242,6 +270,10 @@ cat > input.nml <<EOF
        print_memory_usage = .false.
 /
 
+ &fms_affinity_nml
+       affinity=.false.
+/
+
  &fv_grid_nml
        grid_file = 'INPUT/grid_spec.nc'
 /
@@ -256,7 +288,7 @@ cat > input.nml <<EOF
        grid_type = -1
        make_nh = $make_nh
        fv_debug = .F.
-       range_warn = .F.
+       range_warn = .T.
        reset_eta = .F.
        n_sponge = 30
        nudge_qv = .T.
@@ -277,7 +309,7 @@ cat > input.nml <<EOF
        p_fac = 0.1
        k_split  = $k_split
        n_split  = $n_split
-       nwat = 6 
+       nwat = 6
        na_init = $na_init
        d_ext = 0.0
        dnats = 1
@@ -285,15 +317,15 @@ cat > input.nml <<EOF
        d2_bg = 0.
        nord =  3
        dddmp = 0.2
-       d4_bg = 0.15
-       vtdm4 = 0.03
+       d4_bg = 0.16
+       vtdm4 = 0.06
        delt_max = 0.002
        ke_bg = 0.
        do_vort_damp = $do_vort_damp
-       external_ic = .T.
+       external_ic = $external_ic
        gfs_phil = $gfs_phil
-       nggps_ic = .T.
-       mountain = .F.
+       nggps_ic = $nggps_ic
+       mountain = $mountain
        ncep_ic = .F.
        d_con = $d_con
        hord_mt = 5
@@ -308,10 +340,9 @@ cat > input.nml <<EOF
        fill = .T.
        dwind_2d = .F.
        print_freq = $print_freq
-       warm_start = .F.
+       warm_start = $warm_start
        no_dycore = $no_dycore
        z_tracer = .T.
-       do_inline_mp = .T.
 /
 
  &coupler_nml
@@ -322,12 +353,11 @@ cat > input.nml <<EOF
        dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
-       memuse_verbose = .false.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
 /
 
- &external_ic_nml 
+ &external_ic_nml
        filtered_terrain = $filtered_terrain
        levp = $ncep_levs
        gfs_dwinds = $gfs_dwinds
@@ -337,7 +367,7 @@ cat > input.nml <<EOF
 
  &gfs_physics_nml
        fhzero         = $fhzer
-       ldiag3d        = .false.
+       ldiag3d        = .T.
        fhcyc          = $fhcyc
        nst_anl        = .true.
        use_ufo        = .true.
@@ -357,12 +387,11 @@ cat > input.nml <<EOF
        lwhtr          = .true.
        swhtr          = .true.
        cnvgwd         = .true.
-       do_deep        = .true.
        shal_cnv       = .true.
        cal_pre        = .false.
        redrag         = .true.
-       dspheat        = .true.
-       hybedmf        = .false.
+       dspheat        = .false. ! .true.
+       hybedmf        = .true.
        random_clds    = .false.
        trans_trac     = .true.
        cnvcld         = .false.
@@ -372,156 +401,17 @@ cat > input.nml <<EOF
        prslrd0        = 0.
        ivegsrc        = 1
        isot           = 1
-       ysupbl         = .true.
-       xkzminv        = 1.0
-	   xkzm_m         = 0.001
-       xkzm_h         = 0.001
-       cloud_gfdl     = .false.
-       do_inline_mp   = .true.
-       do_ocean       = .true.
+       debug          = .false.
+       do_ocean       = .false.
+
 /
 
- &ocean_nml
-     mld_option       = "obs"
-     ocean_option     = "MLM"
-     restore_method   = 2
-     mld_obs_ratio    = 1.
-     use_rain_flux    = .true.
-     sst_restore_tscale = 2.
-     start_lat        = -30.
-     end_lat          = 30.
-     Gam              = 0.2
-     use_old_mlm      = .true.
-     do_mld_restore   = .true.
-	 mld_restore_tscale = 2.
-     stress_ratio     = 1.
-     eps_day          = 10.
-/
-
- &gfdl_cloud_microphysics_nml
-       sedi_transport = .true.
-       do_sedi_heat = .true.
-       rad_snow = .true.
-       rad_graupel = .true.
-       rad_rain = .true.
-       const_vi = .false.
-       const_vs = .false.
-       const_vg = .false.
-       const_vr = .false.
-       vi_fac = 1.
-       vs_fac = 1.
-       vg_fac = 1.
-       vr_fac = 1.
-       vi_max = 1.
-       vs_max = 2.
-       vg_max = 12.
-       vr_max = 12.
-       qi_lim = 1.
-       prog_ccn = .false.
-       do_qa = .true.
-       fast_sat_adj = .false.
-       tau_l2v = 300.
-       tau_l2v = 225.
-       tau_v2l = 150.
-       tau_g2v = 900.
-       rthresh = 10.e-6  ! This is a key parameter for cloud water
-       dw_land  = 0.16
-       dw_ocean = 0.10
-       ql_gen = 1.0e-3
-       ql_mlt = 1.0e-3
-       qi0_crt = 8.0E-5
-       qs0_crt = 1.0e-3
-       tau_i2s = 1000.
-       c_psaci = 0.05
-       c_pgacs = 0.01
-       rh_inc = 0.30
-       rh_inr = 0.30
-       rh_ins = 0.30
-       ccn_l = 300.
-       ccn_o = 100.
-       c_paut = 0.5
-       c_cracw = 0.8
-       use_ppm = .false.
-       use_ccn = .true.
-       mono_prof = .true.
-       z_slope_liq  = .true.
-       z_slope_ice  = .true.
-       de_ice = .false.
-       fix_negative = .true.
-       icloud_f = 0
-       mp_time = 150.
-/
 
  &gfdl_mp_nml
-       sedi_transport = .true.
-       do_sedi_heat = .true.
-       rad_snow = .true.
-       rad_graupel = .true.
-       rad_rain = .true.
-       const_vi = .false.
-       const_vs = .false.
-       const_vg = .false.
-       const_vr = .false.
-       vi_fac = 1.
-       vs_fac = 1.
-       vg_fac = 1.
-       vr_fac = 1.
-       vi_max = 1.
-       vs_max = 2.
-       vg_max = 12.
-       vr_max = 12.
-       qi_lim = 1.
-       prog_ccn = .false.
-       do_qa = .true.
-       fast_sat_adj = .false.
-       tau_l2v = 300.
-       tau_l2v = 225.
-       tau_v2l = 150.
-       tau_g2v = 900.
-       rthresh = 10.e-6  ! This is a key parameter for cloud water
-       dw_land  = 0.16
-       dw_ocean = 0.10
-       ql_gen = 1.0e-3
-       ql_mlt = 1.0e-3
-       qi0_crt = 8.0E-5
-       qs0_crt = 1.0e-3
-       tau_i2s = 1000.
-       c_psaci = 0.05
-       c_pgacs = 0.01
-       rh_inc = 0.30
-       rh_inr = 0.30
-       rh_ins = 0.30
-       ccn_l = 300.
-       ccn_o = 100.
-       c_paut = 0.5
-       c_cracw = 0.8
-       use_ppm = .false.
-       use_ccn = .true.
-       mono_prof = .true.
-       z_slope_liq  = .true.
-       z_slope_ice  = .true.
-       de_ice = .false.
-       fix_negative = .true.
-       icloud_f = 0
 /
 
- &cloud_diagnosis_nml
-       ql0_max = 2.0e-3
-       qi0_max = 2.0e-4
-       ccn_o = 100.
-       ccn_l = 300.
-       qmin = 1.0e-12
-       beta = 1.22
-       rewflag = 1
-       reiflag = 1
-       rewmin = 5.0
-       rewmax = 10.0
-       reimin = 10.0
-       reimax = 150.0
-       liq_ice_combine = .true.
-/
 
- &diag_manager_nml 
+ &diag_manager_nml
        prepend_date = .F.
 /
 
@@ -533,7 +423,7 @@ cat > input.nml <<EOF
        FNGLAC   = "$FIX/global_glacier.2x2.grb",
        FNMXIC   = "$FIX/global_maxice.2x2.grb",
        FNTSFC   = "$FIX/RTGSST.1982.2012.monthly.clim.grb",
-       FNMLDC   = "$FIX_bqx/mld/mld_DR003_c1m_reg2.0.grb"
+       FNMLDC   = ""
        FNSNOC   = "$FIX/global_snoclim.1.875.grb",
        FNZORC   = "igbp",
        FNALBC   = "$FIX/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
@@ -556,7 +446,7 @@ cat > input.nml <<EOF
        FSMCL(2) = 99999
        FSMCL(3) = 99999
        FSMCL(4) = 99999
-       FTSFS    = 90
+       FTSFS    = 180
        FAISS    = 99999
        FSNOL    = 99999
        FSICL    = 99999
@@ -574,14 +464,12 @@ cat > input.nml <<EOF
 EOF
 
 # run the executable
-   ${run_cmd} | tee fms.out
-   if ( $? != 0 ) then
-     exit
-   endif
-
-if ($NO_SEND == "no_send") then
+${run_cmd} | tee fms.out
+if ( $? != 0 ) then
   exit
 endif
+
+if ($NO_SEND == "send") then
 
 #########################################################################
 # generate date for file names
@@ -607,13 +495,14 @@ endif
      exit 1
     endif
 
+    mkdir -p $WORKDIR/ascii/$begindate
     foreach out (`ls *.out *.results input*.nml *_table`)
-      mv $out $begindate.$out
+      mv $out $WORKDIR/ascii/$begindate/
     end
 
     tar cvf - *\.out *\.results | gzip -c > $WORKDIR/ascii/$begindate.ascii_out.tgz
 
-    msub -v source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii $SEND_FILE
+    #sbatch --export=source=$WORKDIR/ascii/$begindate.ascii_out.tgz,destination=gfdl:$gfdl_archive/ascii/$begindate.ascii_out.tgz,extension=null,type=ascii --output=$HOME/STDOUT/%x.o%j $SEND_FILE
 
 ########################################################################
 # move restart files
@@ -656,10 +545,10 @@ endif
         mv $WORKDIR/rundir/RESTART/$index $restart_file/$index
       end
 
-      msub -v source=$WORKDIR/restart/$enddate,destination=gfdl:$gfdl_archive/restart/$enddate,extension=tar,type=restart $SEND_FILE
+      ln -sf $restart_file/* $WORKDIR/rundir/RESTART/
+      #sbatch --export=source=$WORKDIR/restart/$enddate,destination=gfdl:$gfdl_archive/restart/$enddate,extension=tar,type=restart --output=$HOME/STDOUT/%x.o%j $SEND_FILE
 
    endif
-
 
 ########################################################################
 # move history files
@@ -684,23 +573,14 @@ endif
     find $WORKDIR/rundir -maxdepth 1 -type f -regex '.*.nc.....' -exec mv {} $dateDir \;
 
     cd $dateDir
-      if ( ! -d ${begindate}_nggps3d ) mkdir -p ${begindate}_nggps3d
-      mv nggps3d*.nc ${begindate}_nggps3d
-      mv ${begindate}_nggps3d ../.
-      if ( ! -d ${begindate}_tracer3d ) mkdir -p ${begindate}_tracer3d
-      mv tracer3d*.nc ${begindate}_tracer3d
-      mv ${begindate}_tracer3d ../.
-      if ( ! -d ${begindate}_gfs_physics ) mkdir -p ${begindate}_gfs_physics
-      mv gfs_physics*.nc ${begindate}_gfs_physics
-      mv ${begindate}_gfs_physics ../.
-      if ( ! -d ${begindate}_cloud3d ) mkdir -p ${begindate}_cloud3d
-      mv cloud3d*.nc ${begindate}_cloud3d
-      mv ${begindate}_cloud3d ../.
+      if ( ! -d ${begindate}_atmos ) mkdir -p ${begindate}_atmos
+      mv *atmos.*.nc* ${begindate}_atmos
+      mv ${begindate}_atmos ../.
 
     cd $WORKDIR/rundir
 
-    msub -v source=$WORKDIR/history/$begindate,destination=gfdl:$gfdl_archive/history/$begindate,extension=tar,type=history $SEND_FILE
-    #msub -v source=$WORKDIR/history/${begindate}_nggps3d,destination=gfdl:$gfdl_archive/history/${begindate}_nggps3d,extension=tar,type=history $SEND_FILE
-    #msub -v source=$WORKDIR/history/${begindate}_tracer3d,destination=gfdl:$gfdl_archive/history/${begindate}_tracer3d,extension=tar,type=history $SEND_FILE
-    #msub -v source=$WORKDIR/history/${begindate}_gfs_physics,destination=gfdl:$gfdl_archive/history/${begindate}_gfs_physics,extension=tar,type=history $SEND_FILE
-    #msub -v source=$WORKDIR/history/${begindate}_cloud3d,destination=gfdl:$gfdl_archive/history/${begindate}_cloud3d,extension=tar,type=history $SEND_FILE
+    sbatch --export=source=$WORKDIR/history/$begindate,destination=gfdl:$gfdl_archive/history/$begindate,extension=tar,type=history --output=$HOME/STDOUT/%x.o%j $SEND_FILE
+
+    sbatch --export=source=$WORKDIR/history/${begindate}_atmos,destination=gfdl:$gfdl_archive/history/${begindate}_atmos,extension=tar,type=history --output=$HOME/STDOUT/%x.o%j $SEND_FILE
+
+

@@ -203,6 +203,20 @@ cat > field_table << EOF
        "profile_type", "fixed", "surface_value=1.e30" /
 EOF
 
+#
+# If you compile FMS with -Duse_yaml you need to create data_table.yaml
+# and field_table.yaml
+if [[ -x $(command -v data-table-to-yaml) ]] ; then
+  data-table-to-yaml -f data_table
+  field-table-to-yaml -f field_table
+else
+  echo "You must first install fms_yaml_tools prior to running this executable"
+  echo "To do this: you will need Python3 installed, then:"
+  echo "git clone https://github.com/NOAA-GFDL/fms_yaml_tools.git"
+  echo "python3 -m pip install --target=./installdir ./fms_yaml_tools"
+  echo "add the location of the install to your PATH"
+  exit
+fi
 
 #
 # build the input.nml

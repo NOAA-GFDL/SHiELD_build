@@ -120,7 +120,6 @@ elif [ `hostname | cut -c1` = "h" ] ; then
    module load netcdf/4.3.0
    module load hdf5/1.8.14
    module load cmake/3.20.1
-   module load libyaml/0.2.5
 
    export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
    export NETCDF_DIR=${NETCDF}
