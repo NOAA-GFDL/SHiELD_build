@@ -40,7 +40,7 @@ case $hostname in
       module load cray-netcdf
       module load craype-hugepages4M
       module load cmake/3.23.1
- 
+
       # make your compiler selections here
       export FC=ftn
       export CC=cc
@@ -48,7 +48,7 @@ case $hostname in
       export LD=ftn
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
- 
+
       # highest level of AVX support
       export AVX_LEVEL=-march=core-avx2
       echo -e ' '
@@ -66,7 +66,7 @@ case $hostname in
       module load cray-netcdf
       module load craype-hugepages4M
       module load cmake/3.20.1
-   
+
       # make your compiler selections here
       export FC=ftn
       export CC=cc
@@ -74,7 +74,7 @@ case $hostname in
       export LD=ftn
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
-   
+
       # highest level of AVX support
       export AVX_LEVEL=-xCORE-AVX2
       echo -e ' '
@@ -82,19 +82,19 @@ case $hostname in
       ;;
    Orion* )
       echo " Orion environment "
- 
+
       . ${MODULESHOME}/init/sh
       module load intel/2020
       module load impi/2020
       module load netcdf
       module load hdf5
       module load cmake/3.22.1
- 
+
       export CPATH="${NETCDF}/include:${CPATH}"
       export HDF5=${HDF5_ROOT}
       export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
       export NETCDF_DIR=${NETCDF}
- 
+
       # make your compiler selections here
       export FC=mpiifort
       export CC=mpiicc
@@ -102,7 +102,7 @@ case $hostname in
       export LD=mpiifort
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
- 
+
       # highest level of AVX support
       export AVX_LEVEL=-xSKYLAKE-AVX512
       echo -e ' '
