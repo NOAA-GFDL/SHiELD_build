@@ -30,7 +30,7 @@ case $hostname in
       echo " lsc environment "
 
       source $MODULESHOME/init/sh
-      module load nvhpc/23.1
+      module load nvhpc-with-openmpi/23.1
       module load netcdf/4.9.0
       module load hdf5/1.12.0
       module load cmake/3.18.2
