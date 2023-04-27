@@ -4,7 +4,6 @@
 #SBATCH --clusters=c4
 #SBATCH --time=00:20:00
 #SBATCH --nodes=29
-#SBATCH --qos=DEBUG
 
 # change clusters to c5 and nodes to 8 to run on gaea c5
 # see run_tests.sh for an example of how to run these tests
@@ -40,7 +39,7 @@ set NO_SEND = "no_send"    # choices:  send, no_send
 set EXE = "x"
 
 # directory structure
-set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${COMP}.${MODE}.${COMPILER}.${MONO}${MEMO}/
+set WORKDIR    = ${BASEDIR}/SHiELD_${RELEASE}/${NAME}.${CASE}.${TYPE}.${COMP}.${MODE}.${COMPILER}.${MONO}${MEMO}/
 set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${EXE}
 
 # input filesets

@@ -33,9 +33,11 @@ case $hostname in
       . ${MODULESHOME}/init/sh
       module unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu
       module load   PrgEnv-intel
+      module rm intel-classic
+      module rm intel-oneapi
       module rm intel
       module rm gcc
-      module load intel-classic/2022.0.2
+      module load intel-classic/2022.2.1
       module load cray-hdf5
       module load cray-netcdf
       module load craype-hugepages4M
@@ -56,16 +58,19 @@ case $hostname in
       echo -e ' '
       module list
       ;;
-   gaea9 | gaea1? | nid* )
+   gaea13 | nid* )
       echo " gaea C4 environment "
 
       . ${MODULESHOME}/init/sh
       module unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu
       module load   PrgEnv-intel
+      module rm intel-classic
+      module rm intel-oneapi
       module rm intel
       module rm gcc
-      module load intel/19.0.5.281
-      module load cray-netcdf
+      module load intel-classic/2022.0.2
+      module load cray-hdf5/1.12.1.3
+      module load cray-netcdf/4.8.1.3
       module load craype-hugepages4M
       module load cmake/3.20.1
       module load python/3.9

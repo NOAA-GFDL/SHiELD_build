@@ -43,7 +43,7 @@ INCLUDE := $(shell pkg-config --cflags yaml-0.1)
 FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
 CPPFLAGS := $(shell pkg-config --cflags yaml-0.1)
 
-FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace
+FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace -fallow-argument-mismatch
 
 ifeq ($(32BIT),Y)
 CPPDEFS += -DOVERLOAD_R4 -DOVERLOAD_R8

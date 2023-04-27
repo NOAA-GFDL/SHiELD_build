@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export COMPILER="gnu"
+export COMPILER="intel"
 export MODE="32bit"
 export COMP="repro"
 ACCOUNT="gfdl_f"
