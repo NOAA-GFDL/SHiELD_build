@@ -339,6 +339,7 @@ cat > input.nml <<EOF
        ke_bg = 0.
        do_vort_damp = .T.
        external_ic = .F. !COLD START
+       is_ideal_case = .T.
        mountain = .F.
        d_con = 1.
        hord_mt = 5
@@ -348,8 +349,6 @@ cat > input.nml <<EOF
        hord_tr = -5 ! z2: changed
        adjust_dry_mass = .F.
        consv_te = 0.0
-       do_sat_adj = .F.
-       do_inline_mp = .T.
        fill = .F.
        dwind_2d = .F.
        print_freq = 6
@@ -364,6 +363,11 @@ cat > input.nml <<EOF
        stretch_fac = 3.0
 
 
+/
+
+ &integ_phys_nml
+       do_inline_mp = .T.
+       do_sat_adj = .T.
 /
 
 &fv_diag_plevs_nml

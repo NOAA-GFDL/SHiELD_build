@@ -18,7 +18,7 @@ if ( ! $?COMPILER ) then
   set COMPILER = "intel"
 endif
 
-set RELEASE = "`cat ${BUILD_AREA}/release`"
+set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
 
 source ${BUILD_AREA}/site/environment.${COMPILER}.sh
 
@@ -375,7 +375,6 @@ flush_nc_files = .true.
        hord_tr = 8
        adjust_dry_mass = .F.
        consv_te = $consv_te
-       do_sat_adj = .F.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -390,6 +389,10 @@ flush_nc_files = .true.
        stretch_fac = 1.5
 
        write_3d_diags = .T.
+/
+
+ &integ_phys_nml
+       do_sat_adj = .F.
 /
 
 &fv_nest_nml
@@ -683,7 +686,6 @@ flush_nc_files = .true.
        hord_tr = 8
        adjust_dry_mass = .F.
        consv_te = 0.
-       do_sat_adj = .F.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -701,6 +703,10 @@ flush_nc_files = .true.
        nestupdate = 7
 
        full_zs_filter = .T.
+/
+
+ &integ_phys_nml
+       do_sat_adj = .F.
 /
 
 &surf_map_nml

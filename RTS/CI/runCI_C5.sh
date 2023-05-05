@@ -4,12 +4,12 @@
 export COMPILER="intel"
 ACCOUNT="gfdl_f"
 export BUILDDIR="/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build"
-RELEASE="`cat ${BUILDDIR}/release`"
+RELEASE="`cat ${BUILDDIR}/../SHiELD_SRC/release`"
 export SCRATCHDIR="${SCRATCH}/${USER}/soloCI_C5_${RELEASE}/"
 
 mkdir -p ${BUILDDIR}/RTS/CI/stdout
 
-SBATCHARGS="--account=${ACCOUNT} --time=00:10:00 --clusters=c5 --output=./stdout/%x.o%j --mail-user=${USER}@noaa.gov --mail-type=fail"
+SBATCHARGS="--account=${ACCOUNT} --time=00:60:00 --clusters=c5 --output=./stdout/%x.o%j --mail-user=${USER}@noaa.gov --mail-type=fail"
 sbatch ${SBATCHARGS} --nodes=1 C128r20.solo.superC
 sbatch ${SBATCHARGS} --nodes=1 C128r3.solo.TC
 sbatch ${SBATCHARGS} --nodes=1 C128r3.solo.TC.d1

@@ -335,14 +335,13 @@ cat > input.nml <<EOF
        d4_bg = 0.15
        do_vort_damp = .F.
        external_ic = .F.
+       is_ideal_case = .T.
        mountain = .F.
        hord_mt = 10
        hord_vt = 10
        hord_tm = 10
        hord_dp = 10
        hord_tr = 8
-       do_sat_adj = .F.
-       do_inline_mp = .T.
        fill = .F.
        dwind_2d = .F.
        print_freq = 6
@@ -357,6 +356,11 @@ cat > input.nml <<EOF
        stretch_fac = 3.0
 
 
+/
+
+ &integ_phys_nml
+       do_inline_mp = .T.
+       do_sat_adj = .F.
 /
 
 &fv_diag_plevs_nml

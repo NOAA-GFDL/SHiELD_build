@@ -218,8 +218,10 @@ cat > input.nml <<EOF
        hord_tr = 8
        print_freq = 24
        warm_start = .F.
-     do_schmidt = .false.
-     adiabatic = .true.
+       do_schmidt = .false.
+       adiabatic = .true.
+       external_ic = .F. !COLD START
+       is_ideal_case = .T.
 /
 
  &test_case_nml

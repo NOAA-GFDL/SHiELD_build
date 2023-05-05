@@ -7,7 +7,7 @@ ACCOUNT="gfdl_f"
 
 mkdir -p stdout
 
-#sbatch C768r15n3.csh --mail-user=${USER}@noaa.gov --mail-type=fail --account=${ACCOUNT}
+sbatch C768r15n3.csh --mail-user=${USER}@noaa.gov --mail-type=fail --account=${ACCOUNT}
 sbatch C3072_res.csh --mail-user=${USER}@noaa.gov --mail-type=fail --account=${ACCOUNT}
 sbatch C384.csh --mail-user=${USER}@noaa.gov --mail-type=fail --account=${ACCOUNT}
 sbatch C48_test.csh --mail-user=${USER}@noaa.gov --mail-type=fail --account=${ACCOUNT}

@@ -339,6 +339,7 @@ cat > input.nml <<EOF
        na_init = $na_init
        nudge_qv = .F.
        external_ic = ${external_ic}
+       is_ideal_case = .T.
        add_noise = ${add_noise}
        mountain = $mountain
 
@@ -363,8 +364,6 @@ cat > input.nml <<EOF
 
      !Physics options
        consv_te = $consv_te
-       do_sat_adj = .F.
-       do_inline_mp = .F.
        fill = .T.
        phys_hydrostatic = .F.
 
@@ -375,6 +374,11 @@ cat > input.nml <<EOF
        fv_debug = .F.
        range_warn = .F.
 
+/
+
+ &integ_phys_nml
+       do_inline_mp = .F.
+       do_sat_adj = .F.
 /
 
 &gfdl_mp_nml

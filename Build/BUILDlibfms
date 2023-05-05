@@ -27,7 +27,7 @@
 # set default values
 # configure your build parameters
   compiler="intel"
-  yaml=""
+  yaml="noyaml"
 #
 # parse arguments
   for arg in "$@"
@@ -37,7 +37,7 @@
              compiler="${arg#*=}"
              shift # Remove "compiler" from processing
              ;;
-	  yaml)
+	  noyaml|yaml)
              yaml="${arg#*=}"
              shift # Remove "yaml" from processing
              ;;
@@ -48,6 +48,7 @@
           echo -e ' '
           echo -e "valid options are:"
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
+	  echo -e "\t[noyaml(D) | yaml] \t\t\t whether to build with -Duse_yaml"
           echo -e "\n"
           exit
           ;;

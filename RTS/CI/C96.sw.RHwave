@@ -233,8 +233,10 @@ cat > input.nml <<EOF
        adjust_dry_mass = .F.
        print_freq = 24
        warm_start = .F.
-     do_schmidt = .false.
-     adiabatic = .true.
+       do_schmidt = .false.
+       adiabatic = .true.
+       external_ic = .F. !COLD START
+       is_ideal_case = .T.
 /
 
  &test_case_nml

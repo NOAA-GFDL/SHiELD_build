@@ -17,7 +17,7 @@ if ( ! $?COMPILER ) then
   set COMPILER = "intel"
 endif
 
-set RELEASE = "`cat ${BUILD_AREA}/release`"
+set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
 
 source ${BUILD_AREA}/site/environment.${COMPILER}.sh
 
@@ -435,8 +435,6 @@ cat >! input.nml <<EOF
        hord_tr = 8
        adjust_dry_mass = .F.
        consv_te = $consv_te
-       do_sat_adj = .F.
-       do_inline_mp = .T.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -451,6 +449,11 @@ cat >! input.nml <<EOF
        stretch_fac = 1.
 
        write_3d_diags = .T.
+/
+
+ &integ_phys_nml
+       do_inline_mp = .T.
+       do_sat_adj = .F.
 /
 
 &fv_diag_column_nml
@@ -547,7 +550,6 @@ cat >! input.nml <<EOF
        ivegsrc        = 1	!1
        isot           = 1	!1
        debug          = .false.
-       do_inline_mp   = .true.
 /
 
  &gfdl_mp_nml
@@ -736,8 +738,6 @@ cat >! input_nest02.nml <<EOF
        hord_tr = 8
        adjust_dry_mass = .F.
        consv_te = 0.
-       do_sat_adj = .F.
-       do_inline_mp = .T.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -760,6 +760,10 @@ cat >! input_nest02.nml <<EOF
 
 /
 
+ &integ_phys_nml
+       do_inline_mp = .T.
+       do_sat_adj = .F.
+/
 
 &fv_diag_column_nml
     do_diag_debug = .F.
@@ -856,7 +860,6 @@ cat >! input_nest02.nml <<EOF
        ivegsrc        = 1	!1
        isot           = 1	!1
        debug          = .false.
-       do_inline_mp   = .true.
 /
 
  &gfdl_mp_nml

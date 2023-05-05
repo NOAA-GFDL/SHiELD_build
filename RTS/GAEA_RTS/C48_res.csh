@@ -18,7 +18,7 @@ if ( ! $?COMPILER ) then
   set COMPILER = "intel"
 endif
 
-set RELEASE = "`cat ${BUILD_AREA}/release`"
+set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
 
 source ${BUILD_AREA}/site/environment.${COMPILER}.sh
 
@@ -391,7 +391,6 @@ cat >! input.nml <<EOF
        hord_tr = -5
        adjust_dry_mass = .F.
        consv_te = $consv_te
-       do_sat_adj = .F.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -399,10 +398,13 @@ cat >! input.nml <<EOF
        warm_start = $warm_start
        no_dycore = $no_dycore
        z_tracer = .T.
-       do_inline_mp = .T.
 /
 
+ &integ_phys_nml
+       do_inline_mp = .T.
+       do_sat_adj = .F.
 /
+
 !&fv_diag_column_nml
 !    do_diag_debug = .F.
 !    do_diag_sonde = .T.
@@ -484,7 +486,6 @@ cat >! input.nml <<EOF
        xkzm_m         = 0.001
        xkzm_h         = 0.001
        cloud_gfdl     = .false.
-       do_inline_mp   = .true.
        do_ocean       = .true.
 /
 

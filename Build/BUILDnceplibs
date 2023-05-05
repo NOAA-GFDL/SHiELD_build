@@ -68,42 +68,43 @@ fi
 
 nceplibs_dir=${NCEP_DIR}/nceplibs/${compiler}
 \rm -rf $nceplibs_dir
+mkdir -p $nceplibs_dir
+cd $nceplibs_dir
 
 #Define common cmake flags
 cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_STANDARD=99"
 
 git clone -b $version_bacio https://github.com/NOAA-EMC/NCEPLIBS-bacio
 pushd NCEPLIBS-bacio
-cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install .
+cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=$nceplibs_dir/NCEPLIBS-bacio/install .
 make -j8
 make install
 popd
 
 git clone -b $version_sp https://github.com/NOAA-EMC/NCEPLIBS-sp
 pushd NCEPLIBS-sp
-cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-sp/install .
+cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=$nceplibs_dir/NCEPLIBS-sp/install .
 make -j8 sp_d
 make install
 popd
 
 git clone -b $version_w3emc https://github.com/NOAA-EMC/NCEPLIBS-w3emc
 pushd NCEPLIBS-w3emc
-cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install -DCMAKE_PREFIX_PATH=${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
+cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=$nceplibs_dir/NCEPLIBS-w3emc/install -DCMAKE_PREFIX_PATH=$nceplibs_dir/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
 make -j8 w3emc_d
 make install
 popd
 
 git clone -b $version_w3nco https://github.com/NOAA-EMC/NCEPLIBS-w3nco
 pushd NCEPLIBS-w3nco
-cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install .
+cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=$nceplibs_dir/NCEPLIBS-w3nco/install .
 make -j8 w3nco_d
 make install
 popd
 
-mkdir -p $nceplibs_dir
-mv ${BUILD_ROOT}/Build/NCEPLIBS-bacio/install/lib/libbacio.a $nceplibs_dir/.
-mv ${BUILD_ROOT}/Build/NCEPLIBS-sp/install/lib/libsp_d.a $nceplibs_dir/.
-mv ${BUILD_ROOT}/Build/NCEPLIBS-w3emc/install/lib/libw3emc_d.a $nceplibs_dir/.
-mv ${BUILD_ROOT}/Build/NCEPLIBS-w3nco/install/lib/libw3nco_d.a $nceplibs_dir/.
+mv $nceplibs_dir/NCEPLIBS-bacio/install/lib/libbacio.a $nceplibs_dir/.
+mv $nceplibs_dir/NCEPLIBS-sp/install/lib/libsp_d.a $nceplibs_dir/.
+mv $nceplibs_dir/NCEPLIBS-w3emc/install/lib/libw3emc_d.a $nceplibs_dir/.
+mv $nceplibs_dir/NCEPLIBS-w3nco/install/lib/libw3nco_d.a $nceplibs_dir/.
 
 \rm -rf NCEPLIBS-bacio NCEPLIBS-sp NCEPLIBS-w3emc NCEPLIBS-w3nco

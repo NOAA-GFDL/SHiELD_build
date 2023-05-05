@@ -1,10 +1,10 @@
 #!/bin/bash
 # This script will run all CI tests on C4 
 
-export COMPILER="gnu"
+export COMPILER="intel"
 ACCOUNT="gfdl_f"
 export BUILDDIR="/ncrc/home1/Lauren.Chilutti/SHiELD_dev/SHiELD_build"
-RELEASE="`cat ${BUILDDIR}/release`"
+RELEASE="`cat ${BUILDDIR}/../SHiELD_SRC/release`"
 export SCRATCHDIR="${SCRATCH}/${USER}/soloCI_${RELEASE}"
 
 mkdir -p ${BUILDDIR}/RTS/CI/stdout

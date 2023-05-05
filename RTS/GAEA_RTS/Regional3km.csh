@@ -18,7 +18,7 @@ if ( ! $?COMPILER ) then
   set COMPILER = "intel"
 endif
 
-set RELEASE = "`cat ${BUILD_AREA}/release`"
+set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
 
 source ${BUILD_AREA}/site/environment.${COMPILER}.sh
 
@@ -413,8 +413,6 @@ cat >! input.nml <<EOF
        hord_tr = -5 
        adjust_dry_mass = .F.
        consv_te = 0.
-       do_sat_adj = .F.
-       do_inline_mp = .T.
        consv_am = .F.
        dwind_2d = .F.
        print_freq = $print_freq
@@ -432,7 +430,10 @@ cat >! input.nml <<EOF
 
 /
 
-
+ &integ_phys_nml
+       do_inline_mp = .T.
+       do_sat_adj = .F.
+/
 
  &coupler_nml
        months = $months
@@ -502,7 +503,6 @@ cat >! input.nml <<EOF
        do_deep        = .false.
        do_ocean       = .true. ! 2019: Using an hfvGFS-like setting
        ysupbl         = .true. ! 201907h6: restored YSU
-       do_inline_mp   = .true.
        xkzminv        = 0.0  ! 2019: NO diffusion in inversion layers
        xkzm_h         = 0.2  ! 2019: YSU default (note divided by 2 inside scheme)
        xkzm_m         = 0.02 ! 2019: YSU default (note divided by 2 inside scheme)

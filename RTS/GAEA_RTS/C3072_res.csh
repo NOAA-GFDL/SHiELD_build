@@ -19,7 +19,7 @@ if ( ! $?COMPILER ) then
   set COMPILER = "intel"
 endif
 
-set RELEASE = "`cat ${BUILD_AREA}/release`"
+set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
 
 #set hires_oro_factor = 3
 set res = 3072
@@ -350,8 +350,6 @@ cat >! input.nml <<EOF
        hord_tr = -5 ! z2: changed
        adjust_dry_mass = .F.
        consv_te = 0.
-       do_sat_adj = .F.
-       do_inline_mp = .T.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -362,7 +360,11 @@ cat >! input.nml <<EOF
 
 /
 
+ &integ_phys_nml
+       do_sat_adj = .F.
+       do_inline_mp = .T.
 /
+
 !&fv_diag_column_nml
 !    do_diag_debug = .F.
 !    do_diag_sonde = .T.
@@ -446,7 +448,6 @@ cat >! input.nml <<EOF
        ivegsrc        = 1
        isot           = 1
        debug          = .F.
-  do_inline_mp = .T.
        xkzminv        = 0.0 ! z12: Using stronger diffusion
     do_ocean  = .T.
     !use_ec_sst     = .T.

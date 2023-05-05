@@ -221,11 +221,13 @@ cat > input.nml <<EOF
        hord_tr = 8
        print_freq = 12
        warm_start = .F.
-     do_schmidt = .false.
-     target_lat = 45.
-     target_lon = 0.
-     !inline_q = .true. !Needed to get flux BCs to work
-     adiabatic = .true.
+       do_schmidt = .false.
+       target_lat = 45.
+       target_lon = 0.
+       !inline_q = .true. !Needed to get flux BCs to work
+       adiabatic = .true.
+       external_ic = .F. !COLD START
+       is_ideal_case = .T.
 /
 
  &test_case_nml

@@ -29,7 +29,7 @@ BUILD_ROOT=${PWD%/*}
 SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC
 PATH="${BUILD_ROOT}/mkmf/bin:${PATH}"
 COMPILER="intel"
-USE_YAML=""
+YAML="noyaml"
 
 #
 ## parse arguments
@@ -40,8 +40,11 @@ do
         COMPILER="${arg#*=}"
         shift # Remove compiler from processing
         ;;
-        yaml)
-        USE_YAML=-Duse_yaml
+        noyaml|yaml)
+        YAML="${arg#*=}"
+	if [ $YAML='yaml' ] ; then
+          USE_YAML=-Duse_yaml
+        fi
 	shift # Remove yaml from processing
 	;;
     esac

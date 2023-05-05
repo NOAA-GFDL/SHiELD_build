@@ -301,6 +301,7 @@ cat > input.nml <<EOF
        d4_bg = 0.12
        do_vort_damp = .F.
        external_ic = .F. !COLD START
+       is_ideal_case = .T.
        mountain = .F.
        hord_mt = 10
        hord_vt = 10
@@ -309,8 +310,6 @@ cat > input.nml <<EOF
        hord_tr = 8 ! z2: changed
        adjust_dry_mass = .F.
        consv_te = 1.
-       do_sat_adj = .F.
-       do_inline_mp = .F.
        consv_am = .T.
        fill = .F.
        dwind_2d = .F.
@@ -318,6 +317,11 @@ cat > input.nml <<EOF
        warm_start = $warm_start
        z_tracer = .T.
        fill_dp = .T.
+/
+
+ &integ_phys_nml
+       do_inline_mp = .F.
+       do_sat_adj = .F.
 /
 
 &fv_diag_plevs_nml
