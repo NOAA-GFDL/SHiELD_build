@@ -57,8 +57,8 @@ case $hostname in
        echo -e ' '
        module list
        ;;
-   gaea13 | nid* )
-       echo " gaea C4 environment "
+   gaea1? | nid* )
+       echo " gaea C3/C4 environment "
 
        . ${MODULESHOME}/init/sh
        module unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu
