@@ -24,6 +24,8 @@
 #              integration software regression testing and as such is
 #              unsupported.
 #
+#  WARNING: This test is not expected to have run-to-run reproducibility.
+#
 #SBATCH --ntasks=24
 
 if [ -z ${BUILDDIR} ] ; then
