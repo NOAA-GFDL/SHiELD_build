@@ -3,7 +3,7 @@
 #SBATCH --job-name=C768r15n3
 #SBATCH --clusters=c4
 #SBATCH --time=00:20:00
-#SBATCH --nodes=29
+#SBATCH --nodes=79
 
 # change clusters to c5 and nodes to 8 to run on gaea c5
 # see run_tests.sh for an example of how to run these tests
@@ -62,8 +62,8 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     set npy_g2 = "1081"
     set npz = "63"
     set npz_g2 = "63"
-    set layout_x = "4" 
-    set layout_y = "5" 
+    set layout_x = "18"
+    set layout_y = "18"
     set layout_x_g2 = "28" #28
     set layout_y_g2 = "32" #32 
     set io_layout = "1,1"
