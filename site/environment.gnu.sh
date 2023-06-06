@@ -43,6 +43,9 @@ case $hostname in
        module load python/3.9
        module load libyaml/0.2.5
 
+       # Add -DHAVE_GETTID to the FMS cppDefs
+       export FMS_CPPDEFS=-DHAVE_GETTID
+
        # make your compiler selections here
        export FC=ftn
        export CC=cc
@@ -75,6 +78,9 @@ case $hostname in
        module load python/3.9
        module load libyaml/0.2.5
 
+       # Add -DHAVE_GETTID to the FMS cppDefs
+       export FMS_CPPDEFS=-DHAVE_GETTID
+
        # make your compiler selections here
        export FC=ftn
        export CC=cc
@@ -103,6 +109,7 @@ case $hostname in
        export HDF5=${HDF5_ROOT}
        export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
        export NETCDF_DIR=${NETCDF}
+       export FMS_CPPDEFS=""
 
        # make your compiler selections here
        export FC=mpif90
@@ -131,6 +138,7 @@ case $hostname in
 
        export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF4}/lib:${HDF5}/lib"
        export NETCDF_DIR=${NETCDF4}
+       export FMS_CPPDEFS=""
 
        # make your compiler selections here
        export FC=mpif90
@@ -158,6 +166,7 @@ case $hostname in
 
        export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
        export NETCDF_DIR=${NETCDF}
+       export FMS_CPPDEFS=""
 
        # make your compiler selections here
        export FC=mpif90
@@ -185,6 +194,7 @@ case $hostname in
 
        export CPATH="${NETCDF_ROOT}/include:${CPATH}"
        export NETCDF_DIR=${NETCDF_ROOT}
+       export FMS_CPPDEFS=""
 
        # make your compiler selections here
        export FC=mpif90
