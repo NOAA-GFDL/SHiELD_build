@@ -1,30 +1,25 @@
 #!/bin/tcsh
-#SBATCH --output=/home/jmoualle/ORION_RT/stdout/%x.%j
-#SBATCH -A gfdlhires
+#SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=X-SHiELD
-#SBATCH --partition=orion
+#SBATCH --clusters=c4
 #SBATCH --time=03:00:00
-#SBATCH --nodes=298
+#SBATCH --nodes=331
 #SBATCH --exclusive
-#SBATCH --mail-user=joseph.mouallem@noaa.gov
-#SBATCH --mail-type=ALL
 
-source ${MODULESHOME}/init/tcsh
-module load intel/2020
-module load netcdf/
-module load hdf5/
-module load impi/2020
+# change c4 to c5 and set nodes to 93 for c5
+# see run_tests.sh for an example of how to run these tests
 
 set echo
 
-set BASEDIR    = "/work/noaa/gfdlscr/${USER}/"
-set INPUT_DATA = "/work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA/"
-# from YQS
-set BUILD_AREA = "~${USER}/SHiELD_Lucas/SHiELD_build/"
+set BASEDIR    = "${SCRATCH}/${USER}/"
+set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA"
+set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
-# release number for the script
-# set RELEASE = "`cat ${BUILD_AREA}/release`"
-set RELEASE = "SHiELD_FMS2020.02"
+if ( ! $?COMPILER ) then
+  set COMPILER = "intel"
+endif
+
+set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
 
 #set hires_oro_factor = 3
 set res = 3072
@@ -32,12 +27,16 @@ set res = 3072
 set CPN = 40
 # case specific details
 set TYPE = "nh"         # choices:  nh, hydro
-set MODE = "32bit"      # choices:  32bit, 64bit
+if ( ! $?MODE ) then
+  set MODE = "32bit"      # choices:  32bit, 64bit
+endif
 set GRID = "C$res"
 set MONO = "non-mono"   # choices:  mono, non-mono
 set MEMO = "$SLURM_JOB_NAME" # trying prod executable
 set HYPT = "on"         # choices:  on, off  (controls hyperthreading)
-set COMP = "repro"       # choices:  debug, repro, prod
+if ( ! $?COMP ) then
+  set COMP = "repro"       # choices:  debug, repro, prod
+endif
 set NO_SEND = "no_send"    # choices:  send, no_send  # send option not available yet
 set NUM_TOT = 8         # run cycle, 1: no restart # z2: increased
 if (! $?DATE) then
@@ -51,8 +50,8 @@ set EXE = "x"
 
 
 # directory structure
-set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}.${MEMO}/
-set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${EXE}
+set WORKDIR    = ${BASEDIR}/SHiELD_${RELEASE}/${NAME}.${CASE}.${TYPE}.${COMP}.${MODE}.${COMPILER}.${MONO}.${MEMO}/
+set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${EXE}
 
 
 # sending file to gfdl
@@ -214,8 +213,10 @@ ls INPUT/
 ls RESTART/
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/RUN/RETRO/data_table data_table 
-cp ${BUILD_AREA}/RUN/RETRO/field_table_6species_tke_clock field_table  # Clock tracers started 10 days after initialization
+cp ${BUILD_AREA}/tables/data_table data_table
+cp ${BUILD_AREA}/tables/field_table_6species_tke_clock field_table  # Clock tracers started 10 days after initialization
+data-table-to-yaml -f data_table
+field-table-to-yaml -f field_table
 cp $executable .
 
 # GFS standard input data
@@ -239,7 +240,7 @@ ${DATE}.${GRID}.${MODE}
 $y $m $d $h 0 0 
 EOF
 ### xic: please verify your diag table is consistent with DYAMOND protocal
-cat ${BUILD_AREA}/RUN/RETRO/diag_table_hwt_dyamond >> diag_table
+cat ${BUILD_AREA}/tables/diag_table_hwt_dyamond >> diag_table
 
 rm -f $WORKDIR/rundir/INPUT/gk03_CF0.nc
 cp $FIXDIR/global_sfc_emissivity_idx.txt INPUT/sfc_emissivity_idx.txt
@@ -276,6 +277,10 @@ cat >! input.nml <<EOF
        clock_grain = 'ROUTINE',
        domains_stack_size = 16000000,
        print_memory_usage = .false.
+/
+
+ &fms_affinity_nml
+       affinity=.false.
 /
 
  &fv_grid_nml
@@ -345,8 +350,6 @@ cat >! input.nml <<EOF
        hord_tr = -5 ! z2: changed
        adjust_dry_mass = .F.
        consv_te = 0.
-       do_sat_adj = .F.
-       do_inline_mp = .T.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -357,7 +360,11 @@ cat >! input.nml <<EOF
 
 /
 
+ &integ_phys_nml
+       do_sat_adj = .F.
+       do_inline_mp = .T.
 /
+
 !&fv_diag_column_nml
 !    do_diag_debug = .F.
 !    do_diag_sonde = .T.
@@ -382,7 +389,6 @@ cat >! input.nml <<EOF
        dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
-       memuse_verbose = .false.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
 !       ncores_per_node = $cores_per_node
@@ -442,7 +448,6 @@ cat >! input.nml <<EOF
        ivegsrc        = 1
        isot           = 1
        debug          = .F.
-  do_inline_mp = .T.
        xkzminv        = 0.0 ! z12: Using stronger diffusion
     do_ocean  = .T.
     !use_ec_sst     = .T.
@@ -469,7 +474,6 @@ cat >! input.nml <<EOF
 /
 
  &gfdl_mp_nml
-       sedi_transport = .T.
        do_sedi_heat = .F.
        do_sedi_w = .T.
        rad_snow = .true.
@@ -486,11 +490,9 @@ cat >! input.nml <<EOF
        qi_lim = 1.
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .F.
        tau_l2v = 300.
        tau_v2l = 90. ! z7: enabled
        do_cond_timescale = .true. ! z7: enabled
-       tau_g2v = 1200.
        rthresh = 10.e-6  !   10.e-6  ! This is a key parameter for cloud water
       dw_land  = 0.15
       dw_ocean = 0.10
@@ -508,13 +510,8 @@ cat >! input.nml <<EOF
        ccn_l = 300.
        ccn_o = 100.
        c_paut =  0.5
-       c_cracw = 0.8
-       mono_prof = .F.
-       use_ppm = .F.
-       use_ccn = .T.
        z_slope_liq  = .T.
        z_slope_ice  = .T.
-       de_ice = .false.
        fix_negative = .true.
        irain_f = 0
        icloud_f = 0

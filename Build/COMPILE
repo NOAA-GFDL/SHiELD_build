@@ -55,6 +55,7 @@ spin()
   avx="Y"
   compiler="intel"
   clean="noclean"
+  yaml="noyaml"
 
   config_name="SHiELD"
 
@@ -104,6 +105,10 @@ spin()
              clean="${arg#*=}"
              shift # Remove "clean" from processing
              ;;
+	  noyaml|yaml)
+             yaml="${arg#*=}"
+	     shift # Remove "yaml" from processing
+	     ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
@@ -117,6 +122,7 @@ spin()
           echo -e "\t[avx(D) | noavx] \t\t\t use AVX_LEVEL defined in site/environment.<compiler>.sh"
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
+	  echo -e "\t[noyaml(D) | yaml] \t will build the FMS library with the -Duse_yaml library.  Default is no yaml"
           echo -e "\n"
           exit
           ;;
@@ -198,7 +204,7 @@ fi
      echo " pre-built ${NCEP_DIR}/libFMS/${compiler} exists"
   else
      echo " ${NCEP_DIR}/libFMS/${compiler} does not exist"
-     ./BUILDlibfms ${compiler}
+     ./BUILDlibfms ${compiler} ${yaml}
      if [ $? -ne 0 ] ; then
         echo ">>> ${NCEP_DIR}/Libfms/${compiler} build failed"
         exit 2

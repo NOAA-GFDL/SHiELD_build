@@ -1,52 +1,52 @@
 #!/bin/tcsh
-#SBATCH --output=/home/jmoualle/ORION_RT/stdout/%x.%j
+#SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C384
-#SBATCH -A gfdlhires
-#SBATCH --partition=orion
+#SBATCH --clusters=c4
 #SBATCH --time=00:20:00
-#SBATCH --nodes=74
+#SBATCH --nodes=72
 #SBATCH --exclusive
-#SBATCH --mail-user=joseph.mouallem@noaa.gov
-#SBATCH --mail-type=ALL
 
-source ${MODULESHOME}/init/tcsh
-module load intel/2020
-module load netcdf/
-module load hdf5/
-module load impi/2020
+# change clusters to c5 and nodes to 21 to run on gaea c5
+# see run_tests.sh for an example of how to run these tests
 
 set echo
 
-set WORKDIR = "/work/noaa/gfdlscr/${USER}/"
+set BASEDIR    = "${SCRATCH}/${USER}/"
+set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA"
+set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
-set BASEDIR    = "$WORKDIR"
-set INPUT_DATA = "/work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA/"
-# from YQS
-set BUILD_AREA = "/home/${USER}/SHiELD_Lucas/SHiELD_build/"
+if ( ! $?COMPILER ) then
+  set COMPILER = "intel"
+endif
+
+set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
+
+source ${BUILD_AREA}/site/environment.${COMPILER}.sh
 
 #set hires_oro_factor = 12
 set res = 384
 
-# release number for the script
-set RELEASE = "SHiELD_FMS2020.02"
-
 # case specific details
 set TYPE = "nh"         # choices:  nh, hydro
-set MODE = "32bit"      # choices:  32bit, 64bit
+if ( ! $?MODE ) then
+  set MODE = "32bit"      # choices:  32bit, 64bit
+endif
 set MONO = "non-mono"   # choices:  mono, non-mono
 set CASE = "C$res"
 set NAME = "20160801.00Z"
 set MEMO = "$SLURM_JOB_NAME"
 set EXE = "x"
 set HYPT = "on"         # choices:  on, off  (controls hyperthreading)
-set COMP = "repro"       # choices:  debug, repro, prod
+if ( ! $?COMP ) then
+  set COMP = "repro"       # choices:  debug, repro, prod
+endif
 set NO_SEND = "no_send"    # choices:  send, no_send # send option not available yet
 set RESTART_RUN = "F"
 set CPN = 40
 
 # directory structure
-set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}.${MEMO}/
-set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${EXE}
+set WORKDIR    = ${BASEDIR}/SHiELD_${RELEASE}/${NAME}.${CASE}.${TYPE}.${COMP}.${MODE}.${COMPILER}.${MONO}.${MEMO}/
+set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${EXE}
 
 # input filesets
 set ICS  = ${INPUT_DATA}/global.v201810/${CASE}/${NAME}_IC/GFS_INPUT.tar
@@ -203,9 +203,11 @@ else
 endif
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/RUN/RETRO/data_table data_table
-cp ${BUILD_AREA}/RUN/RETRO/diag_table_no3d diag_table
-cp ${BUILD_AREA}/RUN/RETRO/field_table_6species field_table
+cp ${BUILD_AREA}/tables/data_table data_table
+cp ${BUILD_AREA}/tables/diag_table_no3d diag_table
+cp ${BUILD_AREA}/tables/field_table_6species field_table
+data-table-to-yaml -f data_table
+field-table-to-yaml -f field_table
 cp $executable .
 
 # GFS standard input data
@@ -266,6 +268,10 @@ cat >! input.nml <<EOF
        clock_grain = 'ROUTINE',
        domains_stack_size = 3000000,
        print_memory_usage = .false.
+/
+
+ &fms_affinity_nml
+       affinity=.false.
 /
 
  &fv_grid_nml
@@ -329,7 +335,6 @@ cat >! input.nml <<EOF
        hord_tr = -5
        adjust_dry_mass = .F.
        consv_te = $consv_te
-       do_sat_adj = .F.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -337,6 +342,10 @@ cat >! input.nml <<EOF
        warm_start = $warm_start
        no_dycore = $no_dycore
        z_tracer = .T.
+/
+
+ &integ_phys_nml
+       do_sat_adj= .F.
 /
 
  &coupler_nml
@@ -347,7 +356,6 @@ cat >! input.nml <<EOF
        dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
-       memuse_verbose = .false.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
 /
@@ -402,52 +410,7 @@ cat >! input.nml <<EOF
 /
 
 
- &gfdl_cloud_microphysics_nml
-       sedi_transport = .true.
-       do_sedi_heat = .false.
-       rad_snow = .true.
-       rad_graupel = .true.
-       rad_rain = .true.
-       const_vi = .F.
-       const_vs = .F.
-       const_vg = .F.
-       const_vr = .F.
-       vi_max = 1.
-       vs_max = 2.
-       vg_max = 12.
-       vr_max = 12.
-       qi_lim = 1.
-       prog_ccn = .false.
-       do_qa = .true.
-       fast_sat_adj = .true.
-       tau_l2v = 300.
-       tau_v2l = 150.
-       tau_g2v = 900.
-       rthresh = 10.e-6  ! This is a key parameter for cloud water
-       dw_land  = 0.16
-       dw_ocean = 0.10
-       ql_gen = 1.0e-3
-       ql_mlt = 1.0e-3
-       qi0_crt = 8.0E-5
-       qs0_crt = 1.0e-3
-       tau_i2s = 1000.
-       c_psaci = 0.05
-       c_pgacs = 0.01
-       rh_inc = 0.30
-       rh_inr = 0.30
-       rh_ins = 0.30
-       ccn_l = 300.
-       ccn_o = 100.
-       c_paut = 0.5
-       c_cracw = 0.8
-       use_ppm = .false.
-       use_ccn = .true.
-       z_slope_liq  = .true.
-       z_slope_ice  = .true.
-       de_ice = .false.
-       fix_negative = .true.
-       mp_time = 150.
-
+ &gfdl_mp_nml
 /
 
 
@@ -463,7 +426,7 @@ cat >! input.nml <<EOF
        FNGLAC   = "$FIX/global_glacier.2x2.grb",
        FNMXIC   = "$FIX/global_maxice.2x2.grb",
        FNTSFC   = "$FIX/RTGSST.1982.2012.monthly.clim.grb",
-       FNMLDC   = "$FIX/../mld/mld_DR003_c1m_reg2.0.grb"
+       FNMLDC   = ""
        FNSNOC   = "$FIX/global_snoclim.1.875.grb",
        FNZORC   = "igbp",
        FNALBC   = "$FIX/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",

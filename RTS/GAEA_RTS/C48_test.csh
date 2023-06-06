@@ -1,63 +1,65 @@
 #!/bin/tcsh
-#SBATCH --output=/home/jmoualle/ORION_RT/stdout/%x.%j
+#SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C48_test
-#SBATCH --partition=orion
+#SBATCH --clusters=c4
 #SBATCH --time=00:10:00
-#SBATCH --nodes=5
+#SBATCH --nodes=6
 #SBATCH --exclusive
-#SBATCH --mail-user=joseph.mouallem@noaa.gov
-#SBATCH --mail-type=ALL
 
-source ${MODULESHOME}/init/tcsh
-module load intel/2020
-module load netcdf/
-module load hdf5/
-module load impi/2020
-
+# change c4 to c5 and set nodes to 2 for c5
+# see run_tests.sh for an example of how to run these tests
+#
 set echo
 
-set WORKDIR = "/work/noaa/gfdlscr/${USER}/"
-set BASEDIR    = "$WORKDIR"
-set INPUT_DATA = "/work/noaa/gfdlscr/pdata/gfdl/SHiELD/INPUT_DATA/"
+set BASEDIR    = "${SCRATCH}/${USER}/"
+set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/"
+set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
-# from YQS
-set BUILD_AREA = "~${USER}/SHiELD_Lucas/SHiELD_build/"
+if ( ! $?COMPILER ) then
+  set COMPILER = "intel"
+endif
 
-# release number for the script
-set RELEASE = "SHiELD_FMS2020.02"
+set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
+
+source ${BUILD_AREA}/site/environment.${COMPILER}.sh
 
 #set hires_oro_factor = 3
 set res = 48
 
 # case specific details
 set TYPE = "nh"         # choices:  nh, hydro
-set MODE = "32bit"      # choices:  32bit, 64bit
+if ( ! $?MODE ) then
+  set MODE = "32bit"      # choices:  32bit, 64bit
+endif
 set MONO = "non-mono"   # choices:  mono, non-mono
 set CASE = "C$res"
 set NAME = "20160801.00Z"
 set MEMO = "$SLURM_JOB_NAME"
 set EXE = "x"
 set HYPT = "on"         # choices:  on, off  (controls hyperthreading)
-set COMP = "repro"       # choices:  debug, repro, prod
+if ( ! $?COMP ) then
+  set COMP = "repro"       # choices:  debug, repro, prod
+endif
 set NO_SEND = "no_send"    # choices:  send, no_send
 set RESTART_RUN = "F"
 set CPN = 40
 
 # directory structure
-set WORKDIR    = ${BASEDIR}/${RELEASE}/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}.${MEMO}/
-set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${EXE}
+set WORKDIR    = ${BASEDIR}/SHiELD_${RELEASE}/${NAME}.${CASE}.${TYPE}.${COMP}.${MODE}.${COMPILER}.${MONO}.${MEMO}/
+set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPILER}.${EXE}
 
 # input filesets
-set ICS  = ${INPUT_DATA}/global.v201810/${CASE}/${NAME}_IC/GFS_INPUT.tar
+set ICDIR   = ${INPUT_DATA}/global.v201810/${CASE}/${NAME}_IC/
+set ICS  = ${ICDIR}/GFS_INPUT.tar
 set FIX  = ${INPUT_DATA}/fix.v201810/
 set GFS  = ${INPUT_DATA}/GFS_STD_INPUT.20160311.tar
 set GRID = ${INPUT_DATA}/global.v201810/${CASE}/GRID/
 set FIX_bqx  = ${INPUT_DATA}/climo_data.v201807
 
 # sending file to gfdl
-set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
-set SEND_FILE = /home/${USER}/Util/send_file_slurm.csh
-set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
+#set gfdl_archive = /archive/${USER}/SHiELD_S2S/${NAME}.${CASE}.${TYPE}.${MODE}.${MONO}${MEMO}/
+#set SEND_FILE = /home/${USER}/Util/send_file_slurm.csh
+set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
 
 # changeable parameters
     # dycore definitions
@@ -175,9 +177,14 @@ if (${RESTART_RUN} == "F") then
   cd $WORKDIR/rundir
 
   mkdir -p RESTART
+  mkdir -p INPUT
 
   # Date specific ICs
-  tar xf ${ICS}
+  if ( -e ${ICDIR}/gfs_data.tile1.nc ) then
+    cp -rf ${ICDIR}/* INPUT/
+  else
+    tar xf ${ICS}
+  endif
 
   # set variables in input.nml for initial run
   set nggps_ic = ".T."
@@ -204,16 +211,18 @@ else
 endif
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/RUN/RETRO/data_table data_table
-cp ${BUILD_AREA}/RUN/RETRO/diag_table_no3d diag_table
-cp ${BUILD_AREA}/RUN/RETRO/field_table_6species field_table
+cp ${BUILD_AREA}/tables/data_table data_table
+cp ${BUILD_AREA}/tables/diag_table_no3d diag_table
+cp ${BUILD_AREA}/tables/field_table_6species field_table
+data-table-to-yaml -f data_table
+field-table-to-yaml -f field_table
 cp $executable .
 
 # GFS standard input data
 tar xf ${GFS}
 
 # Grid and orography data
-ln -sf ${GRID}/* INPUT/.
+cp -rf ${GRID}/* INPUT/.
 
 # build the date for curr_date from NAME
 
@@ -329,7 +338,6 @@ cat > input.nml <<EOF
        hord_tr = -5
        adjust_dry_mass = .F.
        consv_te = $consv_te
-       do_sat_adj = .F.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -337,7 +345,11 @@ cat > input.nml <<EOF
        warm_start = $warm_start
        no_dycore = $no_dycore
        z_tracer = .T.
+/
+
+ &integ_phys_nml
        do_inline_mp = .F.
+       do_sat_adj = .F.
 /
 
  &coupler_nml
@@ -349,7 +361,6 @@ cat > input.nml <<EOF
        dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
-       memuse_verbose = .false.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
 /
@@ -405,7 +416,6 @@ cat > input.nml <<EOF
        xkzm_m         = 0.001
        xkzm_h         = 0.001
        cloud_gfdl     = .false.
-       do_inline_mp   = .false.
        do_ocean       = .true.
 
 /
@@ -482,7 +492,6 @@ cat > input.nml <<EOF
 /
 
 &gfdl_mp_nml
-       sedi_transport = .true.
        do_sedi_heat = .true.
        rad_snow = .true.
        rad_graupel = .true.
@@ -502,10 +511,8 @@ cat > input.nml <<EOF
        qi_lim = 1.
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .false.
        tau_l2v = 225.
        tau_v2l = 150.
-       tau_g2v = 900.
        rthresh = 10.e-6  ! This is a key parameter for cloud water
        dw_land  = 0.16
        dw_ocean = 0.10
@@ -522,13 +529,8 @@ cat > input.nml <<EOF
        ccn_l = 300.
        ccn_o = 100.
        c_paut = 0.5
-       c_cracw = 0.8
-       use_ppm = .false.
-       use_ccn = .true.
-       mono_prof = .false.
        z_slope_liq  = .true.
        z_slope_ice  = .true.
-       de_ice = .false.
        fix_negative = .false.
        icloud_f = 0
 /
@@ -561,7 +563,7 @@ cat > input.nml <<EOF
        FNGLAC   = "$FIX/global_glacier.2x2.grb",
        FNMXIC   = "$FIX/global_maxice.2x2.grb",
        FNTSFC   = "$FIX/RTGSST.1982.2012.monthly.clim.grb",
-       FNMLDC   = "$FIX/../mld/mld_DR003_c1m_reg2.0.grb"
+       FNMLDC   = ""
        FNSNOC   = "$FIX/global_snoclim.1.875.grb",
        FNZORC   = "igbp",
        FNALBC   = "$FIX/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",

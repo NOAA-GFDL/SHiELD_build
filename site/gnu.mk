@@ -39,10 +39,11 @@ else
   INCLUDE = -I$(NETCDF_ROOT)/include
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
-
+INCLUDE := $(shell pkg-config --cflags yaml-0.1)
 FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
+CPPFLAGS := $(shell pkg-config --cflags yaml-0.1)
 
-FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace
+FFLAGS := $(INCLUDE) -fcray-pointer -ffree-line-length-none -fno-range-check -fbacktrace -fallow-argument-mismatch
 
 ifeq ($(32BIT),Y)
 CPPDEFS += -DOVERLOAD_R4 -DOVERLOAD_R8
@@ -119,8 +120,7 @@ ifeq ($(NETCDF),3)
     CPPDEFS += -Duse_LARGEFILE
   endif
 endif
-
-LIBS +=
+LIBS := $(shell pkg-config --libs yaml-0.1)
 LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib
 
 #---------------------------------------------------------------------------

@@ -27,6 +27,7 @@
 # set default values
 # configure your build parameters
   compiler="intel"
+  yaml="noyaml"
 #
 # parse arguments
   for arg in "$@"
@@ -36,6 +37,10 @@
              compiler="${arg#*=}"
              shift # Remove "compiler" from processing
              ;;
+	  noyaml|yaml)
+             yaml="${arg#*=}"
+             shift # Remove "yaml" from processing
+             ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
@@ -43,6 +48,7 @@
           echo -e ' '
           echo -e "valid options are:"
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
+	  echo -e "\t[noyaml(D) | yaml] \t\t\t whether to build with -Duse_yaml"
           echo -e "\n"
           exit
           ;;
@@ -68,7 +74,7 @@ fi
 #
 # build FMS library
 echo " building ${NCEP_DIR}/libFMS/${compiler}"
-MAKE_libFMS ${compiler}  >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
+MAKE_libFMS ${compiler} ${yaml} >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
 #
 # test and report on libFMS build success
 if [ $? -ne 0 ] ; then
