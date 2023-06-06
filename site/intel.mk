@@ -123,7 +123,7 @@ ifeq ($(NETCDF),3)
   endif
 endif
 
-LIBS := $(shell pkg-config --libs yaml-0.1)
+LIBS += $(shell pkg-config --libs yaml-0.1)
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
