@@ -42,7 +42,7 @@ do
         ;;
         noyaml|yaml)
         YAML="${arg#*=}"
-	if [ $YAML='yaml' ] ; then
+	if [ ${YAML} = 'yaml' ] ; then
           USE_YAML=-Duse_yaml
         fi
 	shift # Remove yaml from processing
