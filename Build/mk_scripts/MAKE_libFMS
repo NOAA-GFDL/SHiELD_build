@@ -42,7 +42,7 @@ do
         ;;
         noyaml|yaml)
         YAML="${arg#*=}"
-	if [ $YAML='yaml' ] ; then
+	if [ ${YAML} = 'yaml' ] ; then
           USE_YAML=-Duse_yaml
         fi
 	shift # Remove yaml from processing
@@ -56,7 +56,7 @@ done
 
 #
 # CPPDEFS needed to build libFMS
-cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS -DGFS_CONSTANTS ${USE_YAML} -DHAVE_GETTID"
+cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS -DGFS_CONSTANTS ${USE_YAML} ${FMS_CPPDEFS}"
 
 #
 # clean up and create the FMS library directory

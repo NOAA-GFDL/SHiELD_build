@@ -156,6 +156,7 @@ echo -e "\tbit      = $bit"
 echo -e "\tavx      = $avx"
 echo -e "\tcompiler = $compiler"
 echo -e "\tclean    = $clean"
+echo -e "\tyaml     = $yaml"
 echo -e "\n"
 sleep 5
 

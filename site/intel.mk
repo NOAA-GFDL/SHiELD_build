@@ -39,7 +39,7 @@ else
   INCLUDE = -I$(NETCDF_ROOT)/include
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
-INCLUDE := $(shell pkg-config --cflags yaml-0.1)
+INCLUDE += $(shell pkg-config --cflags yaml-0.1)
 FPPFLAGS := -fpp -Wp,-w $(INCLUDE)
 CPPFLAGS := $(shell pkg-config --cflags yaml-0.1)
 
@@ -123,7 +123,7 @@ ifeq ($(NETCDF),3)
   endif
 endif
 
-LIBS := $(shell pkg-config --libs yaml-0.1)
+LIBS += $(shell pkg-config --libs yaml-0.1)
 LDFLAGS += $(LIBS)
 
 #---------------------------------------------------------------------------
