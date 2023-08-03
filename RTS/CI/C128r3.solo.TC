@@ -367,7 +367,7 @@ cat > input.nml <<EOF
 
  &integ_phys_nml
        do_inline_mp = .T.
-       do_sat_adj = .T.
+       do_sat_adj = .F.
 /
 
 &fv_diag_plevs_nml
