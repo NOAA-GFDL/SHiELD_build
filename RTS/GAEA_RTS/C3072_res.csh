@@ -215,8 +215,6 @@ ls RESTART/
 # copy over the other tables and executable
 cp ${BUILD_AREA}/tables/data_table data_table
 cp ${BUILD_AREA}/tables/field_table_6species_tke_clock field_table  # Clock tracers started 10 days after initialization
-data-table-to-yaml -f data_table
-field-table-to-yaml -f field_table
 cp $executable .
 
 # GFS standard input data
