@@ -212,7 +212,7 @@ if [[ -x $(command -v data-table-to-yaml) ]] ; then
 else
   echo "You must first install fms_yaml_tools prior to running this executable"
   echo "To do this: you will need Python3 installed, then:"
-  echo "git clone https://github.com/NOAA-GFDL/fms_yaml_tools.git"
+  echo "git clone https://githum/NOAA-GFDL/fms_yaml_tools.git"
   echo "python3 -m pip install --target=./installdir ./fms_yaml_tools"
   echo "add the location of the install to your PATH"
   exit
