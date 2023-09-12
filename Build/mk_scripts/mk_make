@@ -72,6 +72,14 @@ do
           COMPILER="${arg#*=}"
           shift # Remove COMPILER from processing
           ;;
+        nopic|pic)
+          if [ "${arg#*=}" = 'pic' ] ; then
+            PIC=Y
+          else
+            PIC=N
+          fi
+          shift # Remove PIC from processing
+          ;;
     esac
 done
 
@@ -81,15 +89,22 @@ module list
 
 $FC --version
 
-NCEPLIBS="${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a"
 if [ ${CONFIG} = 'shield' ] ; then
+  NCEPLIBS="./libfv3.a"
+  NCEPLIBS+=" ${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a"
   NCEPLIBS+=" ./libgfs.a"
   NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+else
+  NCEPLIBS=${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a
 fi
 
 if [ ${CONFIG} = 'shield' ] ; then
-  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} -f Makefile_gfs)
+  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} PIC=${PIC} -f Makefile_gfs)
 fi
-(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
 
+(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
+
+if [ ${CONFIG} = 'shield' ] ; then
+    (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} NCEPLIBS="${NCEPLIBS}" -f Makefile_driver)
+fi
 exit 0

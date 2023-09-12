@@ -41,6 +41,10 @@
              yaml="${arg#*=}"
              shift # Remove "yaml" from processing
              ;;
+          nopic|pic)
+             pic="${arg#*=}"
+             shift # Remove "PIC" from processing
+             ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
@@ -49,6 +53,7 @@
           echo -e "valid options are:"
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
 	  echo -e "\t[noyaml(D) | yaml] \t\t\t whether to build with -Duse_yaml"
+          echo -e "\t[nopic(D) | pic] \t\t\t whether to build all components with the -fPIC flag (position independent code)"
           echo -e "\n"
           exit
           ;;
@@ -74,7 +79,7 @@ fi
 #
 # build FMS library
 echo " building ${NCEP_DIR}/libFMS/${compiler}"
-MAKE_libFMS ${compiler} ${yaml} >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
+MAKE_libFMS ${compiler} ${yaml} ${pic} >> build_libFMS_${compiler}.out 2>&1   # build 32bit and 64bit versions of libFMS
 #
 # test and report on libFMS build success
 if [ $? -ne 0 ] ; then
