@@ -5,7 +5,7 @@
 #SBATCH --time=00:20:00
 #SBATCH --nodes=79
 
-# change clusters to c5 and nodes to 8 to run on gaea c5
+# change clusters to c5 and nodes to 23 to run on gaea c5
 # see run_tests.sh for an example of how to run these tests
 #
 set echo
