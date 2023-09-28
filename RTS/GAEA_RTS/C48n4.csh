@@ -216,8 +216,6 @@ mkdir -p RESTART
 cp ${BUILD_AREA}/tables/data_table data_table
 cp ${BUILD_AREA}/tables/diag_table_no3d diag_table
 cp ${BUILD_AREA}/tables/field_table_6species field_table
-data-table-to-yaml -f data_table
-field-table-to-yaml -f field_table
 cp $executable .
 
 

@@ -192,8 +192,6 @@ cp ${BUILD_AREA}/tables/data_table data_table
 # file does not exist so there will be no diag table
 cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
 cp ${BUILD_AREA}/tables/field_table_6species field_table
-data-table-to-yaml -f data_table
-field-table-to-yaml -f field_table
 cp $executable .
 
 # GFS standard input data

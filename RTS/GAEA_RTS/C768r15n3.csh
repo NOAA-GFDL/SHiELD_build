@@ -5,7 +5,7 @@
 #SBATCH --time=00:20:00
 #SBATCH --nodes=79
 
-# change clusters to c5 and nodes to 8 to run on gaea c5
+# change clusters to c5 and nodes to 23 to run on gaea c5
 # see run_tests.sh for an example of how to run these tests
 #
 set echo
@@ -226,8 +226,6 @@ cp ${BUILD_AREA}/tables/data_table data_table
 # this file does not exist, so there will be no diag table
 cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
 cp ${BUILD_AREA}/tables/field_table_6species field_table
-data-table-to-yaml -f data_table
-field-table-to-yaml -f field_table
 cp $executable .
 
 mkdir -p INPUT/
