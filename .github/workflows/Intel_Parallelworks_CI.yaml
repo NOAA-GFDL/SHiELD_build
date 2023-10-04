@@ -94,7 +94,7 @@ jobs:
           - d96_500m.solo.mtn_schar.sh
     steps:
       # This will end the slurm job started in the checkout job
-      - run: scancel -n $GITHUB_REF
+      - run: scancel -n SB_$GITHUB_REF
       - env:
           RUNPATH: ${{ matrix.runpath }}
           RUNSCRIPT: ${{ matrix.runscript }}
