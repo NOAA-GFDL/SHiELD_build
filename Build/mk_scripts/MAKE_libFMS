@@ -30,6 +30,7 @@ SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC
 PATH="${BUILD_ROOT}/mkmf/bin:${PATH}"
 COMPILER="intel"
 YAML="noyaml"
+pic="nopic"
 
 #
 ## parse arguments

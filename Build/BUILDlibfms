@@ -28,6 +28,7 @@
 # configure your build parameters
   compiler="intel"
   yaml="noyaml"
+  pic="nopic"
 #
 # parse arguments
   for arg in "$@"

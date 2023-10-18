@@ -23,8 +23,9 @@
 #  DISCLAIMER: This script is provided as-is and as such is unsupported.
 #
 
-#set default compiler
+# set default values
 compiler="intel"
+pic="nopic"
 
 #define versions to checkout
 version_bacio="v2.6.0"
