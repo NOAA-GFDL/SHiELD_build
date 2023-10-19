@@ -23,8 +23,9 @@
 #  DISCLAIMER: This script is provided as-is and as such is unsupported.
 #
 
-#set default compiler
+# set default values
 compiler="intel"
+pic="nopic"
 
 #define versions to checkout
 version_bacio="v2.6.0"
@@ -40,6 +41,10 @@ version_w3nco="v2.4.1"
              compiler="${arg#*=}"
              shift # Remove "compiler" from processing
              ;;
+          nopic|pic)
+             pic="${arg#*=}"
+             shift # Remove "pic" from processing
+             ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
@@ -47,6 +52,7 @@ version_w3nco="v2.4.1"
           echo -e ' '
           echo -e "valid options are:"
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
+          echo -e "\t[nopic(D) | pic] \t\t\t whether to build all components with the -fPIC flag (position independent code)"
           echo -e "\n"
           exit
           ;;
@@ -72,7 +78,11 @@ mkdir -p $nceplibs_dir
 cd $nceplibs_dir
 
 #Define common cmake flags
-cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_STANDARD=99"
+if [ ${pic} = 'pic' ] ; then
+  cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_STANDARD=99 -DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+else
+  cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_STANDARD=99"
+fi
 
 git clone -b $version_bacio https://github.com/NOAA-EMC/NCEPLIBS-bacio
 pushd NCEPLIBS-bacio

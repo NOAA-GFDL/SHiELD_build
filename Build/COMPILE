@@ -56,6 +56,7 @@ spin()
   compiler="intel"
   clean="noclean"
   yaml="noyaml"
+  pic="nopic"
 
   config_name="SHiELD"
 
@@ -109,6 +110,10 @@ spin()
              yaml="${arg#*=}"
 	     shift # Remove "yaml" from processing
 	     ;;
+          nopic|pic)
+             pic="${arg#*=}"
+             shift # Remove "pic" from processing
+             ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
@@ -123,6 +128,7 @@ spin()
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
 	  echo -e "\t[noyaml(D) | yaml] \t will build the FMS library with the -Duse_yaml library.  Default is no yaml"
+          echo -e "\t[nopic(D) | pic] \t whether to build all components with the -fPIC flag (position independent code)"
           echo -e "\n"
           exit
           ;;
@@ -157,6 +163,7 @@ echo -e "\tavx      = $avx"
 echo -e "\tcompiler = $compiler"
 echo -e "\tclean    = $clean"
 echo -e "\tyaml     = $yaml"
+echo -e "\tpic      = $pic"
 echo -e "\n"
 sleep 5
 
@@ -205,7 +212,7 @@ fi
      echo " pre-built ${NCEP_DIR}/libFMS/${compiler} exists"
   else
      echo " ${NCEP_DIR}/libFMS/${compiler} does not exist"
-     ./BUILDlibfms ${compiler} ${yaml}
+     ./BUILDlibfms ${compiler} ${yaml} ${pic}
      if [ $? -ne 0 ] ; then
         echo ">>> ${NCEP_DIR}/Libfms/${compiler} build failed"
         exit 2
@@ -218,7 +225,7 @@ fi
      echo " pre-built ${NCEP_DIR}/nceplibs/${compiler} exists"
   else
      echo " ${NCEP_DIR}/nceplibs/${compiler} does not exist"
-     ./BUILDnceplibs ${compiler}
+     ./BUILDnceplibs ${compiler} ${pic}
      if [ $? -ne 0 ] ; then
         echo ">>> ${NCEP_DIR}/ncepdir/${compiler} build failed"
         exit 3
@@ -248,7 +255,7 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
     fi
   #
   # build the configuration
-    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} ${pic} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
   #
   # move the executable to an accessible area
     mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x

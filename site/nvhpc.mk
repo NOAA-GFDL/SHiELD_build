@@ -15,6 +15,7 @@ DEBUG =
 REPRO =
 VERBOSE =
 OPENMP =
+PIC =
 
 ##############################################
 # Need to use at least GNU Make version 3.81 #
@@ -54,6 +55,15 @@ CFLAGS += $(AVX_LEVEL)
 else
 FFLAGS += -tp=host
 CFLAGS += -tp=host
+endif
+
+# For some applications, namely wrapping SHiELD in Python, it can be required to
+# compile all libraries as position independent code. Setting the PIC option to
+# 'Y' with this Makefile template will enable this.
+ifeq ($(PIC),Y)
+FFLAGS += -fPIC
+CFLAGS += -fPIC
+CPPFLAGS += -fPIC
 endif
 
 FFLAGS_OPT = -g -O3 -Mvect=nosse -Mnoscalarsse -Mallocatable=95
