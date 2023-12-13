@@ -1,11 +1,10 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C768
-#SBATCH --clusters=c4
+#SBATCH --clusters=c5
 #SBATCH --time=00:20:00
-#SBATCH --nodes=54
+#SBATCH --nodes=16
 
-# change c4 to c5 and nodes to 16 for c5
 # see run_tests.sh for an example of how to run these tests
 
 set echo

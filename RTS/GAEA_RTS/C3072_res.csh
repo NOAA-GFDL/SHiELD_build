@@ -1,12 +1,11 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=X-SHiELD
-#SBATCH --clusters=c4
+#SBATCH --clusters=c5
 #SBATCH --time=03:00:00
-#SBATCH --nodes=331
+#SBATCH --nodes=93
 #SBATCH --exclusive
 
-# change c4 to c5 and set nodes to 93 for c5
 # see run_tests.sh for an example of how to run these tests
 
 set echo

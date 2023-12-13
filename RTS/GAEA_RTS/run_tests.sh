@@ -1,5 +1,12 @@
 #!/bin/sh
 
+
+#All tests in GAEA_RTS assume that you have cloned SHiELD_build at this location:
+#BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
+#The rrun directories will be at (as defined by the test scripts):
+#${SCRATCH}/${USER}/SHiELD_${RELEASE}
+#where RELEASE is defined in CHECKOUT_code when the code was compiled
+
 export COMPILER="intel"
 export MODE="32bit"
 export COMP="repro"

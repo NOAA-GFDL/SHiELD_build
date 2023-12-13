@@ -57,7 +57,9 @@ MODE="64bit"      # choices:  32bit, 64bit
 MONO="non-mono"        # choices:  mono, non-mono
 GRID="d96_500m"
 HYPT="on"         # choices:  on, off  (controls hyperthreading)
-COMP="repro"       # choices:  debug, repro, prod
+if [ -z ${COMP} ] ; then
+  COMP="repro"       # choices:  debug, repro, prod
+fi
 
 # directory structure
 WORKDIR=${SCRATCHDIR:-${BUILDDIR}}/CI/BATCH-CI/${GRID}.${MEMO}/

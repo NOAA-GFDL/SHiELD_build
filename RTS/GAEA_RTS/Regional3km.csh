@@ -1,11 +1,10 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=Regional3km
-#SBATCH --clusters=c4
+#SBATCH --clusters=c5
 #SBATCH --time=00:30:00
-#SBATCH --nodes=25
+#SBATCH --nodes=8
 
-# change clusters to c5 and nodes to 8 to run on gaea c5
 # see run_tests.sh for an example of how to run these tests
 
 set echo
