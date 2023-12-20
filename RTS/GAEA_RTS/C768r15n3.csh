@@ -638,6 +638,14 @@ flush_nc_files = .true.
        print_memory_usage = .F.
 /
 
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+
  &fv_grid_nml
        !grid_file = 'INPUT/grid_spec.nc'
 /
