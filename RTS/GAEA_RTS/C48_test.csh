@@ -282,14 +282,6 @@ cat > input.nml <<EOF
        print_memory_usage = .false.
 /
 
- &field_manager_nml
-       use_field_table_yaml = $use_yaml
-/
-
- &data_override_nml
-       use_data_table_yaml = $use_yaml
-/
-
  &fv_grid_nml
        grid_file = 'INPUT/grid_spec.nc'
 /
@@ -615,6 +607,19 @@ cat > input.nml <<EOF
        FSICS    = 99999,
 /
 EOF
+
+if ( ${use_yaml} == ".T." ) then
+  cat >> input.nml <<- EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
 
 # run the executable
 ${run_cmd} | tee fms.out

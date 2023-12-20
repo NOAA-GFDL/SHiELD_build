@@ -316,14 +316,6 @@ flush_nc_files = .true.
        print_memory_usage = .F.
 /
 
- &field_manager_nml
-       use_field_table_yaml = $use_yaml
-/
-
- &data_override_nml
-       use_data_table_yaml = $use_yaml
-/
-
  &fms_affinity_nml
       affinity=.false.
 /
@@ -604,6 +596,19 @@ flush_nc_files = .true.
 /
 EOF
 
+if ( ${use_yaml} == ".T." ) then
+  cat >> input.nml <<- EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
+
 cat >! input_nest02.nml <<EOF
  &amip_interp_nml
      interp_oi_sst = .true.
@@ -636,14 +641,6 @@ flush_nc_files = .true.
        clock_grain = 'ROUTINE',
        domains_stack_size = 3000000,
        print_memory_usage = .F.
-/
-
- &field_manager_nml
-       use_field_table_yaml = $use_yaml
-/
-
- &data_override_nml
-       use_data_table_yaml = $use_yaml
 /
 
  &fv_grid_nml
@@ -910,6 +907,19 @@ flush_nc_files = .true.
        FSICS    = 99999,
 /
 EOF
+
+if ( ${use_yaml} == ".T." ) then
+  cat >> input_nest02.nml <<- EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
 
 # run the executable
 

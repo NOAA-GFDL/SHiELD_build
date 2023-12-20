@@ -683,6 +683,19 @@ cat >! input.nml <<EOF
 
 EOF
 
+if ( ${use_yaml} == ".T." ) then
+  cat >> input.nml <<- EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
+
 # run the executable
 ${run_cmd} | tee fms.out || exit
 @ num ++
