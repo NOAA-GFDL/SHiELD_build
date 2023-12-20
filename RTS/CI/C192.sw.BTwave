@@ -152,6 +152,7 @@ field_table:
       profile_type: fixed
       subparams:
       - surface_value: 3.0e-06
+EOF
 else
   cat > field_table <<- EOF
 

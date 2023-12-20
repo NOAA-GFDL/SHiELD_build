@@ -83,6 +83,9 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     set seconds = "0"
     set dt_atmos = "90" 
 
+    #fms yaml
+    set use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
+
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
     # >0 means new adiabatic pre-conditioning
@@ -221,10 +224,15 @@ EOF
 #cat ${BUILD_AREA}/tables/diag_table_hwt_test >> diag_table
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/tables/data_table data_table
+if ( ${use_yaml} == ".T." ) then
+  cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  cp ${BUILD_AREA}/tables/field_table_6species.yaml field_table.yaml
+else
+  cp ${BUILD_AREA}/tables/data_table data_table
+  cp ${BUILD_AREA}/tables/field_table_6species field_table
+endif
 # this file does not exist, so there will be no diag table
-cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
-cp ${BUILD_AREA}/tables/field_table_6species field_table
+#cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
 cp $executable .
 
 mkdir -p INPUT/
@@ -306,6 +314,14 @@ flush_nc_files = .true.
        clock_grain = 'ROUTINE',
        domains_stack_size = 3000000,
        print_memory_usage = .F.
+/
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
 /
 
  &fms_affinity_nml

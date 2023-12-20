@@ -88,6 +88,9 @@ set GRIDDIR = ${INPUT_DATA}/global.v202003/${GRID}_smooth/GRID/ #CHECK
     set seconds = "0"
     set dt_atmos = "180"  # z12: decreased
 
+    #fms yaml
+    set use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
+
 # variables for gfs diagnostic output intervals and time to zero out time-accumulated data
 #set fdiag = "6.,12.,18.,24.,30.,36.,42.,48.,54.,60.,66.,72.,78.,84.,90.,96.,102.,108.,114.,120.,126.,132.,138.,144.,150.,156.,162.,168.,174.,180.,186.,192.,198.,204.,210.,216.,222.,228.,234.,240."
 set fdiag = "3.0"
@@ -212,8 +215,13 @@ ls INPUT/
 ls RESTART/
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/tables/data_table data_table
-cp ${BUILD_AREA}/tables/field_table_6species_tke_clock field_table  # Clock tracers started 10 days after initialization
+if ( ${use_yaml} == ".T." ) then
+  cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  cp ${BUILD_AREA}/tables/field_table_6species_tke_clock.yaml field_table.yaml  # Clock tracers started 10 days after initialization
+else
+  cp ${BUILD_AREA}/tables/data_table data_table
+  cp ${BUILD_AREA}/tables/field_table_6species_tke_clock field_table  # Clock tracers started 10 days after initialization
+endif
 cp $executable .
 
 # GFS standard input data
@@ -237,7 +245,8 @@ ${DATE}.${GRID}.${MODE}
 $y $m $d $h 0 0 
 EOF
 ### xic: please verify your diag table is consistent with DYAMOND protocal
-cat ${BUILD_AREA}/tables/diag_table_hwt_dyamond >> diag_table
+#This table does not exist
+#cat ${BUILD_AREA}/tables/diag_table_hwt_dyamond >> diag_table
 
 rm -f $WORKDIR/rundir/INPUT/gk03_CF0.nc
 cp $FIXDIR/global_sfc_emissivity_idx.txt INPUT/sfc_emissivity_idx.txt
@@ -274,6 +283,14 @@ cat >! input.nml <<EOF
        clock_grain = 'ROUTINE',
        domains_stack_size = 16000000,
        print_memory_usage = .false.
+/
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
 /
 
  &fms_affinity_nml
