@@ -145,7 +145,7 @@ cp $executable .
 #
 # create an empty data_table
 if [ $use_yaml = ".T." ] ; then
-  cat > data_table.yaml <<- EOF
+  cat > data_table.yaml << EOF
 data_table: []
 EOF
 else
@@ -191,7 +191,7 @@ EOF
 #
 # build the field_table
 if [ $use_yaml = ".T." ] ; then
-  cat > field_table.yaml <<- EOF
+  cat > field_table.yaml << EOF
 field_table:
 - field_type: tracer
   modlist:
@@ -259,7 +259,7 @@ field_table:
       - surface_value: 1.e30
 EOF
 else
-  cat > field_table <<- EOF
+  cat > field_table << EOF
 # added by FRE: sphum must be present in atmos
 # specific humidity for moist runs
  "TRACER", "atmos_mod", "sphum"
@@ -482,7 +482,7 @@ cat > input.nml <<EOF
 EOF
 
 if [ $use_yaml = ".T." ] ; then
-  cat >> input.nml <<- EOF
+  cat >> input.nml << EOF
 
  &field_manager_nml
        use_field_table_yaml = $use_yaml

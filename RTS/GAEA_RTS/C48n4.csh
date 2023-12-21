@@ -651,7 +651,7 @@ cat >! input.nml <<EOF
 EOF
 
 if ( ${use_yaml} == ".T." ) then
-  cat >> input.nml <<- EOF
+  cat >> input.nml << EOF
 
  &field_manager_nml
        use_field_table_yaml = $use_yaml
@@ -974,7 +974,7 @@ cat >! input_nest02.nml <<EOF
 EOF
 
 if ( ${use_yaml} == ".T." ) then
-  cat >> input_nest02.nml <<- EOF
+  cat >> input_nest02.nml << EOF
 
  &field_manager_nml
        use_field_table_yaml = $use_yaml
