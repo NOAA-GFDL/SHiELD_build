@@ -208,6 +208,33 @@ case $hostname in
       echo -e ' '
       module list
       ;;
+   stellar* )
+     echo " Stellar environment "                                                                                                                            
+
+      . ${MODULESHOME}/init/sh
+      module purge
+      module load cmake/3.19.7
+      module load intel/2021.1.2
+      module load openmpi/intel-2021.1/4.1.2
+      module load netcdf/intel-2021.1/hdf5-1.10.6/4.7.4
+      module load hdf5/intel-2021.1/1.10.6
+
+      export FMS_CPPDEFS=""
+
+      # make your compiler selections here
+      export FC=mpif90
+      export CC=mpicc
+      export CXX=mpicxx
+      export LD=mpif90
+      export TEMPLATE=site/intel.mk
+      export LAUNCHER=srun
+
+      # highest level of AVX support
+      export AVX_LEVEL=-march=core-avx2
+      echo -e ' '
+      module list  
+ 
+      ;;
    * )
       echo " no environment available based on the hostname "
       ;;
