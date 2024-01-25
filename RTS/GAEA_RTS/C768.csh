@@ -1,11 +1,10 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C768
-#SBATCH --clusters=c4
+#SBATCH --clusters=c5
 #SBATCH --time=00:20:00
-#SBATCH --nodes=54
+#SBATCH --nodes=16
 
-# change c4 to c5 and nodes to 16 for c5
 # see run_tests.sh for an example of how to run these tests
 
 set echo
@@ -75,6 +74,9 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     set hours = "1"
     set seconds = "300"
     set dt_atmos = "150"
+
+    #fms yaml
+    set use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -188,10 +190,15 @@ EOF
 #cat ${BUILD_AREA}/tables/diag_table_no3d >> diag_table
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/tables/data_table data_table
+if ( ${use_yaml} == ".T." ) then
+  cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  cp ${BUILD_AREA}/tables/field_table_6species.yaml field_table.yaml
+else
+  cp ${BUILD_AREA}/tables/data_table data_table
+  cp ${BUILD_AREA}/tables/field_table_6species field_table
+endif
 # file does not exist so there will be no diag table
-cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
-cp ${BUILD_AREA}/tables/field_table_6species field_table
+#cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
 cp $executable .
 
 # GFS standard input data
@@ -593,6 +600,19 @@ cat > input.nml <<EOF
        FSICS    = 99999,
 /
 EOF
+
+if ( ${use_yaml} == ".T." ) then
+  cat >> input.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
 
 # run the executable
    ${run_cmd} | tee fms.out

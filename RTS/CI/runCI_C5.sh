@@ -2,6 +2,7 @@
 # This script will run all CI tests on c5 
 
 export COMPILER="intel"
+#export COMP="debug"
 ACCOUNT="gfdl_f"
 export BUILDDIR="/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build"
 RELEASE="`cat ${BUILDDIR}/../SHiELD_SRC/release`"
