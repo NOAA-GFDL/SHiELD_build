@@ -30,7 +30,7 @@ jobs:
     # so this salloc will prompt 46 nodes to startup and stay active for 20 min
     # this is enough nodes for the first 17 tests to run in parallel, and we
     # have 17 runners configured.
-    - run: salloc --partition=p2 -N 46 -J SB_$GITHUB_SHA sleep 20m &
+    - run: salloc --partition=p2 -N 46 -J $GITHUB_SHA sleep 20m &
     - run: /contrib/fv3/SHiELD_build_CI/checkout.sh $GITHUB_REF $GITHUB_SHA
     
   build:
@@ -103,7 +103,7 @@ jobs:
           - d96_500m.solo.mtn_schar.sh
     steps:
       # This will end the slurm job started in the checkout job
-      - run: scancel -n SB_$GITHUB_SHA
+      - run: scancel -n $GITHUB_SHA
       - env:
           RUNPATH: ${{ matrix.runpath }}
           RUNSCRIPT: ${{ matrix.runscript }}
