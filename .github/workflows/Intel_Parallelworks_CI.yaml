@@ -31,7 +31,7 @@ jobs:
     # this is enough nodes for the first 17 tests to run in parallel, and we
     # have 17 runners configured.
     - run: salloc --partition=p2 -N 46 -J $GITHUB_SHA sleep 20m &
-    - run: /contrib/fv3/SHiELD_build_CI/checkout.sh $GITHUB_REF $GITHUB_SHA
+    - run: /contrib/fv3/SHiELD_build_CI/checkout.sh -b $GITHUB_REF -h $GITHUB_SHA
     
   build:
     if: github.repository == 'NOAA-GFDL/SHiELD_build'
@@ -42,13 +42,19 @@ jobs:
       fail-fast: true
       max-parallel: 3
       matrix:
-        runpath: [/contrib/fv3/SHiELD_build_CI/]
-        runscript: [swcompile.sh, nhcompile.sh, hydrocompile.sh]
+        runscript: [/contrib/fv3/SHiELD_build_CI/compile.sh]
+        config: [shield, solo]
+        hydro: [sw, nh, hydro]
+        bit: [32bit, 64bit]
+        mode: [repro, prod, debug]
     steps:
       - env:
-          RUNPATH: ${{ matrix.runpath }}
           RUNSCRIPT: ${{ matrix.runscript }}
-        run: $RUNPATH/$RUNSCRIPT $GITHUB_REF $GITHUB_SHA
+          CONFIG: ${{ matrix.config }}
+          HYDRO: ${{ matrix.hydro }}
+          BIT: ${{ matrix.bit }}
+          MODE: ${{ matrix.mode }}
+        run: $RUNSCRIPT -b $GITHUB_REF -h $GITHUB_SHA -c $CONFIG -hy $HYDRO -b $BIT -m $MODE
         
   test:
     if: github.repository == 'NOAA-GFDL/SHiELD_build'
@@ -107,7 +113,7 @@ jobs:
       - env:
           RUNSCRIPT: ${{ matrix.runscript }}
           ARG1: ${{ matrix.argument }}
-        run: $RUNSCRIPT $ARG1 $GITHUB_REF $GITHUB_SHA
+        run: $RUNSCRIPT -t $ARG1 -b $GITHUB_REF -h $GITHUB_SHA
   shutdown:
     if: always() && github.repository == 'NOAA-GFDL/SHiELD_build'
     runs-on: [shieldbuild]

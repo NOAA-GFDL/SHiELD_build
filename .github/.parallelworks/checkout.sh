@@ -11,32 +11,34 @@ intelVersion=2023.2.0
 container=/contrib/containers/noaa-intel-prototype_2023.09.25.sif
 container_env_script=/contrib/containers/load_spack_noaa-intel.sh
 ##############################################################################
-## Set up the directories
-# First argument should be $GITHUB_REF which is the reference to the PR/branch
-# to be checked out for SHiELD_build
-if [ -z "$1" ]
-  then
-    echo "No branch/PR supplied; using main"
-    branch=main
-  else
-    echo Branch is ${1}
-    branch=${1}
-fi
-# Second Argument should be $GITHUB_SHA which  is the commit hash of the
-# branch or PR to trigger the CI, if run manually, you do not need a 2nd
-# argument.  This is needed in the circumstance where a PR is created, 
-# then the CI triggers, and before that CI has finished, the developer
-# pushes a newer commit which triggers a second round of CI.  We would
-# like unique directories so that both CI runs do not interfere.
-if [ -z "$2" ]
-  then
-    echo "No second argument"
-    commit=""
-  else
-    echo Commit is ${2}
-    commit=${2}
-fi
 
+#Parse Arguments
+branch=main
+commit=""
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -b|--branch)
+      branch="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -h|--hash)
+      commit="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    *)
+      echo "unknown argument"
+      exit 1
+      ;;
+  esac
+done
+
+echo "branch is $branch"
+echo "commit is $commit"
+
+
+## Set up the directories
 testDir=${dirRoot}/${intelVersion}/SHiELD_build/${branch}/${commit}
 logDir=${testDir}/log
 export MODULESHOME=/usr/share/lmod/lmod
