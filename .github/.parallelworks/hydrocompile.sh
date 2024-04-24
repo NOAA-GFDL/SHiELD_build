@@ -33,7 +33,7 @@ logDir=${testDir}/log
 # Set up build
 cd ${testDir}/SHiELD_build/Build
 #Define External Libs path
-export EXTERNAL_LIBS=${dirRoot}/externallibs
+export EXTERNAL_LIBS=${dirRoot}/${intelVersion}/SHiELD_build/externallibs
 # Build SHiELD
 set -o pipefail
 singularity exec -B /contrib ${container} ${container_env_script} "./COMPILE solo hydro 64bit repro intel clean"
