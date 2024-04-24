@@ -1,0 +1,46 @@
+name: Test Multiple Compiles
+￼
+# This GitHub Action Workflow is running on the cloud shieldbuildciintel cluster
+# The tests are run inside of a container with the following software/libraries:
+# -intel: 2023.2.0
+# -hdf5: 1.14.0
+# -netcdf-c: 4.9.2
+# -netcdf-fortran: 4.6.0
+# -cmake
+# -libyaml
+￼
+on:
+  workflow_run:
+    workflows: ["Compile SHiELD SOLO and run tests"]
+    branches: [main]
+    types:
+    - completed
+￼
+#this should cancel in progress ci runs for the same PR 
+#(e.g. a second commit on the same PR comes in while CI is still running)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile:
+    if: github.repository == 'NOAA-GFDL/SHiELD_build'
+    runs-on: [shieldbuild]
+    name: Compile SHiELD
+    strategy: 
+      fail-fast: false
+      max-parallel: 17
+      matrix:
+        config: [shield, solo]
+        hyrdo: [sw, nh, hydro]
+        comp: [prod, repro, debug]
+        bit: [32bit, 64bit]
+    steps:
+    - env: 
+      container: /contrib/containers/noaa-intel-prototype_2023.09.25.sif
+     ￼container_env_script: /contrib/containers/load_spack_noaa-intel.sh
+    - run: |
+       cd /contrib/fv3/2023.2.0/SHiELD_build/$GITHUB_REF/$GITHUB_SHA/SHiELD_build/Build
+       export EXTERNAL_LIBS=/contrib/fv3/2023.2.0/SHiELD_build/externallibs
+       singularity exec -B /contrib ${container} ${container_env_script} "./COMPILE ${{ matrix.config }} ${{ matrix.hydro }} ${{ matrix.comp }} ${{ matrix.bit }} intel clean"
+        
