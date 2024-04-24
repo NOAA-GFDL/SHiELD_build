@@ -31,18 +31,22 @@ while [[ $# -gt 0 ]]; do
       config="$2"
       shift # past argument
       shift # past value
-    -hy|--hydro)
+      ;;
+    --hydro)
       hydro="$2"
       shift # past argument
       shift # past value
-    -b|--bit)
+      ;;
+    --bit)
       bit="$2"
       shift # past argument
       shift # past value
+      ;;
     -m|--mode)
       mode="$2"
       shift # past argument
       shift # past value
+      ;;
     *)
       echo "unknown argument"
       exit 1
