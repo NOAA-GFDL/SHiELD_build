@@ -40,7 +40,7 @@ jobs:
     needs: [checkout]
     strategy:
       fail-fast: true
-      max-parallel: 3
+      max-parallel: 17
       matrix:
         runscript: [/contrib/fv3/SHiELD_build_CI/compile.sh]
         config: [shield, solo]
