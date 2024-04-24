@@ -50,7 +50,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [ -z $mode | -z $bit | -z $hydro | -b $config ]
+if [ -z $mode ] || [ -z $bit ] || [ -z $hydro ] || [ -z $config ]
   then
     echo "must specify config, hydro, bit, and mode options for compile"
     exit 1
@@ -63,13 +63,18 @@ echo "bit is $bit"
 echo "hydro is $hydro"
 echo "config is $config"
 
-## Set up the directories
-testDir=${dirRoot}/${intelVersion}/SHiELD_build/${branch}/${commit}
-logDir=${testDir}/log
-# Set up build
-cd ${testDir}/SHiELD_build/Build
-#Define External Libs path
-export EXTERNAL_LIBS=${dirRoot}/${intelVersion}/SHiELD_build/externallibs
-# Build SHiELD
-set -o pipefail
-singularity exec -B /contrib ${container} ${container_env_script} "./COMPILE ${config} ${hydro} ${bit} ${mode} intel clean"
+if [ $hydro = "sw" ] && [ $config = "shield" ]
+  then
+    echo "this combination should not be tested"
+  else
+    ## Set up the directories
+    testDir=${dirRoot}/${intelVersion}/SHiELD_build/${branch}/${commit}
+    logDir=${testDir}/log
+    # Set up build
+    cd ${testDir}/SHiELD_build/Build
+    #Define External Libs path
+    export EXTERNAL_LIBS=${dirRoot}/${intelVersion}/SHiELD_build/externallibs
+    # Build SHiELD
+    set -o pipefail
+    singularity exec -B /contrib ${container} ${container_env_script} "./COMPILE ${config} ${hydro} ${bit} ${mode} intel clean"
+fi
