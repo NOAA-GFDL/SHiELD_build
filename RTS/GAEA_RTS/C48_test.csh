@@ -10,8 +10,9 @@
 #
 set echo
 
-set BASEDIR    = "${SCRATCH}/${USER}/"
-set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/"
+set YourGroup  = "gfdl_w" #modify this to be your own group on f5
+set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
+set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/"
 set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
 if ( ! $?COMPILER ) then

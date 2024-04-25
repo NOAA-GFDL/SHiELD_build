@@ -8,9 +8,9 @@
 # see run_tests.sh for an example of how to run these tests
 
 set echo
-
-set BASEDIR    = "${SCRATCH}/${USER}/"
-set INPUT_DATA = "/lustre/f2/dev/Lauren.Chilutti/Alaska_c3072"
+set YourGroup  = "gfdl_w" #modify this to be your own group on f5
+set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
+set INPUT_DATA = "/ncrc/home1/Lauren.Chilutti/Alaska_c3072/SHiELD_IC/Alaska_c3072"
 set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
 if ( ! $?COMPILER ) then
@@ -45,8 +45,8 @@ set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPIL
 
 # input filesets
 set ICS  = ${INPUT_DATA}/${NAME}_IC/
-set FIX  = /lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/fix.v201810
-set GFS  = /lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
+set FIX  = /gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/fix.v201810
+set GFS  = /gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
 set GRID = ${INPUT_DATA}/GRID/
 
 # sending file to gfdl
