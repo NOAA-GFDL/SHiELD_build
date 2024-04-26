@@ -1,0 +1,616 @@
+#!/bin/sh
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANYWARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is for the purpose of continuous
+#              integration software regression testing and as such is
+#              unsupported.
+#
+#SBATCH --ntasks=96
+
+#Runscript to test the multiple same level and telescoping nest framework.
+#The test case consists of two idealized TCs running at a C48 global resolution with three nests:
+#1- One nest in tile4 over a first TC at longitude 180
+#2- Two nests in tiles1,7 (second nest is telescope) over the second TC at longitude -30
+#contact joseph.mouallem@noaa.gov
+
+if [ -z ${BUILDDIR} ] ; then
+  echo -e "\nERROR:\tset BUILDDIR to the base path /<path>/SHiELD_build/ \n"
+  exit 99
+fi
+
+# when we are running this test for CI, we run it in a container
+# an expected value for container would be "--mpi=pmi2 singularity exec -B <file directory> <container>"
+# this is needed within the run command
+if [ -z "$1" ] ; then
+  CONTAINER=""
+else
+  CONTAINER=$1
+  echo -e "\nThis test will be run inside of a container with the command $1"
+fi
+
+# configure the site
+COMPILER=${COMPILER:-intel}
+. ${BUILDDIR}/site/environment.${COMPILER}.sh
+
+set -x
+
+# necessary for OpenMP
+export OMP_STACKSIZE=256m
+
+# case specific details
+res=48
+MEMO="solo.2TC.3nest" # trying repro executable
+TYPE="nh"         # choices:  nh, hydro
+MODE="64bit"      # choices:  32bit, 64bit
+GRID="C$res.3n2"
+HYPT="on"         # choices:  on, off  (controls hyperthreading)
+if [ -z ${COMP} ] ; then
+  COMP="repro"       # choices:  debug, repro, prod
+fi
+
+# directory structure
+ WORKDIR=${SCRATCHDIR:-${BUILDDIR}}/CI/BATCH-CI/${GRID}.${MEMO}/
+ executable=${BUILDDIR}/Build/bin/SOLO_${TYPE}.${COMP}.${MODE}.${COMPILER}.x
+
+# changeable parameters
+    # dycore definitions
+    npx="49"
+    npy="49"
+    npz="63"
+    layout_x="2"
+    layout_y="2"
+    io_layout="1,1" #Want to increase this in a production run??
+    num_nest="3" 
+    npx_nest=(57 37 37) 
+    npy_nest=(57 37 37)
+    layout_x_nest=(8 2 2) 
+    layout_y_nest=(8 2 2) 
+    io_layout_x_nest=(1 1 1)
+    io_layout_y_nest=(1 1 1)
+ 
+    nthreads="2"
+    blocksize="32"
+    blocksize_nest=(32 32 32)
+
+    # run length
+    days="5"
+    hours="0"
+    minutes="0"
+    months="0"
+    seconds="0"
+    dt_atmos="1200"
+
+    # variables in input.nml for initial run
+    ecmwf_ic=".F."
+    mountain=".F."
+    external_ic=".F."
+    warm_start=".F."
+    na_init=0
+    curr_date="0,0,0,0"
+
+    use_yaml=".F."
+
+if [ ${TYPE} = "nh" ] ; then
+  # non-hydrostatic options
+  make_nh=".T."
+  hydrostatic=".F."
+  phys_hydrostatic=".F."     # can be tested
+  use_hydro_pressure=".F."   # can be tested
+  consv_te="1."
+  k_split="1"
+  n_split="6"
+  k_split_nest=(1 1 2)    # array ?!?# 1 2 3
+  n_split_nest=(10 10 10) # 12 11 10
+else
+  # hydrostatic options
+  make_nh=".F."
+  hydrostatic=".T."
+  phys_hydrostatic=".F."     # will be ignored in hydro mode
+  use_hydro_pressure=".T."   # have to be .T. in hydro mode
+  consv_te="0."
+fi
+
+  no_dycore=".F."
+  dycore_only=".T."
+  chksum_debug=".F."
+  print_freq="12"
+  do_vort_damp=".True."
+  vtdm4="0.06"
+  fdiag="1."
+  d_con="1."
+  consv_te="1."
+
+# variables for hyperthreading
+if [ ${HYPT} = "on" ] ; then
+  hyperthread=".true."
+  div=2
+else
+  hyperthread=".false."
+  div=1
+fi
+skip=`expr ${nthreads} \/ ${div}`
+
+# when running with threads, need to use the following command
+npes_g1=`expr ${layout_x} \* ${layout_y} \* 6 `
+
+for ((i=0; i<$num_nest; i++)); do
+  prod=$((layout_x_nest[i] * layout_y_nest[i]))
+  npes_nest+=("$prod")
+  npes_nest_total=$((npes_nest_total + prod))
+done
+
+npes=$((npes_nest_total + npes_g1))
+LAUNCHER=${LAUNCHER:-srun}
+if [ ${LAUNCHER} = 'srun' ] ; then
+    export SLURM_CPU_BIND=verbose
+    run_cmd="${LAUNCHER} --label --ntasks=$npes --cpus-per-task=$skip $CONTAINER ./${executable##*/}"
+else
+    export MPICH_ENV_DISPLAY=YES
+    run_cmd="${LAUNCHER} -np $npes $CONTAINER ./${executable##*/}"
+fi
+
+# set up the run area
+\rm -rf $WORKDIR
+mkdir -p $WORKDIR
+cd $WORKDIR
+mkdir -p RESTART
+mkdir -p INPUT
+
+# copy over the executable
+cp $executable .
+
+# create an empty data_table
+if [ $use_yaml = ".T." ] ; then
+  cat > data_table.yaml << EOF
+data_table: []
+EOF
+else
+  touch data_table
+fi
+
+# build the diag_table with the experiment name and date stamp
+cat > diag_table << EOF
+${GRID}.${MODE}
+0 0 0 0 0 0
+"grid_spec",    -1,  "hours",  1, "days", "time",
+"atmos_daily",  24,  "hours",  1, "days", "time",
+
+"dynamics", "grid_lon", "grid_lon", "grid_spec", "all", .false.,  "none", 2,
+"dynamics", "grid_lat", "grid_lat", "grid_spec", "all", .false.,  "none", 2,
+"dynamics", "area", "area", "grid_spec", "all", .false.,  "none", 2,
+
+"dynamics", "ps_ic", "ps_ic",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "ps",    "ps",      "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "ua_ic", "ua_ic",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "va_ic", "va_ic",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "us", "us",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "vs", "vs",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics",  "tb",          "tb",        "atmos_daily", "all", .false., "none", 2
+"dynamics",  "u850",        "u850",       "atmos_daily", "all", .false.,  "none", 2
+"dynamics",  "v850",        "v850",       "atmos_daily", "all", .false.,  "none", 2
+"dynamics", "w500", "w500",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "vort850", "vort850",   "atmos_daily", "all", .false.,  "none", 2,
+"dynamics", "area", "area", "atmos_daily", "all", .false.,  "none", 2,
+
+"dynamics",  "tq",          "PWAT",        "atmos_daily", "all", .false., "none", 2
+"dynamics",  "tm",          "TMP500_300", "atmos_daily", "all", .false.,  "none", 2
+
+EOF
+
+
+#
+# build the field_table
+if [ $use_yaml = ".T." ] ; then
+  cat > field_table.yaml << EOF
+field_table:
+- field_type: tracer
+  modlist:
+  - model_type: atmos_mod
+    varlist:
+    - variable: sphum
+      longname: specific humidity
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: liq_wat
+      longname: cloud water mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: rainwat
+      longname: rain mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: ice_wat
+      longname: cloud ice mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: snowwat
+      longname: snow mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: graupel
+      longname: graupel mixing ratio
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+    - variable: cld_amt
+      longname: cloud amount
+      units: '1'
+      profile_type: fixed
+      subparams:
+      - surface_value: 1.e30
+EOF
+else
+cat > field_table <<EOF
+
+# added by FRE: sphum must be present in atmos
+# specific humidity for moist runs
+ "TRACER", "atmos_mod", "sphum"
+           "longname",     "specific humidity"
+           "units",        "kg/kg" 
+           "profile_type", "fixed", "surface_value=3.e-6" /
+
+# prognostic cloud water mixing ratio
+ "TRACER", "atmos_mod", "liq_wat"
+           "longname",     "cloud water mixing ratio"
+           "units",        "kg/kg"
+       "profile_type", "fixed", "surface_value=1.e30" / 
+ "TRACER", "atmos_mod", "rainwat"
+           "longname",     "rain mixing ratio"
+           "units",        "kg/kg"
+       "profile_type", "fixed", "surface_value=1.e30" /                                                                                
+ "TRACER", "atmos_mod", "ice_wat" 
+           "longname",     "cloud ice mixing ratio"
+           "units",        "kg/kg"
+       "profile_type", "fixed", "surface_value=1.e30" /
+ "TRACER", "atmos_mod", "snowwat"
+           "longname",     "snow mixing ratio"
+           "units",        "kg/kg"
+       "profile_type", "fixed", "surface_value=1.e30" /
+ "TRACER", "atmos_mod", "graupel"
+           "longname",     "graupel mixing ratio"
+           "units",        "kg/kg"
+       "profile_type", "fixed", "surface_value=1.e30" /
+# non-prognostic cloud amount
+ "TRACER", "atmos_mod", "cld_amt"
+           "longname",     "cloud amount"
+           "units",        "1"
+       "profile_type", "fixed", "surface_value=1.e30" /
+EOF
+
+fi #if use_yaml
+
+
+
+
+
+
+
+
+
+
+
+cat > input.nml <<EOF
+&test_case_nml
+     test_case = 58
+/
+
+&atmos_model_nml
+     blocksize = $blocksize
+     chksum_debug = $chksum_debug
+     dycore_only = $dycore_only
+     fdiag = $fdiag
+/
+
+&diag_manager_nml
+     prepend_date = .F.
+     do_diag_field_log = .T.
+/
+
+&fms_io_nml
+     checksum_required   = .false.
+     max_files_r = 100,
+     max_files_w = 100,
+/
+
+&fms_affinity_nml
+     affinity = .false.
+/
+
+&fms_nml
+     clock_grain = 'ROUTINE',
+     domains_stack_size = 3000000,
+     print_memory_usage = .F.
+/
+
+&fv_core_nml
+     layout   = $layout_x,$layout_y
+     io_layout = $io_layout
+     npx      = $npx
+     npy      = $npy
+     ntiles   = 6,
+     npz    = $npz
+     npz_type = 'gfs'
+     grid_type = 0
+     make_nh = $make_nh
+     fv_debug = .F.
+     range_warn = .F.
+     reset_eta = .F.
+     !n_sponge = -1
+     sg_cutoff = 150.e2 !replaces old "n_sponge"
+     nudge_qv = .F.
+     rf_fast = .F.
+     tau = 3.
+     rf_cutoff = 8.e2
+     d2_bg_k1 = 0.16
+     d2_bg_k2 = 0.02
+     kord_tm = -10
+     kord_mt =  10
+     kord_wz =  10
+     kord_tr =  10
+     hydrostatic = $hydrostatic
+     phys_hydrostatic = $phys_hydrostatic
+     use_hydro_pressure = $use_hydro_pressure
+     beta = 0.
+     a_imp = 1.
+     p_fac = 0.1
+     k_split  = $k_split
+     n_split  = $n_split
+     nwat = 6
+     na_init = $na_init
+     d_ext = 0.0
+     dnats = 1
+     fv_sg_adj = 900
+     d2_bg = 0.
+     nord =  2
+     dddmp = 0.2
+     d4_bg = 0.12
+     vtdm4 = $vtdm4
+     delt_max = 0.002
+     ke_bg = 0.
+     do_vort_damp = $do_vort_damp
+     external_ic = $external_ic
+     !gfs_phil = $gfs_phil
+     !nggps_ic = $nggps_ic
+     !mountain = $mountain
+     ncep_ic = .F.
+     d_con = $d_con
+     hord_mt = 5
+     hord_vt = 5
+     hord_tm = 5
+     hord_dp = 5
+     hord_tr = -5
+     adjust_dry_mass = .F.
+     consv_te = $consv_te
+     consv_am = .F.
+     fill = .F.
+     dwind_2d = .F.
+     print_freq = $print_freq
+     warm_start = $warm_start
+     no_dycore = $no_dycore
+     z_tracer = .T.
+     adiabatic =.false.
+     write_3d_diags = .T.
+     is_ideal_case = .T.
+/
+
+&fv_nest_nml
+     num_tile_top = 6
+     grid_pes        = $npes_g1 ${npes_nest[@]} 
+     tile_coarse     = 0, 1, 4, 7         
+     nest_refine     = 0, 2, 2, 2
+     nest_ioffsets  = 999, 4, 10, 14 
+     nest_joffsets  = 999, 14, 20, 24
+     p_split = 1
+/
+
+&main_nml
+     months = $months
+     days  = $days
+     hours = $hours
+     minutes = $minutes
+     seconds = $seconds
+     dt_atmos = $dt_atmos
+     current_time =  $curr_date !for solo
+     !memuse_verbose = .T.
+     atmos_nthreads = $nthreads
+     use_hyper_thread = $hyperthread
+/
+
+&gfdl_mp_nml
+     do_qa=.false.
+/
+
+&sim_phys_nml
+     do_GFDL_sim_phys = .F.
+/
+
+&interpolator_nml
+     interp_method = 'conserve_great_circle'
+/
+
+EOF
+
+if [ $use_yaml = ".T." ] ; then
+  cat >> input.nml << EOF
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+fi
+
+
+# Nests namelists
+##################
+
+for ((counter=0; counter<$num_nest; counter++)); do
+cat > input_nest0$((counter + 2)).nml <<EOF
+&test_case_nml
+     test_case = 58
+/
+
+&atmos_model_nml
+     blocksize = ${blocksize_nest[counter]}
+     chksum_debug = $chksum_debug
+     dycore_only = $dycore_only
+     fdiag = $fdiag
+/
+
+&diag_manager_nml
+     prepend_date = .F.
+     do_diag_field_log = .T.
+/
+
+&fms_io_nml
+     checksum_required   = .false.
+     max_files_r = 100,
+     max_files_w = 100,
+/
+
+&fms_affinity_nml
+     affinity = .false.
+/
+
+&fms_nml
+     clock_grain = 'ROUTINE',
+     domains_stack_size = 3000000,
+     print_memory_usage = .F.
+/
+
+&fv_core_nml
+     layout   = ${layout_x_nest[counter]}, ${layout_y_nest[counter]}
+     io_layout = ${io_layout_x_nest[counter]},${io_layout_y_nest[counter]}
+     npx      = ${npx_nest[counter]}
+     npy      = ${npy_nest[counter]}
+     ntiles   = 1,
+     npz    = $npz
+     npz_type = 'gfs'
+     grid_type = 0
+     make_nh = $make_nh
+     fv_debug = .F.
+     range_warn = .F.
+     reset_eta = .F.
+     !n_sponge = -1
+     sg_cutoff = 150.e2 !replaces old "n_sponge"
+     nudge_qv = .F.
+     rf_fast = .F.
+     tau = 3.
+     rf_cutoff = 8.e2
+     d2_bg_k1 = 0.16
+     d2_bg_k2 = 0.02
+     kord_tm = -10
+     kord_mt =  10
+     kord_wz =  10
+     kord_tr =  10
+     hydrostatic = $hydrostatic
+     phys_hydrostatic = $phys_hydrostatic
+     use_hydro_pressure = $use_hydro_pressure
+     beta = 0.
+     a_imp = 1.
+     p_fac = 0.1
+     k_split  = ${k_split_nest[counter]}
+     n_split  = ${n_split_nest[counter]}
+     nwat = 6
+     na_init = $na_init
+     d_ext = 0.0
+     dnats = 1
+     fv_sg_adj = 900
+     d2_bg = 0.
+     nord =  2
+     dddmp = 0.2
+     d4_bg = 0.12
+     vtdm4 = 0.06
+     ke_bg = 0.
+     do_vort_damp = $do_vort_damp
+     external_ic = $external_ic
+     !gfs_phil = $gfs_phil
+     !nggps_ic = $nggps_ic
+     !mountain = $mountain
+     ncep_ic = .F.
+     d_con = 1.0 !was 0
+     hord_mt = 5
+     hord_vt = 5
+     hord_tm = 5
+     hord_dp = 5
+     hord_tr = -5
+     adjust_dry_mass = .F.
+     consv_te = 0.
+     consv_am = .F.
+     fill = .F.
+     dwind_2d = .F.
+     print_freq = $print_freq
+     warm_start = $warm_start
+     no_dycore = $no_dycore
+     z_tracer = .T.
+     adiabatic =.false.
+     write_3d_diags = .T.
+     twowaynest=.F.
+     nestupdate=7
+     is_ideal_case = .T.
+/
+
+&gfdl_mp_nml
+     do_qa=.false.
+/
+
+&sim_phys_nml
+     do_GFDL_sim_phys = .F.
+/
+
+&interpolator_nml
+     interp_method = 'conserve_great_circle'
+/
+
+EOF
+
+if [ $use_yaml = ".T." ] ; then
+cat >> input_nest0$((counter + 2)).nml <<EOF
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+fi
+
+done
+
+# run the executable
+${run_cmd} | tee fms.out || exit
+
+#
+# verification
+# < add logic for verification >

@@ -45,3 +45,4 @@ sbatch ${SBATCHARGS} --nodes=1 d96_2k.solo.bubble
 sbatch ${SBATCHARGS} --nodes=1 d96_2k.solo.bubble.n0
 sbatch ${SBATCHARGS} --nodes=1 d96_2k.solo.bubble.nhK
 sbatch ${SBATCHARGS} --nodes=1 d96_500m.solo.mtn_schar
+sbatch ${SBATCHARGS} --nodes=1 C48.solo.2TC.3nest 
