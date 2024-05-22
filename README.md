@@ -10,11 +10,13 @@ The top level directory structure groups source code and input files as follow:
 | --------------       | ------- |
 | ```LICENSE.md```     | copy of the Gnu Lesser General Public license, version 3 |
 | ```README.md```      | this file with basic pointers to more information |
-| ```CHECKOUT_code```  | script to download necessary source for proper build GFDL's SHield and FV3 Solo models |
+| ```CHECKOUT_code```  | script to download necessary source for proper build GFDL's SHield and FV3 Solo models <sup>*</sup>|
 | ```Build/```         | contains scripts used for building models listed above |
 | ```mkmf/```          | submodule entry point for the externally managed [mkmf software](https://github.com/NOAA-GFDL/mkmf) |
 | ```RTS/```           | contains scripts for use in CI software regression testing (see [RTS/README.md](https://github.com/NOAA-GFDL/SHiELD_build/blob/main/RTS/README.md))|
 | ```site/```          | contains site specific scripts and compiler make templates |
+
+<sup>*</sup>By default, ```CHECKOUT_code``` checks out the latest main branch from each repository, which may include experimental features
 
 # Compiling
 
