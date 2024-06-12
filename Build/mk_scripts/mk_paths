@@ -34,7 +34,7 @@ COMPILER="intel"
 for arg in "$@"
 do
     case $arg in
-        shield|solo)
+        shield|solo|shieldfull|shiemom)
         CONFIG="${arg#*=}"
         shift # Remove CONFIG from processing
         ;;
@@ -89,6 +89,55 @@ elif [ ${CONFIG} = 'shield' ] ; then
 
   list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \
       FMSCoupler/SHiELD/coupler_main.F90
+
+elif [ ${CONFIG} = 'shieldfull' ] ; then
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs \
+      GFDL_atmos_cubed_sphere/model/gfdl_cld_mp.F90 \
+      GFDL_atmos_cubed_sphere/model/cld_eff_rad.F90 \
+      SHiELD_physics/gsmphys/  \
+      SHiELD_physics/GFS_layer/ \
+      SHiELD_physics/IPD_layer/
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 \
+      SHiELD_physics/FV3GFS/ \
+      GFDL_atmos_cubed_sphere/tools/ \
+      GFDL_atmos_cubed_sphere/model/ \
+      GFDL_atmos_cubed_sphere/GFDL_tools/fv_diag_column.F90 \
+      atmos_null/ \
+      ocean_null/ \
+      ice_null/ \
+      ice_param/ \
+      land_null/
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \
+      atmos_drivers/SHiELDFULL/atmos_model.F90 \
+      GFDL_atmos_cubed_sphere/driver/SHiELDFULL/atmosphere.F90 \
+      FMSCoupler/full/ \
+      FMSCoupler/shared/
+
+elif  [ ${CONFIG} = 'shiemom' ] ; then
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs \
+      GFDL_atmos_cubed_sphere/model/gfdl_cld_mp.F90 \
+      GFDL_atmos_cubed_sphere/model/cld_eff_rad.F90 \
+      SHiELD_physics/gsmphys/  \
+      SHiELD_physics/GFS_layer/ \
+      SHiELD_physics/IPD_layer/
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 \
+      SHiELD_physics/FV3GFS/ \
+      GFDL_atmos_cubed_sphere/tools/ \
+      GFDL_atmos_cubed_sphere/model/ \
+      GFDL_atmos_cubed_sphere/GFDL_tools/fv_diag_column.F90 \
+      atmos_null/ \
+      land_null/
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \
+      atmos_drivers/shiemom/atmos_model.F90 \
+      GFDL_atmos_cubed_sphere/driver/SHiELDFULL/atmosphere.F90 \
+      FMSCoupler/full/ \
+      FMSCoupler/shared/
+
 fi
 
 popd
