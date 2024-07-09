@@ -32,44 +32,45 @@ mkdir -p ${SHiELD_SRC}
 cd ${SHiELD_SRC}
 
 release="main"
-release="shiemom"
-
-#fv3_release=$release
-#phy_release=$release
-#fms_release="2023.04"
-#drivers_release=$release
-#
-#git clone -b ${fv3_release}   https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
-#git clone -b ${phy_release}   https://github.com/NOAA-GFDL/SHiELD_physics
-#git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
-#git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMSCoupler
-#git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
-
-
 
 fv3_release=$release
 phy_release=$release
-fms_release="$release"
-drivers_release="$release"
-atmosnull_release="$release"
-ocean_release="$release"
-land_release="$release"
-ice_release="$release"
+fms_release="2023.04"
+drivers_release=$release
 
-git clone -b ${fv3_release}   https://github.com/JosephMouallem/GFDL_atmos_cubed_sphere
-git clone -b ${phy_release}   https://github.com/JosephMouallem/SHiELD_physics
-git clone -b ${fms_release}   https://github.com/JosephMouallem/FMS
-git clone -b ${fms_release}   https://github.com/JosephMouallem/FMSCoupler
-git clone -b ${drivers_release}   https://github.com/JosephMouallem/atmos_drivers
-git clone -b ${atmosnull_release}   https://github.com/JosephMouallem/atmos_null
-git clone -b ${ocean_release}   https://github.com/JosephMouallem/ocean_null
-git clone -b ${land_release}   https://github.com/JosephMouallem/land_null
-git clone -b ${ice_release}   https://github.com/JosephMouallem/ice_null
-git clone  https://github.com/NOAA-GFDL/ice_param
+git clone -b ${fv3_release}   https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
+git clone -b ${phy_release}   https://github.com/NOAA-GFDL/SHiELD_physics
+git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
+git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMSCoupler
+git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
 
+
+#release="shiemom"
+#
+#fv3_release=$release
+#phy_release=$release
+#fms_release="$release"
+#drivers_release="$release"
+#atmosnull_release="$release"
+#ocean_release="$release"
+#land_release="$release"
+#ice_release="$release"
+#
+#git clone -b ${fv3_release}   https://github.com/JosephMouallem/GFDL_atmos_cubed_sphere
+#git clone -b ${phy_release}   https://github.com/JosephMouallem/SHiELD_physics
+#git clone -b ${fms_release}   https://github.com/JosephMouallem/FMS
+#git clone -b ${fms_release}   https://github.com/JosephMouallem/FMSCoupler
+#git clone -b ${drivers_release}   https://github.com/JosephMouallem/atmos_drivers
+#git clone -b ${atmosnull_release}   https://github.com/JosephMouallem/atmos_null
+#git clone -b ${ocean_release}   https://github.com/JosephMouallem/ocean_null
+#git clone -b ${land_release}   https://github.com/JosephMouallem/land_null
+#git clone -b ${ice_release}   https://github.com/JosephMouallem/ice_null
+#git clone  https://github.com/NOAA-GFDL/ice_param
+#
+#cd ../SHiELD_build/
+#./CHECKOUT_mom6.csh
 
 #Automatic release tracking from Matt M.
 echo $release > release
 
-cd ../SHiELD_build/
-./CHECKOUT_mom6.csh
+
