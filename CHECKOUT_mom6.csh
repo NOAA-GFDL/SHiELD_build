@@ -53,13 +53,3 @@ endif
           end
           popd
 
-
-## ---------------- component 'sis2'
-#echo "Cloning https://github.com/NOAA-GFDL/ice_param.git on branch/tag 2021.03"
-#set git_output=`git clone -q --recursive -b 2021.03 https://github.com/NOAA-GFDL/ice_param.git >& /dev/stdout`
-#if ( $? != 0 ) then
-#     echo "$git_output" | sed 's/^/**GIT ERROR** /' > /dev/stderr
-#     exit 1
-#endif
-## Additional checkout commands from XML file
-
