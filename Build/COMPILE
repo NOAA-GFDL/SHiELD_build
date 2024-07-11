@@ -70,6 +70,12 @@ spin()
              if [ $config = 'solo' ] ; then
                config_name="SOLO"
              fi
+             if [ $config = 'shieldfull' ] ; then
+               config_name="SHiELDFULL"
+             fi
+             if [ $config = 'shiemom' ] ; then
+               config_name="SHiEMOM"
+             fi
              shift # Remove "config" from processing
              ;;
           nh|hydro|sw)
