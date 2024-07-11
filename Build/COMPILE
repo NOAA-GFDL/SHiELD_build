@@ -146,6 +146,11 @@ if [ $hydro = "sw" ] && [ $config = "shield" ] ; then
   exit 1
 fi
 
+if [ $compiler = "nvhpc" ] && [ $config = "shiemom" ] ; then
+  echo -e ">>> option '$compiler' with '$config' is not a valid configuration"
+  exit 1
+fi
+
 #
 # set up some default variables for use within the helper scripts
 export BUILD_ROOT=${PWD%/*}

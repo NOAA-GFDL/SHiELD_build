@@ -33,7 +33,7 @@ set -x
   for arg in "$@"
   do
       case $arg in
-          intel|gnu|nvhpc)
+          intel|gnu)
              COMPILER="${arg#*=}"
              shift # Remove "compiler" from processing
              ;;
@@ -47,7 +47,7 @@ set -x
           fi
           echo -e ' '
           echo -e "valid options are:"
-          echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
+          echo -e "\t[intel(D) | gnu ] \t\t\t compiler"
 	  echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
           echo -e "\n"
           exit
