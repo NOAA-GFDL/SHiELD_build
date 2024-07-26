@@ -110,6 +110,7 @@ elif [ ${CONFIG} = 'shieldfull' ] ; then
 
   list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \
       atmos_drivers/SHiELDFULL/ \
+      SHiELD_physics/atmos_shared/  \
       GFDL_atmos_cubed_sphere/driver/SHiELDFULL/atmosphere.F90 \
       FMSCoupler/full/ \
       FMSCoupler/shared/
@@ -132,6 +133,7 @@ elif  [ ${CONFIG} = 'shiemom' ] ; then
 
   list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \
       atmos_drivers/SHiELDFULL/ \
+      SHiELD_physics/atmos_shared/  \
       GFDL_atmos_cubed_sphere/driver/SHiELDFULL/atmosphere.F90 \
       FMSCoupler/full/ \
       FMSCoupler/shared/
