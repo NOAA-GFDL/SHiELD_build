@@ -1,0 +1,114 @@
+#!/bin/bash
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is and as such is unsupported.
+#
+set -x
+#
+# set default values
+# configure your build parameters
+  COMPILER="intel"
+  BIT="64bit"
+#
+# parse arguments
+  for arg in "$@"
+  do
+      case $arg in
+          intel|gnu)
+             COMPILER="${arg#*=}"
+             shift # Remove "compiler" from processing
+             ;;
+	  32bit|64bit)
+             BIT="${arg#*=}"
+             shift # Remove *bit from processing
+             ;;
+          *)
+          if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
+            echo "option "${arg#}" not found"
+          fi
+          echo -e ' '
+          echo -e "valid options are:"
+          echo -e "\t[intel(D) | gnu ] \t\t\t compiler"
+	  echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
+          echo -e "\n"
+          exit
+          ;;
+      esac
+  done
+
+#
+# set up some default variables if not called from COMPILE
+# BUILD_ROOT is set if this script is called from the COMPILE script
+if [ -z ${BUILD_ROOT} ] ; then
+   export BUILD_ROOT=${PWD%/*}
+   export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
+   export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
+   export NCEP_DIR=${BUILD_ROOT}/Build
+   if [ ! -z ${EXTERNAL_LIBS} ] ; then
+      export NCEP_DIR=${EXTERNAL_LIBS}
+   fi
+   # load the proper environment for your machine
+   . ${BUILD_ROOT}/site/environment.${COMPILER}.sh
+fi
+
+
+
+mkdir -p ${BUILD_ROOT}/Build/mom6
+list_paths -l -o ${BUILD_ROOT}/Build/mom6/pathnames_mom6 \
+    ${SHiELD_SRC}/mom6/src/MOM6/config_src/memory/dynamic_nonsymmetric \
+    ${SHiELD_SRC}/mom6/src/MOM6/config_src/drivers/FMS_cap \
+    ${SHiELD_SRC}/mom6/src/MOM6/src/*/ \
+    ${SHiELD_SRC}/mom6/src/MOM6/src/*/*/ \
+    ${SHiELD_SRC}/mom6/src/MOM6/config_src/external/ODA_hooks \
+    ${SHiELD_SRC}/mom6/src/MOM6/config_src/external/database_comms \
+    ${SHiELD_SRC}/mom6/src/MOM6/config_src/external/drifters \
+    ${SHiELD_SRC}/mom6/src/MOM6/config_src/external/stochastic_physics \
+    ${SHiELD_SRC}/mom6/src/MOM6/config_src/infra/FMS2 \
+    ${SHiELD_SRC}/ocean_BGC/generic_tracers \
+    ${SHiELD_SRC}/ocean_BGC/mocsy/src \
+    ${SHiELD_SRC}/mom6/src/MOM6/pkg/GSW-Fortran/*/ \
+    ${SHiELD_SRC}/mom6/src/MOM6/config_src/infra/FMS2
+cd ${BUILD_ROOT}/Build
+
+pushd mom6
+
+mkmf -m Makefile -a ${SHiELD_SRC} -p libmom6.a -t "${BUILD_ROOT}/${TEMPLATE}" \
+     -c "-DINTERNAL_FILE_NML -g -DMAX_FIELDS_=100 -DNOT_SET_AFFINITY -D_USE_MOM6_DIAG -D_USE_GENERIC_TRACER -DUSE_PRECISION=2 -I${NCEP_DIR}/libFMS/${COMPILER}/${BIT}" \
+     -I${SHiELD_SRC}/FMS/axis_utils/include -I${SHiELD_SRC}/FMS/diag_manager/include -I${SHiELD_SRC}/FMS/fms/include -I${SHiELD_SRC}/FMS/fms2_io/include \
+     -I${SHiELD_SRC}/FMS/horiz_interp/include -I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/FMS/mpp/include -I${SHiELD_SRC}/FMS/sat_vapor_pres/include \
+     -I${SHiELD_SRC}/FMS/string_utils/include -I${SHiELD_SRC}/FMS/test_fms/fms/include -I${SHiELD_SRC}/mom6/src/MOM6/pkg/CVMix-src/include \
+     -I${SHiELD_SRC}/mom6/src/MOM6/src/framework ${BUILD_ROOT}/Build/mom6/pathnames_mom6
+
+make -j8 REPRO=Y OPENMP=Y AVX=Y NETCDF=3 Makefile libmom6.a >& Build_mom6.out
+
+################
+#will get noise with openmp in debugmode
+################
+
+# test and report on libFMS build success
+if [ $? -ne 0 ] ; then
+  echo ">>> ${BUILD_ROOT}/Build/mom6 build failed"
+  exit 1
+fi
+echo " libmom6 build successful"
+
+popd

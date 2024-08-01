@@ -31,18 +31,84 @@ export SHiELD_SRC=${PWD%/*}/SHiELD_SRC/
 mkdir -p ${SHiELD_SRC}
 cd ${SHiELD_SRC}
 
+config="shield"
+config_name="SHiELD"
+
+#Check input argument
+######################
+for arg in "$@"
+  do
+      case $arg in
+          solo|shield|shieldfull|shiemom)
+             config="${arg#*=}"
+             if [ $config = 'solo' ] ; then
+               config_name="SOLO"
+             fi
+             if [ $config = 'shield' ] ; then
+               config_name="SHiELD"
+             fi
+             if [ $config = 'shieldfull' ] ; then
+               config_name="SHiELDFULL"
+             fi
+             if [ $config = 'shiemom' ] ; then
+               config_name="SHiEMOM"
+             fi
+             shift # Remove "config" from processing
+             ;;
+          *)
+          if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
+            echo "option "${arg#}" not found"
+          fi
+          echo -e ' '
+          echo -e "valid options are:"
+          echo -e "\t[solo]       \t\t\t SOLO FV3 configuration"
+          echo -e "\t[shield]     \t\t\t SHiELD configuration"
+          echo -e "\t[shieldfull] \t\t\t SHiELD with the full coupler configuration"
+          echo -e "\t[shiemom]    \t\t\t SHiEMOM (SHiELD+MOM6/SIS2) configuration"
+          echo -e "\n"
+          exit
+          ;;
+      esac
+  done
+
+
+#CHECKOUT code
+################
+echo ' '
+echo 'Checking out files for: '$config_name
+echo ' '
+
 release="main"
 
 fv3_release=$release
-phy_release=$release
-fms_release="2023.04"
+fms_release="2024.02"
 drivers_release=$release
 
 git clone -b ${fv3_release}   https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
-git clone -b ${phy_release}   https://github.com/NOAA-GFDL/SHiELD_physics
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
-git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMSCoupler
 git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
+
+if [ $config_name = 'SHiELD' ] || [ $config_name = 'SHiELDFULL' ] || [ $config_name = 'SHiEMOM' ] ; then
+   phy_release=$release
+   git clone -b ${phy_release}   https://github.com/NOAA-GFDL/SHiELD_physics
+   git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMSCoupler
+fi
+
+if [ $config_name = 'SHiELDFULL' ] ; then
+   git clone  https://github.com/NOAA-GFDL/ocean_null
+   git clone  https://github.com/NOAA-GFDL/land_null
+   git clone  https://github.com/NOAA-GFDL/ice_null
+   git clone  https://github.com/NOAA-GFDL/ice_param
+fi
+
+if [ $config_name = 'SHiEMOM' ] ; then
+   git clone  https://github.com/NOAA-GFDL/land_null
+   git clone  https://github.com/NOAA-GFDL/ice_param
+   cd ../SHiELD_build/
+   ./CHECKOUT_mom6.csh
+fi
 
 #Automatic release tracking from Matt M.
 echo $release > release
+
+

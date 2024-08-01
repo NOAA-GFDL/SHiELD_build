@@ -65,10 +65,16 @@ spin()
   for arg in "$@"
   do
       case $arg in
-          shield|solo)
+          shield|solo|shieldfull|shiemom)
              config="${arg#*=}"
              if [ $config = 'solo' ] ; then
                config_name="SOLO"
+             fi
+             if [ $config = 'shieldfull' ] ; then
+               config_name="SHiELDFULL"
+             fi
+             if [ $config = 'shiemom' ] ; then
+               config_name="SHiEMOM"
              fi
              shift # Remove "config" from processing
              ;;
@@ -102,7 +108,7 @@ spin()
                sleep 20
              fi
              ;;
-          noclean|clean|cleanall)
+          noclean|clean|cleanmom|cleanall)
              clean="${arg#*=}"
              shift # Remove "clean" from processing
              ;;
@@ -137,6 +143,11 @@ spin()
 
 if [ $hydro = "sw" ] && [ $config = "shield" ] ; then
   echo -e ">>> option '$hydro' with '$config' is not a valid configuration"
+  exit 1
+fi
+
+if [ $compiler = "nvhpc" ] && [ $config = "shiemom" ] ; then
+  echo -e ">>> option '$compiler' with '$config' is not a valid configuration"
   exit 1
 fi
 
@@ -193,10 +204,17 @@ fi
      \rm -rf libFMS/${compiler}/*
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
      \rm -rf nceplibs/${compiler}/*
+     \rm -rf mom6/*
+     \rm -rf sis2/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+  elif [ ${clean} = "cleanmom" ] ; then
+     echo " cleaning build directory in 2 seconds"
+     sleep 2
+     \rm -rf mom6/*
+     \rm -rf sis2/*
   fi
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
@@ -231,6 +249,18 @@ fi
         exit 3
      fi
   fi
+
+if [ $config = "shiemom" ] ; then
+# from lauren
+  # I think mom6 needs to be built in 64bit for now?
+  # I can only get it to compiler with 64bit FMS
+  ./BUILDmom6 ${compiler} ${bit}
+     echo "DONE WITH MOM6"
+
+# for sis2
+  ./BUILDsis2 ${compiler} ${bit}
+     echo "DONE WITH SIS2"
+fi
 
 #
 # ensure the build and final executable locations are available
