@@ -71,7 +71,7 @@ FV3_cppDefs="-Duse_libMPI -Duse_netCDF -DHAVE_SCHED_GETAFFINITY -DSPMD -Duse_LAR
 if [ ${CONFIG} = 'shield' ] ; then
   FV3_cppDefs+=" -DGFS_PHYS -DUSE_GFSL63"
 elif [ ${CONFIG} = 'shieldfull' ] || [ ${CONFIG} = 'shiemom' ]  ; then
-  FV3_cppDefs+=" -DGFS_PHYS -DUSE_GFSL63 -D_USE_LEGACY_LAND_ -DLAND_GRID_FROM_ATMOS"
+  FV3_cppDefs+=" -DGFS_PHYS -DUSE_GFSL63 -D_USE_LEGACY_LAND_"
 elif [ ${CONFIG} = 'solo' ] ; then
   FV3_cppDefs+=" -DDCMIP -DDYCORE_SOLO -DHIWPP"
 fi
