@@ -8,8 +8,8 @@ echo `pwd`
 
 
 # ---------------- component 'mom6'
-echo "Cloning https://github.com/NOAA-GFDL/ocean_BGC.git on branch/tag master"
-set git_output=`git clone -q --recursive -b master https://github.com/NOAA-GFDL/ocean_BGC.git >& /dev/stdout`
+echo "Cloning https://github.com/NOAA-GFDL/ocean_BGC.git on branch/tag main"
+set git_output=`git clone -q --recursive -b main https://github.com/NOAA-GFDL/ocean_BGC.git >& /dev/stdout`
 if ( $? != 0 ) then
      echo "$git_output" | sed 's/^/**GIT ERROR** /' > /dev/stderr
      exit 1
