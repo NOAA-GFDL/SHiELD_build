@@ -72,10 +72,10 @@ fi
 
 mkdir -p ${BUILD_ROOT}/Build/sis2
 list_paths -l -o ${BUILD_ROOT}/Build/sis2/pathnames_sis2 \
-    ${SHiELD_SRC}/mom6/src/SIS2/config_src/dynamic_symmetric \
-    ${SHiELD_SRC}/mom6/src/SIS2/config_src/external/Icepack_interfaces \
-    ${SHiELD_SRC}/mom6/src/SIS2/src \
-    ${SHiELD_SRC}/mom6/src/icebergs/src \
+    ${SHiELD_SRC}/SIS2/config_src/dynamic_symmetric \
+    ${SHiELD_SRC}/SIS2/config_src/external/Icepack_interfaces \
+    ${SHiELD_SRC}/SIS2/src \
+    ${SHiELD_SRC}/icebergs/src \
     ${SHiELD_SRC}/ice_param 
 
 cd ${BUILD_ROOT}/Build
@@ -86,11 +86,11 @@ mkmf -m Makefile -a ${SHiELD_SRC} -p libsis2.a -t "${BUILD_ROOT}/${TEMPLATE}" \
      -c "-DINTERNAL_FILE_NML -g -DUSE_FMS2_IO -I${NCEP_DIR}/mom6 -I${NCEP_DIR}/libFMS/${COMPILER}/${BIT}" -I${SHiELD_SRC}/FMS/axis_utils/include \
      -I${SHiELD_SRC}/FMS/diag_manager/include -I${SHiELD_SRC}/FMS/fms/include -I${SHiELD_SRC}/FMS/fms2_io/include -I${SHiELD_SRC}/FMS/horiz_interp/include \
      -I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/FMS/mpp/include -I${SHiELD_SRC}/FMS/sat_vapor_pres/include -I${SHiELD_SRC}/FMS/string_utils/include \
-     -I${SHiELD_SRC}/FMS/test_fms/fms/include -I${SHiELD_SRC}/mom6/src/MOM6/pkg/CVMix-src/include \
-     -I${SHiELD_SRC}/mom6/src/MOM6/src/framework ${BUILD_ROOT}/Build/sis2/pathnames_sis2
+     -I${SHiELD_SRC}/FMS/test_fms/fms/include -I${SHiELD_SRC}/MOM6/pkg/CVMix-src/include \
+     -I${SHiELD_SRC}/MOM6/src/framework ${BUILD_ROOT}/Build/sis2/pathnames_sis2
 
 
-make -j8  REPRO=Y OPENMP=Y AVX=Y NETCDF=3 Makefile libsis2.a >& Build_sis2.out
+make -j8  REPRO=Y AVX=Y NETCDF=3 Makefile libsis2.a >& Build_sis2.out
 
 #
 # test and report on libsis2 build success
