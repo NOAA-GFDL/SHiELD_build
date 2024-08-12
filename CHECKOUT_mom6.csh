@@ -18,6 +18,3 @@ if ("fac2ec43" != "") then
   echo WARNING: Checking out from a fork! Work in progress
   (cd SIS2;git submodule update --recursive --init; git checkout fac2ec43; )
 endif
-popd
-
-
