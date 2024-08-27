@@ -1,11 +1,10 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=Regional3km
-#SBATCH --clusters=c4
+#SBATCH --clusters=c5
 #SBATCH --time=00:30:00
-#SBATCH --nodes=25
+#SBATCH --nodes=8
 
-# change clusters to c5 and nodes to 8 to run on gaea c5
 # see run_tests.sh for an example of how to run these tests
 
 set echo
@@ -76,6 +75,9 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     set seconds = "0"
     set dt_atmos = "60"
     set nruns = "1"
+
+    #fms yaml
+    set use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -209,11 +211,17 @@ ${NAME}.${CASE}.${MODE}.${MONO}
 $y $m $d $h 0 0 
 EOF
 #this file does not exist so no diag table is being used
-cat ${BUILD_AREA}/tables/diag_table_hwt_simple >> diag_table
+#cat ${BUILD_AREA}/tables/diag_table_hwt_simple >> diag_table
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/tables/data_table data_table
-cp ${BUILD_AREA}/tables/field_table_6species field_table
+if ( ${use_yaml} == ".T." ) then
+  cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  cp ${BUILD_AREA}/tables/field_table_6species.yaml field_table.yaml
+else
+  cp ${BUILD_AREA}/tables/data_table data_table
+  cp ${BUILD_AREA}/tables/field_table_6species field_table
+endif
+
 cp $executable .
 
 # GFS standard input data
@@ -698,6 +706,19 @@ mp_time = $dt_atmos
        FSICS    = 99999,
 /
 EOF
+
+if ( ${use_yaml} == ".T." ) then
+  cat >> input.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
 
 # run the executable
 
