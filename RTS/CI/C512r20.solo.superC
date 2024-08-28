@@ -358,7 +358,6 @@ cat > input.nml <<EOF
        make_nh = $make_nh
        fv_debug = .F.
        range_warn = .F.
-       w_limiter = .F.
        reset_eta = .F.
        n_sponge = 0
        nudge_qv = .F.
@@ -461,7 +460,6 @@ cat > input.nml <<EOF
        dw_ocean = 0.10
        rh_inc = 0.0
        rh_inr = 0.0
-       rh_ins = 0.3 !not used
        ccn_l = 300.
        ccn_o = 100.
        z_slope_liq  = .false.

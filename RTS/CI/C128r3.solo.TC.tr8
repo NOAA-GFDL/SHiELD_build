@@ -498,7 +498,6 @@ cat > input.nml <<EOF
        rthresh = 10.e-6  !   10.e-6  ! This is a key parameter for cloud water
       dw_land  = 0.15
       dw_ocean = 0.10
-       ql_gen = 1.0e-3
     ql_mlt = 2.0e-3
     qs_mlt = 1.e-6
        qi0_crt = 8.E-5
@@ -508,7 +507,6 @@ cat > input.nml <<EOF
        c_pgacs = 0.01
        rh_inc = 0.0
        rh_inr = 0.0
-       rh_ins = 0.0
        ccn_l = 300.
        ccn_o = 100.
        c_paut =  0.55
