@@ -1,11 +1,10 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C768r15n3
-#SBATCH --clusters=c4
+#SBATCH --clusters=c5
 #SBATCH --time=00:20:00
-#SBATCH --nodes=79
+#SBATCH --nodes=23
 
-# change clusters to c5 and nodes to 23 to run on gaea c5
 # see run_tests.sh for an example of how to run these tests
 #
 set echo
@@ -83,6 +82,9 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     set minutes = "0"
     set seconds = "0"
     set dt_atmos = "90" 
+
+    #fms yaml
+    set use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -222,10 +224,15 @@ EOF
 #cat ${BUILD_AREA}/tables/diag_table_hwt_test >> diag_table
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/tables/data_table data_table
+if ( ${use_yaml} == ".T." ) then
+  cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  cp ${BUILD_AREA}/tables/field_table_6species.yaml field_table.yaml
+else
+  cp ${BUILD_AREA}/tables/data_table data_table
+  cp ${BUILD_AREA}/tables/field_table_6species field_table
+endif
 # this file does not exist, so there will be no diag table
-cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
-cp ${BUILD_AREA}/tables/field_table_6species field_table
+#cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
 cp $executable .
 
 mkdir -p INPUT/
@@ -589,6 +596,19 @@ flush_nc_files = .true.
 /
 EOF
 
+if ( ${use_yaml} == ".T." ) then
+  cat >> input.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
+
 cat >! input_nest02.nml <<EOF
  &amip_interp_nml
      interp_oi_sst = .true.
@@ -887,6 +907,19 @@ flush_nc_files = .true.
        FSICS    = 99999,
 /
 EOF
+
+if ( ${use_yaml} == ".T." ) then
+  cat >> input_nest02.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
 
 # run the executable
 
