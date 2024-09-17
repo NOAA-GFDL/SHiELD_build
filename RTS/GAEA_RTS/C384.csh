@@ -10,9 +10,10 @@
 
 set echo
 
-set BASEDIR    = "${SCRATCH}/${USER}/"
-set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA"
-set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
+set YourGroup  = "gfdl_f" #modify this to be your own group on f5
+set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
+set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA"
+set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_gitlab/SHiELD_build/"
 
 if ( ! $?COMPILER ) then
   set COMPILER = "intel"
@@ -80,7 +81,7 @@ set TIME_STAMP = /home/${USER}/Util/time_stamp.csh
     set dt_atmos = "225"
 
     #fms yaml
-    set use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
+    set use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -206,10 +207,10 @@ endif
 
 # copy over the other tables and executable
 if ( ${use_yaml} == ".T." ) then
-  cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  #cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
   cp ${BUILD_AREA}/tables/field_table_6species.yaml field_table.yaml
 else
-  cp ${BUILD_AREA}/tables/data_table data_table
+  #cp ${BUILD_AREA}/tables/data_table data_table
   cp ${BUILD_AREA}/tables/field_table_6species field_table
 endif
 cp ${BUILD_AREA}/tables/diag_table_no3d diag_table

@@ -6,66 +6,66 @@ field_table:
     - variable: sphum
       longname: specific humidity
       units: kg/kg
-      profile_type: fixed
-      subparams:
-      - surface_value: 1.e30
+      profile_type:
+      - value: fixed
+        surface_value: 1.e30
     - variable: liq_wat
       longname: cloud water mixing ratio
       units: kg/kg
-      profile_type: fixed
-      subparams:
-      - surface_value: 1.e30
+      profile_type:
+      - value: fixed
+        surface_value: 1.e30
     - variable: rainwat
       longname: rain mixing ratio
       units: kg/kg
-      profile_type: fixed
-      subparams:
-      - surface_value: 1.e30
+      profile_type:
+      - value: fixed
+        surface_value: 1.e30
     - variable: ice_wat
       longname: cloud ice mixing ratio
       units: kg/kg
-      profile_type: fixed
-      subparams:
-      - surface_value: 1.e30
+      profile_type:
+      - value: fixed
+        surface_value: 1.e30
     - variable: snowwat
       longname: snow mixing ratio
       units: kg/kg
-      profile_type: fixed
-      subparams:
-      - surface_value: 1.e30
+      profile_type:
+      - value: fixed
+        surface_value: 1.e30
     - variable: graupel
       longname: graupel mixing ratio
       units: kg/kg
-      profile_type: fixed
-      subparams:
-      - surface_value: 1.e30
+      profile_type:
+      - value: fixed
+        surface_value: 1.e30
     - variable: o3mr
       longname: ozone mixing ratio
       units: kg/kg
-      profile_type: fixed
-      subparams:
-      - surface_value: 1.e30
+      profile_type:
+      - value: fixed
+        surface_value: 1.e30
     - variable: sgs_tke
       longname: TKE
       units: m**2/s**2
-      profile_type: fixed
-      subparams:
-      - surface_value: 100.0
+      profile_type:
+      - value: fixed
+        surface_value: 100.0
     - variable: itcz_clock
       longname: ITCZ clock tracer
       units: s*1.e-6
-      profile_type: fixed
-      subparams:
-      - surface_value: 0.0
+      profile_type:
+      - value: fixed
+        surface_value: 0.0
     - variable: sfc_clock
       longname: sfc clock tracer
       units: s*1.e-6
-      profile_type: fixed
-      subparams:
-      - surface_value: 0.0
+      profile_type:
+      - value: fixed
+        surface_value: 0.0
     - variable: cld_amt
       longname: cloud amount
-      units: '1'
-      profile_type: fixed
-      subparams:
-      - surface_value: 1.e30
+      units: 1
+      profile_type:
+      - value: fixed
+        surface_value: 1.e30

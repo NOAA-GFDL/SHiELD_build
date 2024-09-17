@@ -9,9 +9,10 @@
 
 set echo
 
-set BASEDIR    = "${SCRATCH}/${USER}/"
-set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA"
-set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
+set YourGroup  = "gfdl_f" #modify this to be your own group on f5
+set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
+set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA"
+set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_gitlab/SHiELD_build/"
 
 if ( ! $?COMPILER ) then
   set COMPILER = "intel"
@@ -76,7 +77,7 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     set dt_atmos = "150"
 
     #fms yaml
-    set use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
+    set use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -191,10 +192,10 @@ EOF
 
 # copy over the other tables and executable
 if ( ${use_yaml} == ".T." ) then
-  cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  #cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
   cp ${BUILD_AREA}/tables/field_table_6species.yaml field_table.yaml
 else
-  cp ${BUILD_AREA}/tables/data_table data_table
+  #cp ${BUILD_AREA}/tables/data_table data_table
   cp ${BUILD_AREA}/tables/field_table_6species field_table
 endif
 # file does not exist so there will be no diag table
@@ -431,60 +432,6 @@ cat > input.nml <<EOF
      eps_day          = 10.
 /
 
- &gfdl_cloud_microphysics_nml
-       sedi_transport = .true.
-       do_sedi_heat = .true.
-       rad_snow = .true.
-       rad_graupel = .true.
-       rad_rain = .true.
-       const_vi = .false.
-       const_vs = .false.
-       const_vg = .false.
-       const_vr = .false.
-       vi_fac = 1.
-       vs_fac = 1.
-       vg_fac = 1.
-       vr_fac = 1.
-       vi_max = 1.
-       vs_max = 2.
-       vg_max = 12.
-       vr_max = 12.
-       qi_lim = 1.
-       prog_ccn = .false.
-       do_qa = .true.
-       fast_sat_adj = .false.
-       tau_l2v = 300.
-       tau_l2v = 225.
-       tau_v2l = 150.
-       tau_g2v = 900.
-       rthresh = 10.e-6  ! This is a key parameter for cloud water
-       dw_land  = 0.16
-       dw_ocean = 0.10
-       ql_gen = 1.0e-3
-       ql_mlt = 1.0e-3
-       qi0_crt = 8.0E-5
-       qs0_crt = 1.0e-3
-       tau_i2s = 1000.
-       c_psaci = 0.05
-       c_pgacs = 0.01
-       rh_inc = 0.30
-       rh_inr = 0.30
-       rh_ins = 0.30
-       ccn_l = 300.
-       ccn_o = 100.
-       c_paut = 0.5
-       c_cracw = 0.8
-       use_ppm = .false.
-       use_ccn = .true.
-       mono_prof = .true.
-       z_slope_liq  = .true.
-       z_slope_ice  = .true.
-       de_ice = .false.
-       fix_negative = .true.
-       icloud_f = 0
-       mp_time = 150.
-/
-
  &gfdl_mp_nml
        do_sedi_heat = .true.
        rad_snow = .true.
@@ -511,7 +458,6 @@ cat > input.nml <<EOF
        rthresh = 10.e-6  ! This is a key parameter for cloud water
        dw_land  = 0.16
        dw_ocean = 0.10
-       ql_gen = 1.0e-3
        ql_mlt = 1.0e-3
        qi0_crt = 8.0E-5
        qs0_crt = 1.0e-3
@@ -520,7 +466,6 @@ cat > input.nml <<EOF
        c_pgacs = 0.01
        rh_inc = 0.30
        rh_inr = 0.30
-       rh_ins = 0.30
        ccn_l = 300.
        ccn_o = 100.
        c_paut = 0.5

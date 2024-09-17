@@ -6,7 +6,7 @@ export COMPILER="intel"
 ACCOUNT="gfdl_f"
 export BUILDDIR="/ncrc/home1/${USER}/SHiELD_gitlab/SHiELD_build"
 RELEASE="`cat ${BUILDDIR}/../SHiELD_SRC/release`"
-export SCRATCHDIR="/gpfs/f5/gfdl_f/scratch/Lauren.Chilutti/AugRelease/soloCI_C5_${RELEASE}/"
+export SCRATCHDIR="/gpfs/f5/gfdl_f/scratch/Lauren.Chilutti/soloCI_C5_${RELEASE}/"
 
 mkdir -p ${BUILDDIR}/RTS/CI/stdout
 
