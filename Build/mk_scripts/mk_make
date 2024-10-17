@@ -89,10 +89,14 @@ done
 module list
 
 $FC --version
-
-if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shieldfull' ] ; then
+if [ ${CONFIG} = 'shield' ] ; then
   NCEPLIBS="./libfv3.a"
   NCEPLIBS+=" ${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a"
+  NCEPLIBS+=" ./libgfs.a"
+  NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+elif [ ${CONFIG} = 'shieldfull' ] ; then
+  NCEPLIBS="./libfv3.a"
+  NCEPLIBS+=" ${NCEP_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
   NCEPLIBS+=" ./libgfs.a"
   NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
 elif [ ${CONFIG} = 'solo'  ] ; then
@@ -101,7 +105,7 @@ elif [ ${CONFIG} = 'shiemom'  ] ; then
   NCEPLIBS="./libfv3.a"
   NCEPLIBS+=" ${NCEP_DIR}/sis2/libsis2.a"
   NCEPLIBS+=" ${NCEP_DIR}/mom6/libmom6.a"
-  NCEPLIBS+=" ${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a"
+  NCEPLIBS+=" ${NCEP_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
   NCEPLIBS+=" ./libgfs.a"
   NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
 fi
@@ -112,7 +116,9 @@ fi
 
 (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
 
-if [ ${CONFIG} = 'shield' ] ||  [ ${CONFIG} = 'shieldfull' ] || [ ${CONFIG} = 'shiemom' ] ; then
+if   [ ${CONFIG} = 'shieldfull' ] || [ ${CONFIG} = 'shiemom' ] ; then
+   (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} PIC=${PIC} NCEPLIBS="${NCEPLIBS}" -f Makefile_driver)
+elif [ ${CONFIG} = 'shield' ] ; then
    (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} NCEPLIBS="${NCEPLIBS}" -f Makefile_driver)
 fi
 exit 0
