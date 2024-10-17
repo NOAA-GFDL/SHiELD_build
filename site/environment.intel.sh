@@ -32,6 +32,7 @@ case $hostname in
 
       . ${MODULESHOME}/init/sh
       module unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu
+      module unload darshan-runtime
       module load   PrgEnv-intel
       module rm intel-classic
       module rm intel-oneapi
@@ -66,6 +67,7 @@ case $hostname in
 
       . ${MODULESHOME}/init/sh
       module unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu
+      module unload darshan-runtime
       module load   PrgEnv-intel
       module rm intel-classic
       module rm intel-oneapi
