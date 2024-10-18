@@ -35,15 +35,17 @@ case $hostname in
        module rm intel
        module load   PrgEnv-gnu
        module rm gcc
-       module load gcc/10.3.0
-       module load cray-hdf5/1.12.2.3
-       module load cray-netcdf/4.9.0.3
+       module load gcc-native/13.2
+       module load cray-hdf5/1.12.2.11
+       module load cray-netcdf/4.9.0.11
        module load craype-hugepages4M
        module load cmake/3.23.1
        module load libyaml/0.2.5
 
        # Add -DHAVE_GETTID to the FMS cppDefs
        export FMS_CPPDEFS=-DHAVE_GETTID
+       # Needed with the new Environment on C5 as of 10/16/2024
+       export FI_VERBS_PREFER_XRC=0
 
        # make your compiler selections here
        export FC=ftn
