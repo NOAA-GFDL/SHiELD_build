@@ -113,7 +113,7 @@ executable=${BUILDDIR}/Build/bin/SOLO_${TYPE}.${COMP}.${MODE}.${COMPILER}.x
     add_noise=0.0
     curr_date="0,0,0,0"
     #fms yaml
-    use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
+    use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
 
     if [ ${TYPE} = "nh" ]; then
       # non-hydrostatic options

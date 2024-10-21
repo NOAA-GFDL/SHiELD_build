@@ -1,12 +1,14 @@
 #!/bin/bash
-# This script will run all CI tests on c5 
+# This script will run all CI tests on c5
+# Modify ACCOUNT to be your group
+# Modify BUILDDIR to be where you have cloned the SHiELD_build repository
 
 export COMPILER="intel"
-#export COMP="debug"
+export COMP="repro"
 ACCOUNT="gfdl_f"
-export BUILDDIR="/ncrc/home1/${USER}/SHiELD_gitlab/SHiELD_build"
+export BUILDDIR="/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build"
 RELEASE="`cat ${BUILDDIR}/../SHiELD_SRC/release`"
-export SCRATCHDIR="/gpfs/f5/gfdl_f/scratch/Lauren.Chilutti/soloCI_C5_${RELEASE}/"
+export SCRATCHDIR="/gpfs/f5/${ACCOUNT}/scratch/${USER}/soloCI_C5_${RELEASE}/"
 
 mkdir -p ${BUILDDIR}/RTS/CI/stdout
 

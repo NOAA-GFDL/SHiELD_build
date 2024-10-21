@@ -92,7 +92,7 @@ executable=${BUILDDIR}/Build/bin/SOLO_${TYPE}.${COMP}.${MODE}.${COMPILER}.x
     use_hydro_pressure=".T."   # have to be .T. in hydro mode
     consv_te="0."
     #fms yaml
-    use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
+    use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
 
 # variables for hyperthreading
 if [ ${HYPT} = "on" ] ; then

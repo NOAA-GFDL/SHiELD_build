@@ -12,7 +12,7 @@ set echo
 set YourGroup  = "gfdl_f" #modify this to be your own group on f5
 set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
 set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA"
-set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_gitlab/SHiELD_build/"
+set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
 if ( ! $?COMPILER ) then
   set COMPILER = "intel"
@@ -62,14 +62,10 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     set npy_g2 = "1081"
     set npz = "63"
     set npz_g2 = "63"
-    #set layout_x = "18"
-    #set layout_y = "18"
-    #set layout_x_g2 = "28" #28
-    #set layout_y_g2 = "32" #32 
-    set layout_x = "9"
-    set layout_y = "9"
-    set layout_x_g2 = "14" #28
-    set layout_y_g2 = "16" #32 
+    set layout_x = "18"
+    set layout_y = "18"
+    set layout_x_g2 = "28" #28
+    set layout_y_g2 = "32" #32 
     set io_layout = "1,1"
     set io_layout_g2 = "1,1"
     set nthreads = "2" # DEBUG "2"
