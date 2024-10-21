@@ -20,7 +20,7 @@ endif
 
 set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
 
-source ${BUILD_AREA}/site/environment.${COMPILER}.sh
+source ${BUILD_AREA}/site/environment.${COMPILER}.csh
 
 # case specific details
 set TYPE = "nh"         # choices:  nh, hydro

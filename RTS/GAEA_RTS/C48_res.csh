@@ -20,7 +20,7 @@ endif
 
 set RELEASE = "`cat ${BUILD_AREA}/../SHiELD_SRC/release`"
 
-source ${BUILD_AREA}/site/environment.${COMPILER}.sh
+source ${BUILD_AREA}/site/environment.${COMPILER}.csh
 
 #set hires_oro_factor = 3
 set res = 48
