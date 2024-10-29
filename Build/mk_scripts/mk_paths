@@ -133,7 +133,7 @@ elif  [ ${CONFIG} = 'shiemom' ] ; then
       GFDL_atmos_cubed_sphere/GFDL_tools/fv_diag_column.F90
 
   list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \
-      land_null/
+      land_null/ \
       atmos_drivers/SHiELDFULL/ \
       GFDL_atmos_cubed_sphere/driver/SHiELDFULL/atmosphere.F90 \
       FMSCoupler/full/ \
