@@ -254,11 +254,11 @@ if [ $config = "shiemom" ] ; then
 # from lauren
   # I think mom6 needs to be built in 64bit for now?
   # I can only get it to compiler with 64bit FMS
-  ./BUILDmom6 ${compiler} ${bit}
+  ./BUILDmom6 ${comp} ${compiler} ${bit}
      echo "DONE WITH MOM6"
 
 # for sis2
-  ./BUILDsis2 ${compiler} ${bit}
+  ./BUILDsis2 ${comp} ${compiler} ${bit}
      echo "DONE WITH SIS2"
 fi
 
