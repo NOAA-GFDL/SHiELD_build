@@ -28,6 +28,7 @@ set -x
 # configure your build parameters
   COMPILER="intel"
   BIT="64bit"
+  COMP=""
 #
 # parse arguments
   for arg in "$@"
