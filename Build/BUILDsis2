@@ -28,14 +28,13 @@ set -x
 # configure your build parameters
   COMPILER="intel"
   BIT="64bit"
-  COMP=""
+  COMP="" # implies PROD=Y
 #
 # parse arguments
   for arg in "$@"
   do
       case $arg in
         prod|repro|debug)
-          comp="${arg#*=}"
           if [ ${arg#} = 'repro' ] ; then
             COMP="REPRO=Y"
           elif [ ${arg#} = 'debug' ] ; then
@@ -58,6 +57,7 @@ set -x
           echo -e ' '
           echo -e "valid options are:"
           echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
 	  echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
           echo -e "\n"
           exit
