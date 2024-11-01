@@ -28,11 +28,20 @@ set -x
 # configure your build parameters
   COMPILER="intel"
   BIT="64bit"
+  COMP="" # implies PROD=Y
 #
 # parse arguments
   for arg in "$@"
   do
       case $arg in
+        prod|repro|debug)
+          if [ ${arg#} = 'repro' ] ; then
+            COMP="REPRO=Y"
+          elif [ ${arg#} = 'debug' ] ; then
+            COMP="DEBUG=Y"
+          fi
+          shift # Remove COMP from processing
+          ;;
           intel|gnu)
              COMPILER="${arg#*=}"
              shift # Remove "compiler" from processing
@@ -44,6 +53,7 @@ set -x
           echo -e ' '
           echo -e "valid options are:"
           echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
           echo -e "\n"
           exit
           ;;
@@ -85,7 +95,7 @@ mkmf -m Makefile -a ${SHiELD_SRC} -p libsis2.a -t "${BUILD_ROOT}/${TEMPLATE}" \
      -I${SHiELD_SRC}/MOM6/src/framework ${BUILD_ROOT}/Build/sis2/pathnames_sis2
 
 
-make -j8  REPRO=Y AVX=Y NETCDF=3 Makefile libsis2.a >& Build_sis2.out
+make -j8  ${COMP} AVX=Y NETCDF=3 Makefile libsis2.a >& Build_sis2.out
 
 #
 # test and report on libsis2 build success

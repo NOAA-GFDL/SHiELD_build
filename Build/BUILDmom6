@@ -28,11 +28,20 @@ set -x
 # configure your build parameters
   COMPILER="intel"
   BIT="64bit"
+  COMP="" # implies PROD=Y
 #
 # parse arguments
   for arg in "$@"
   do
       case $arg in
+        prod|repro|debug)
+          if [ ${arg#} = 'repro' ] ; then
+            COMP="REPRO=Y"
+          elif [ ${arg#} = 'debug' ] ; then
+            COMP="DEBUG=Y"
+          fi
+          shift # Remove COMP from processing
+          ;;
           intel|gnu)
              COMPILER="${arg#*=}"
              shift # Remove "compiler" from processing
@@ -43,7 +52,8 @@ set -x
           fi
           echo -e ' '
           echo -e "valid options are:"
-          echo -e "\t[intel(D) | gnu ] \t\t\t compiler"
+          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+          echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
           echo -e "\n"
           exit
           ;;
@@ -91,7 +101,7 @@ mkmf -m Makefile -a ${SHiELD_SRC} -p libmom6.a -t "${BUILD_ROOT}/${TEMPLATE}" \
      -I${SHiELD_SRC}/FMS/string_utils/include -I${SHiELD_SRC}/FMS/test_fms/fms/include  \
      -I${SHiELD_SRC}/MOM6/src/framework ${BUILD_ROOT}/Build/mom6/pathnames_mom6
 
-make -j8 REPRO=Y AVX=Y NETCDF=3 Makefile libmom6.a >& Build_mom6.out
+make -j8 ${COMP} AVX=Y NETCDF=3 Makefile libmom6.a >& Build_mom6.out
 
 ################
 #will get noise with openmp in debugmode
