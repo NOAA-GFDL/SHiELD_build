@@ -46,10 +46,6 @@ set -x
              COMPILER="${arg#*=}"
              shift # Remove "compiler" from processing
              ;;
-	  32bit|64bit)
-             BIT="${arg#*=}"
-             shift # Remove *bit from processing
-             ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
@@ -58,7 +54,6 @@ set -x
           echo -e "valid options are:"
           echo -e "\t[intel(D) | gnu] \t\t\t compiler"
           echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
-	  echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
           echo -e "\n"
           exit
           ;;
