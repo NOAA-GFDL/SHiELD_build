@@ -1,17 +1,16 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=Regional3km
-#SBATCH --clusters=c4
+#SBATCH --clusters=c5
 #SBATCH --time=00:30:00
-#SBATCH --nodes=25
+#SBATCH --nodes=8
 
-# change clusters to c5 and nodes to 8 to run on gaea c5
 # see run_tests.sh for an example of how to run these tests
 
 set echo
-
-set BASEDIR    = "${SCRATCH}/${USER}/"
-set INPUT_DATA = "/lustre/f2/dev/Lauren.Chilutti/Alaska_c3072"
+set YourGroup  = "gfdl_f" #modify this to be your own group on f5
+set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
+set INPUT_DATA = "/ncrc/home1/Lauren.Chilutti/Alaska_c3072/SHiELD_IC/Alaska_c3072"
 set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
 if ( ! $?COMPILER ) then
@@ -46,8 +45,8 @@ set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPIL
 
 # input filesets
 set ICS  = ${INPUT_DATA}/${NAME}_IC/
-set FIX  = /lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/fix.v201810
-set GFS  = /lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
+set FIX  = /gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/fix.v201810
+set GFS  = /gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
 set GRID = ${INPUT_DATA}/GRID/
 
 # sending file to gfdl
@@ -76,6 +75,9 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     set seconds = "0"
     set dt_atmos = "60"
     set nruns = "1"
+
+    #fms yaml
+    set use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -209,11 +211,17 @@ ${NAME}.${CASE}.${MODE}.${MONO}
 $y $m $d $h 0 0 
 EOF
 #this file does not exist so no diag table is being used
-cat ${BUILD_AREA}/tables/diag_table_hwt_simple >> diag_table
+#cat ${BUILD_AREA}/tables/diag_table_hwt_simple >> diag_table
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/tables/data_table data_table
-cp ${BUILD_AREA}/tables/field_table_6species field_table
+if ( ${use_yaml} == ".T." ) then
+  #cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  cp ${BUILD_AREA}/tables/field_table_6species.yaml field_table.yaml
+else
+  #cp ${BUILD_AREA}/tables/data_table data_table
+  cp ${BUILD_AREA}/tables/field_table_6species field_table
+endif
+
 cp $executable .
 
 # GFS standard input data
@@ -531,58 +539,6 @@ cat >! input.nml <<EOF
      eps_day          = 10.
 /
 
-
- &gfdl_cloud_microphysics_nml
-       sedi_transport = .T.  ! 2019: enabled
-       do_sedi_heat = .T.    ! 2019: enabled
-       do_sedi_w = .T.       ! 2019: enabled
-       rad_snow = .true.
-       rad_graupel = .true.
-       rad_rain = .true.
-       const_vi = .F.
-       const_vs = .F.
-       const_vg = .F.
-       const_vr = .F.
-       vi_max = 1.0
-       vs_max = 6.
-       vg_max = 12.
-       vr_max = 12.
-       qi_lim = 2.
-       prog_ccn = .false.
-       do_qa = .true.
-       fast_sat_adj = .F.
-       tau_l2v = 180
-       tau_v2l =  22.5 ! 201907d: short timescale introduced
-       tau_g2v = 900. ! 2019: increased
-       rthresh = 10.0e-6
-       dw_land  = 0.16
-       dw_ocean = 0.10
-       ql_gen = 1.0e-3
-       ql_mlt = 1.0e-3 ! 2019: added
-       qi0_crt = 7.5e-5 ! 2019: decreased
-       qs0_crt = 1.0e-3 ! 2019: decreased
-       tau_i2s = 1000.
-       c_psaci = 0.05 ! 2019: decreased
-       c_pgacs = 0.2  ! 2019: increased substantially; improves rainfall coverage
-       c_cracw = 0.75 ! 2019: decreased
-       rh_inc = 0.30
-       rh_inr = 0.30
-       rh_ins = 0.30
-       ccn_l = 300.   ! 2019: Increased
-       ccn_o = 100.   ! 2019: increased
-       use_ppm = .F.  ! 2019: Disabled
-       use_ccn = .true.
-       z_slope_liq  = .true.
-       z_slope_ice  = .true.
-       de_ice = .false.
-       fix_negative = .true.
-       icloud_f = 0     ! 2019: enabled
-       do_hail = .true. ! 2019: enabled
-       do_cond_timescale = .true. ! 201984zb
-mp_time = $dt_atmos
-/
-
-
  &gfdl_mp_nml
        do_sedi_heat = .T.    ! 2019: enabled
        do_sedi_w = .T.       ! 2019: enabled
@@ -605,7 +561,6 @@ mp_time = $dt_atmos
        rthresh = 10.0e-6
        dw_land  = 0.16
        dw_ocean = 0.10
-       ql_gen = 1.0e-3
        ql_mlt = 1.0e-3 ! 2019: added
        qi0_crt = 7.5e-5 ! 2019: decreased
        qs0_crt = 1.0e-3 ! 2019: decreased
@@ -614,7 +569,6 @@ mp_time = $dt_atmos
        c_pgacs = 0.2  ! 2019: increased substantially; improves rainfall coverage
        rh_inc = 0.30
        rh_inr = 0.30
-       rh_ins = 0.30
        ccn_l = 300.   ! 2019: Increased
        ccn_o = 100.   ! 2019: increased
        z_slope_liq  = .true.
@@ -698,6 +652,19 @@ mp_time = $dt_atmos
        FSICS    = 99999,
 /
 EOF
+
+if ( ${use_yaml} == ".T." ) then
+  cat >> input.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
 
 # run the executable
 

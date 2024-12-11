@@ -78,20 +78,20 @@ echo ' '
 echo 'Checking out files for: '$config_name
 echo ' '
 
-release="main"
+release="FV3-202411-public"
 
 fv3_release=$release
+phy_release=$release
 fms_release="2024.03"
 fms_c_release="2024.03.01"
 drivers_release=$release
 
-git clone -b ${fv3_release}   https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
+git clone -b ${fv3_release} https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
 git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
 
 if [ $config_name = 'SHiELD' ] || [ $config_name = 'SHiELDFULL' ] || [ $config_name = 'SHiEMOM' ] ; then
-   phy_release=$release
-   git clone -b ${phy_release}   https://github.com/NOAA-GFDL/SHiELD_physics
+   git clone -b ${phy_release} https://github.com/NOAA-GFDL/SHiELD_physics
    git clone -b ${fms_c_release} https://github.com/NOAA-GFDL/FMSCoupler
 fi
 

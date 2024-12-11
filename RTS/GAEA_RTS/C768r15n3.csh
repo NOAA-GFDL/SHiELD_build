@@ -1,17 +1,17 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C768r15n3
-#SBATCH --clusters=c4
+#SBATCH --clusters=c5
 #SBATCH --time=00:20:00
-#SBATCH --nodes=79
+#SBATCH --nodes=23
 
-# change clusters to c5 and nodes to 23 to run on gaea c5
 # see run_tests.sh for an example of how to run these tests
 #
 set echo
 
-set BASEDIR    = "${SCRATCH}/${USER}/"
-set INPUT_DATA = "/lustre/f2/pdata/gfdl/gfdl_W/fvGFS_INPUT_DATA"
+set YourGroup  = "gfdl_f" #modify this to be your own group on f5
+set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
+set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA"
 set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
 if ( ! $?COMPILER ) then
@@ -83,6 +83,9 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     set minutes = "0"
     set seconds = "0"
     set dt_atmos = "90" 
+
+    #fms yaml
+    set use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
 
     # set the pre-conditioning of the solution
     # =0 implies no pre-conditioning
@@ -222,10 +225,15 @@ EOF
 #cat ${BUILD_AREA}/tables/diag_table_hwt_test >> diag_table
 
 # copy over the other tables and executable
-cp ${BUILD_AREA}/tables/data_table data_table
+if ( ${use_yaml} == ".T." ) then
+  #cp ${BUILD_AREA}/tables/data_table.yaml data_table.yaml
+  cp ${BUILD_AREA}/tables/field_table_6species.yaml field_table.yaml
+else
+  #cp ${BUILD_AREA}/tables/data_table data_table
+  cp ${BUILD_AREA}/tables/field_table_6species field_table
+endif
 # this file does not exist, so there will be no diag table
-cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
-cp ${BUILD_AREA}/tables/field_table_6species field_table
+#cp ${BUILD_AREA}/tables/diag_table_hwt_test diag_table
 cp $executable .
 
 mkdir -p INPUT/
@@ -434,7 +442,7 @@ flush_nc_files = .true.
        nst_anl        = .true.
        use_ufo        = .true.
        pre_rad        = .false.
-       ncld           = 5
+       ncld           = 1
        zhao_mic       = .true.
        pdfcld         = .false.
        fhswr          = 3600.
@@ -486,8 +494,7 @@ flush_nc_files = .true.
      eps_day = 10.
 /
 
- &gfdl_cloud_microphysics_nml
-       sedi_transport = .true.
+  &gfdl_mp_nml
        do_sedi_heat = .false.
        rad_snow = .true.
        rad_graupel = .true.
@@ -503,14 +510,11 @@ flush_nc_files = .true.
        qi_lim = 1.
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .F.
        tau_l2v = 180.
        tau_v2l =  90.
-       tau_g2v = 900.
        rthresh = 10.e-6  ! This is a key parameter for cloud water
        dw_land  = 0.16
        dw_ocean = 0.10
-       ql_gen = 1.0e-3
        ql_mlt = 1.0e-3
        qi0_crt = 8.0E-5
        qs0_crt = 1.0e-3
@@ -519,26 +523,14 @@ flush_nc_files = .true.
        c_pgacs = 0.01
        rh_inc = 0.30
        rh_inr = 0.30
-       rh_ins = 0.30
        ccn_l = 300.
        ccn_o = 100.
        c_paut = 0.5
-       c_cracw = 0.8
-       use_ppm = .false.
-       use_ccn = .true.
-       mono_prof = .true.
        z_slope_liq  = .true.
        z_slope_ice  = .true.
-       de_ice = .false.
        fix_negative = .true.
        mp_time = 90.
        icloud_f = 1
-/
-
-  &gfdl_mp_nml
-/
-
-  &cld_eff_rad_nml
 /
 
   &interpolator_nml
@@ -588,6 +580,19 @@ flush_nc_files = .true.
        FSICS    = 99999,
 /
 EOF
+
+if ( ${use_yaml} == ".T." ) then
+  cat >> input.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
 
 cat >! input_nest02.nml <<EOF
  &amip_interp_nml
@@ -786,8 +791,7 @@ flush_nc_files = .true.
        xkzm_m         = 0.00 
 /
 
- &gfdl_cloud_microphysics_nml
-       sedi_transport = .F. 
+  &gfdl_mp_nml
        do_sedi_heat = .F.   
        rad_snow = .true.
        rad_graupel = .true.
@@ -804,37 +808,26 @@ flush_nc_files = .true.
        qi_lim = 1. ! old Fast MP
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .F.
        tau_l2v = 180
        tau_v2l =  90.
-       tau_g2v = 600.
        rthresh = 10.0e-6  ! This is a key parameter for cloud water ! use 10 for shallow conv
        dw_land  = 0.16
        dw_ocean = 0.10
-       ql_gen = 1.0e-3
        qi0_crt = 1.2e-4 
        qi0_max = 2.0e-4 
        qs0_crt = 1.0e-3 ! 10x smaller, increase snow --> graupel AC
        tau_i2s = 1000.   !ice to snow autoconversion time
        c_psaci = 0.1   
        c_pgacs = 0.1 ! 100x increased rain --> graupel accretion
-       c_cracw = 1.0 
        rh_inc = 0.30
        rh_inr = 0.30
-       rh_ins = 0.30
        ccn_l = 270. !for CONUS
        ccn_o = 90.
-       use_ppm = .T.  ! set to true
-       use_ccn = .true.
        z_slope_liq  = .true.
        z_slope_ice  = .true.
-       de_ice = .false.
        fix_negative = .true.
        icloud_f = 1
        mp_time = $dt_atmos
-/
-
-  &gfdl_mp_nml
 /
 
   &cld_eff_rad_nml
@@ -887,6 +880,19 @@ flush_nc_files = .true.
        FSICS    = 99999,
 /
 EOF
+
+if ( ${use_yaml} == ".T." ) then
+  cat >> input_nest02.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+endif
 
 # run the executable
 

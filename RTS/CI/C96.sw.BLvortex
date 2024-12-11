@@ -57,7 +57,10 @@ TYPE="sw"         # choices:  nh, hydro
 MODE="64bit"      # choices:  32bit, 64bit
 GRID="C$res"
 HYPT="on"         # choices:  on, off  (controls hyperthreading)
-COMP="repro"       # choices:  debug, repro, prod
+HYPT="on"         # choices:  on, off  (controls hyperthreading)
+if [ -z ${COMP} ] ; then
+  COMP="repro"       # choices:  debug, repro, prod
+fi
 
 # directory structure
 WORKDIR=${SCRATCHDIR:-${BUILDDIR}}/CI/BATCH-CI/${GRID}.${MEMO}/
@@ -89,6 +92,8 @@ executable=${BUILDDIR}/Build/bin/SOLO_${TYPE}.${COMP}.${MODE}.${COMPILER}.x
     phys_hydrostatic=".F."     # will be ignored in hydro mode
     use_hydro_pressure=".T."   # have to be .T. in hydro mode
     consv_te="0."
+    #fms yaml
+    use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
 
 # variables for hyperthreading
 if [ ${HYPT} = "on" ] ; then
@@ -124,19 +129,40 @@ cp $executable .
 # copy over the tables
 #
 # create an empty data_table
-touch data_table
+if [ $use_yaml = ".T." ] ; then
+  cat > data_table.yaml << EOF
+data_table: []
+EOF
+else
+  touch data_table
+fi
 
 
 #
 # build the field_table
-cat > field_table <<EOF
+if [ $use_yaml = ".T." ] ; then
+  cat > field_table.yaml << EOF
+field_table:
+- field_type: tracer
+  modlist:
+  - model_type: atmos_mod
+    varlist:
+    - variable: sphum
+      longname: specific humidity
+      units: kg/kg
+      profile_type: fixed
+      subparams:
+      - surface_value: 3.0e-06
+EOF
+else
+  cat > field_table << EOF
 
  "TRACER", "atmos_mod", "sphum"
            "longname",     "specific humidity"
            "units",        "kg/kg"
            "profile_type", "fixed", "surface_value=3.e-6" /
 EOF
-
+fi
 
 #
 # build the diag_table with the experiment name and date stamp
@@ -232,6 +258,19 @@ cat > input.nml <<EOF
 /
 
 EOF
+
+if [ $use_yaml = ".T." ] ; then
+  cat >> input.nml << EOF
+
+ &field_manager_nml
+       use_field_table_yaml = $use_yaml
+/
+
+ &data_override_nml
+       use_data_table_yaml = $use_yaml
+/
+EOF
+fi
 
 # run the executable
 ${run_cmd} | tee fms.out || exit
