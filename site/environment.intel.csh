@@ -59,7 +59,7 @@ switch ($hostname)
       setenv LAUNCHER "srun"
 
       # highest level of AVX support
-      setenv AVX_LEVEL "-march core-avx2"
+      setenv AVX_LEVEL "-march core-avx-i"
       echo -e ' '
       module list
       breaksw
@@ -97,7 +97,7 @@ switch ($hostname)
       setenv LAUNCHER "srun"
 
       # highest level of AVX support
-      setenv AVX_LEVEL "-march core-avx2"
+      setenv AVX_LEVEL "-march core-avx-i"
       echo -e ' '
       module list
       breaksw
