@@ -29,7 +29,7 @@ BUILD_ROOT=${PWD%/*}
 SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC
 PATH="${BUILD_ROOT}/mkmf/bin:${PATH}"
 COMPILER="intel"
-YAML="noyaml"
+YAML="yaml"
 pic="nopic"
 
 #

@@ -27,7 +27,7 @@
 # set default values
 # configure your build parameters
   compiler="intel"
-  yaml="noyaml"
+  yaml="yaml"
   pic="nopic"
 #
 # parse arguments

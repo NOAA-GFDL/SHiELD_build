@@ -55,7 +55,7 @@ spin()
   avx="Y"
   compiler="intel"
   clean="noclean"
-  yaml="noyaml"
+  yaml="yaml"
   pic="nopic"
 
   config_name="SHiELD"
