@@ -47,19 +47,8 @@ switch ($hostname)
       #module load cmake/3.23.1
       #module load libyaml/0.2.5
 
-      # Add -DHAVE_GETTID to the FMS cppDefs
-      setenv FMS_CPPDEFS "-DHAVE_GETTID"
-
-      # make your compiler selections here
-      setenv FC "ftn"
-      setenv CC "cc"
-      setenv CXX "CC"
-      setenv LD "ftn"
-      setenv TEMPLATE "site/intel.mk"
       setenv LAUNCHER "srun"
 
-      # highest level of AVX support
-      setenv AVX_LEVEL "-march core-avx-i"
       echo -e ' '
       module list
       breaksw
@@ -83,21 +72,11 @@ switch ($hostname)
       module load cmake/3.23.1
       module load libyaml/0.2.5
 
-      # Add -DHAVE_GETTID to the FMS cppDefs
-      setenv FMS_CPPDEFS "-DHAVE_GETTID"
       # Needed with the new Environment on C5 as of 10/16/2024
       setenv FI_VERBS_PREFER_XRC 0
 
-      # make your compiler selections here
-      setenv FC "ftn"
-      setenv CC "cc"
-      setenv CXX "CC"
-      setenv LD "ftn"
-      setenv TEMPLATE "site/intel.mk"
       setenv LAUNCHER "srun"
 
-      # highest level of AVX support
-      setenv AVX_LEVEL "-march core-avx-i"
       echo -e ' '
       module list
       breaksw
