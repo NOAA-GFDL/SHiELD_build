@@ -93,7 +93,7 @@ fi
     na_init=0
     curr_date="0,0,0,0"
     #fms yaml
-    use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
+    use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
 
 if [ ${TYPE} = "nh" ] ; then
   # non-hydrostatic options

@@ -103,7 +103,7 @@ executable=${BUILDDIR}/Build/bin/SOLO_hydro.${COMP}.${MODE}.${COMPILER}.x
     add_noise=0.1
     curr_date="0,0,0,0"
     #fms yaml
-    use_yaml=".T." #if True, requires data_table.yaml and field_table.yaml
+    use_yaml=".F." #if True, requires data_table.yaml and field_table.yaml
 
     #initialization options
     # set the pre-conditioning of the solution

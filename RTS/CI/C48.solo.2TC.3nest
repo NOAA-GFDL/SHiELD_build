@@ -107,7 +107,7 @@ fi
     na_init=0
     curr_date="0,0,0,0"
 
-    use_yaml=".T."
+    use_yaml=".F."
 
 if [ ${TYPE} = "nh" ] ; then
   # non-hydrostatic options
