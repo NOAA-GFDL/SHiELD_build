@@ -55,7 +55,6 @@ spin()
   avx="Y"
   compiler="intel"
   clean="noclean"
-  yaml="yaml"
   pic="nopic"
 
   config_name="SHiELD"
@@ -112,10 +111,6 @@ spin()
              clean="${arg#*=}"
              shift # Remove "clean" from processing
              ;;
-	  noyaml|yaml)
-             yaml="${arg#*=}"
-	     shift # Remove "yaml" from processing
-	     ;;
           nopic|pic)
              pic="${arg#*=}"
              shift # Remove "pic" from processing
@@ -133,7 +128,6 @@ spin()
           echo -e "\t[avx(D) | noavx] \t\t\t use AVX_LEVEL defined in site/environment.<compiler>.sh"
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
-	  echo -e "\t[noyaml(D) | yaml] \t will build the FMS library with the -Duse_yaml library.  Default is no yaml"
           echo -e "\t[nopic(D) | pic] \t whether to build all components with the -fPIC flag (position independent code)"
           echo -e "\n"
           exit
@@ -173,7 +167,6 @@ echo -e "\tbit      = $bit"
 echo -e "\tavx      = $avx"
 echo -e "\tcompiler = $compiler"
 echo -e "\tclean    = $clean"
-echo -e "\tyaml     = $yaml"
 echo -e "\tpic      = $pic"
 echo -e "\n"
 sleep 5
@@ -230,7 +223,7 @@ fi
      echo " pre-built ${NCEP_DIR}/libFMS/${compiler} exists"
   else
      echo " ${NCEP_DIR}/libFMS/${compiler} does not exist"
-     ./BUILDlibfms ${compiler} ${yaml} ${pic}
+     ./BUILDlibfms ${compiler} ${pic}
      if [ $? -ne 0 ] ; then
         echo ">>> ${NCEP_DIR}/Libfms/${compiler} build failed"
         exit 2
