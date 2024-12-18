@@ -81,6 +81,7 @@ echo ' '
 release="main"
 
 fv3_release=$release
+phy_release=$release
 fms_release="2024.03"
 fms_c_release="2024.03.01"
 drivers_release=$release
