@@ -56,6 +56,7 @@ spin()
   compiler="intel"
   clean="noclean"
   yaml="noyaml"
+  pic="nopic"
 
   config_name="SHiELD"
 
@@ -64,10 +65,16 @@ spin()
   for arg in "$@"
   do
       case $arg in
-          shield|solo)
+          shield|solo|shieldfull|shiemom)
              config="${arg#*=}"
              if [ $config = 'solo' ] ; then
                config_name="SOLO"
+             fi
+             if [ $config = 'shieldfull' ] ; then
+               config_name="SHiELDFULL"
+             fi
+             if [ $config = 'shiemom' ] ; then
+               config_name="SHiEMOM"
              fi
              shift # Remove "config" from processing
              ;;
@@ -101,7 +108,7 @@ spin()
                sleep 20
              fi
              ;;
-          noclean|clean|cleanall)
+          noclean|clean|cleanmom|cleanall)
              clean="${arg#*=}"
              shift # Remove "clean" from processing
              ;;
@@ -109,6 +116,10 @@ spin()
              yaml="${arg#*=}"
 	     shift # Remove "yaml" from processing
 	     ;;
+          nopic|pic)
+             pic="${arg#*=}"
+             shift # Remove "pic" from processing
+             ;;
           *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
@@ -123,6 +134,7 @@ spin()
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
 	  echo -e "\t[noyaml(D) | yaml] \t will build the FMS library with the -Duse_yaml library.  Default is no yaml"
+          echo -e "\t[nopic(D) | pic] \t whether to build all components with the -fPIC flag (position independent code)"
           echo -e "\n"
           exit
           ;;
@@ -131,6 +143,11 @@ spin()
 
 if [ $hydro = "sw" ] && [ $config = "shield" ] ; then
   echo -e ">>> option '$hydro' with '$config' is not a valid configuration"
+  exit 1
+fi
+
+if [ $compiler = "nvhpc" ] && [ $config = "shiemom" ] ; then
+  echo -e ">>> option '$compiler' with '$config' is not a valid configuration"
   exit 1
 fi
 
@@ -157,6 +174,7 @@ echo -e "\tavx      = $avx"
 echo -e "\tcompiler = $compiler"
 echo -e "\tclean    = $clean"
 echo -e "\tyaml     = $yaml"
+echo -e "\tpic      = $pic"
 echo -e "\n"
 sleep 5
 
@@ -186,10 +204,17 @@ fi
      \rm -rf libFMS/${compiler}/*
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
      \rm -rf nceplibs/${compiler}/*
+     \rm -rf mom6/*
+     \rm -rf sis2/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+  elif [ ${clean} = "cleanmom" ] ; then
+     echo " cleaning build directory in 2 seconds"
+     sleep 2
+     \rm -rf mom6/*
+     \rm -rf sis2/*
   fi
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
@@ -205,7 +230,7 @@ fi
      echo " pre-built ${NCEP_DIR}/libFMS/${compiler} exists"
   else
      echo " ${NCEP_DIR}/libFMS/${compiler} does not exist"
-     ./BUILDlibfms ${compiler} ${yaml}
+     ./BUILDlibfms ${compiler} ${yaml} ${pic}
      if [ $? -ne 0 ] ; then
         echo ">>> ${NCEP_DIR}/Libfms/${compiler} build failed"
         exit 2
@@ -218,12 +243,32 @@ fi
      echo " pre-built ${NCEP_DIR}/nceplibs/${compiler} exists"
   else
      echo " ${NCEP_DIR}/nceplibs/${compiler} does not exist"
-     ./BUILDnceplibs ${compiler}
+     ./BUILDnceplibs ${compiler} ${pic}
      if [ $? -ne 0 ] ; then
         echo ">>> ${NCEP_DIR}/ncepdir/${compiler} build failed"
         exit 3
      fi
   fi
+
+if [ $config = "shiemom" ] ; then
+# from lauren
+  # I think mom6 needs to be built in 64bit for now?
+  # I can only get it to compiler with 64bit FMS
+  ./BUILDmom6 ${comp} ${compiler}
+     if [ $? -ne 0 ] ; then
+        echo " MOM6 build failed"
+        exit
+     fi
+     echo "DONE WITH MOM6"
+
+# for sis2
+  ./BUILDsis2 ${comp} ${compiler}
+     if [ $? -ne 0 ] ; then
+        echo " SIS2 build failed"
+        exit
+     fi
+     echo "DONE WITH SIS2"
+fi
 
 #
 # ensure the build and final executable locations are available
@@ -248,7 +293,7 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
     fi
   #
   # build the configuration
-    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} ${pic} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
   #
   # move the executable to an accessible area
     mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x

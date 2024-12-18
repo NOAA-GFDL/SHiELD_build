@@ -34,13 +34,14 @@ COMPILER="intel"
 
 bit="32bit"
 comp="prod"
+pic="nopic"
 
 #
 ## parse arguments
 for arg in "$@"
 do
     case $arg in
-        shield|solo)
+        shield|solo|shieldfull|shiemom)
           CONFIG="${arg#*=}"
           shift # Remove CONFIG from processing
           ;;
@@ -72,6 +73,14 @@ do
           COMPILER="${arg#*=}"
           shift # Remove COMPILER from processing
           ;;
+        nopic|pic)
+          if [ "${arg#*=}" = 'pic' ] ; then
+            PIC=Y
+          else
+            PIC=N
+          fi
+          shift # Remove PIC from processing
+          ;;
     esac
 done
 
@@ -80,16 +89,36 @@ done
 module list
 
 $FC --version
-
-NCEPLIBS="${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a"
 if [ ${CONFIG} = 'shield' ] ; then
+  NCEPLIBS="./libfv3.a"
+  NCEPLIBS+=" ${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a"
+  NCEPLIBS+=" ./libgfs.a"
+  NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+elif [ ${CONFIG} = 'shieldfull' ] ; then
+  NCEPLIBS="./libfv3.a"
+  NCEPLIBS+=" ${NCEP_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
+  NCEPLIBS+=" ./libgfs.a"
+  NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+elif [ ${CONFIG} = 'solo'  ] ; then
+  NCEPLIBS=${NCEP_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a
+elif [ ${CONFIG} = 'shiemom'  ] ; then
+  NCEPLIBS="./libfv3.a"
+  NCEPLIBS+=" ${NCEP_DIR}/sis2/libsis2.a"
+  NCEPLIBS+=" ${NCEP_DIR}/mom6/libmom6.a"
+  NCEPLIBS+=" ${NCEP_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
   NCEPLIBS+=" ./libgfs.a"
   NCEPLIBS+=" -L${NCEP_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
 fi
 
-if [ ${CONFIG} = 'shield' ] ; then
-  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} -f Makefile_gfs)
+if [ ${CONFIG} = 'shield' ] ||  [ ${CONFIG} = 'shieldfull' ] || [ ${CONFIG} = 'shiemom' ]  ; then
+  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} PIC=${PIC} -f Makefile_gfs)
 fi
-(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
 
+(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} NCEPLIBS="${NCEPLIBS}" -f Makefile_fv3)
+
+if   [ ${CONFIG} = 'shieldfull' ] || [ ${CONFIG} = 'shiemom' ] ; then
+   (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} PIC=${PIC} NCEPLIBS="${NCEPLIBS}" -f Makefile_driver)
+elif [ ${CONFIG} = 'shield' ] ; then
+   (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} NCEPLIBS="${NCEPLIBS}" -f Makefile_driver)
+fi
 exit 0
