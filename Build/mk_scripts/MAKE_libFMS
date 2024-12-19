@@ -29,7 +29,6 @@ BUILD_ROOT=${PWD%/*}
 SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC
 PATH="${BUILD_ROOT}/mkmf/bin:${PATH}"
 COMPILER="intel"
-YAML="noyaml"
 pic="nopic"
 
 #
@@ -41,13 +40,6 @@ do
         COMPILER="${arg#*=}"
         shift # Remove compiler from processing
         ;;
-        noyaml|yaml)
-        YAML="${arg#*=}"
-	if [ ${YAML} = 'yaml' ] ; then
-          USE_YAML=-Duse_yaml
-        fi
-	shift # Remove yaml from processing
-	;;
         nopic|pic)
         pic="${arg#*=}"
         if [ ${pic} = 'pic' ] ; then
@@ -66,7 +58,7 @@ done
 
 #
 # CPPDEFS needed to build libFMS
-cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS -DGFS_CONSTANTS ${USE_YAML} ${FMS_CPPDEFS}"
+cppDefs="-Duse_libMPI -Duse_netCDF -Duse_LARGEFILE -DHAVE_SCHED_GETAFFINITY -DINTERNAL_FILE_NML -DGFS_PHYS -DGFS_CONSTANTS -Duse_yaml ${FMS_CPPDEFS}"
 
 #
 # clean up and create the FMS library directory
