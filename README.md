@@ -35,6 +35,8 @@ Be sure to download the mkmf submodule prior to beginning.  To use:
 
       Example: ./COMPILE shield nh repro 32bit intel
 
+For instructions on transitioning or running SHiELD with the FMS full coupler infrastructure, please refer to the documentation and resources available at [doi.org/10.25923/ezfm-az21](https://repository.library.noaa.gov/view/noaa/66759)
+
 # Disclaimer
 
 The United States Department of Commerce (DOC) GitHub project code is provided
