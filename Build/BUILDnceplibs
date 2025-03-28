@@ -79,35 +79,35 @@ cd $nceplibs_dir
 
 #Define common cmake flags
 if [ ${pic} = 'pic' ] ; then
-  cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_STANDARD=99 -DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+  cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_PREFIX=install -DCMAKE_POSITION_INDEPENDENT_CODE=ON"
 else
-  cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_C_STANDARD=99"
+  cmake_flags="-DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_PREFIX=install"
 fi
 
 git clone -b $version_bacio https://github.com/NOAA-EMC/NCEPLIBS-bacio
 pushd NCEPLIBS-bacio
-cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=$nceplibs_dir/NCEPLIBS-bacio/install .
+cmake ${cmake_flags} -DCMAKE_C_STANDARD=99 .
 make -j8
 make install
 popd
 
 git clone -b $version_sp https://github.com/NOAA-EMC/NCEPLIBS-sp
 pushd NCEPLIBS-sp
-cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=$nceplibs_dir/NCEPLIBS-sp/install .
+cmake ${cmake_flags} -DCMAKE_C_STANDARD=99 .
 make -j8 sp_d
 make install
 popd
 
 git clone -b $version_w3emc https://github.com/NOAA-EMC/NCEPLIBS-w3emc
 pushd NCEPLIBS-w3emc
-cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=$nceplibs_dir/NCEPLIBS-w3emc/install -DCMAKE_PREFIX_PATH=$nceplibs_dir/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
+cmake ${cmake_flags} -DCMAKE_C_STANDARD=90 -DCMAKE_PREFIX_PATH=$nceplibs_dir/NCEPLIBS-bacio/install/lib/cmake/bacio/ .
 make -j8 w3emc_d
 make install
 popd
 
 git clone -b $version_w3nco https://github.com/NOAA-EMC/NCEPLIBS-w3nco
 pushd NCEPLIBS-w3nco
-cmake ${cmake_flags} -DCMAKE_INSTALL_PREFIX=$nceplibs_dir/NCEPLIBS-w3nco/install .
+cmake ${cmake_flags} -DCMAKE_C_STANDARD=90 .
 make -j8 w3nco_d
 make install
 popd
