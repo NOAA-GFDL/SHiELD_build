@@ -82,8 +82,8 @@ release="FV3-202411-public"
 
 fv3_release=$release
 phy_release=$release
-fms_release="2024.03"
-fms_c_release="2024.03.01"
+fms_release="2025.01"
+fms_c_release="2025.01.01"
 drivers_release=$release
 
 git clone -b ${fv3_release} https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
