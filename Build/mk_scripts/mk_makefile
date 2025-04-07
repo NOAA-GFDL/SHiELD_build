@@ -131,11 +131,11 @@ fi
 ############################
 #---ADD LIBS TO FINAL LINK
 ############################
-sed 's/LDFLAGS/NCEPLIBS) $(LDFLAGS/g' < Makefile_fv3 > OUT
+sed 's/LDFLAGS/EXTERNALLIBS) $(LDFLAGS/g' < Makefile_fv3 > OUT
 mv OUT Makefile_fv3
 
 if [ ${CONFIG} = 'shield' ] ||  [ ${CONFIG} = 'shieldfull' ] || [ ${CONFIG} = 'shiemom' ] ; then
-  sed 's/LDFLAGS/NCEPLIBS) $(LDFLAGS/g' < Makefile_driver > OUT
+  sed 's/LDFLAGS/EXTERNALLIBS) $(LDFLAGS/g' < Makefile_driver > OUT
   mv OUT Makefile_driver
 fi
 ############################
