@@ -202,7 +202,7 @@ case $hostname in
       export CC=mpiicx
       export CXX=mpicpc
       export LD=mpiifort
-      export TEMPLATE=site/intel.mk
+      export TEMPLATE=site/intel-icx.mk
       export LAUNCHER="mpirun -prepend-rank"
 
       # highest level of AVX support
