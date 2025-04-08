@@ -60,19 +60,19 @@ version_w3nco="v2.4.1"
   done
 
 # set up some default variables if not called from COMPILE
-# NCEP_DIR is set if this script is called from the COMPILE script
+# LIBS_DIR is set if this script is called from the COMPILE script
 # EXTERNAL_LIBS is set if using external location for storage of nceplibs
-if [ -z ${NCEP_DIR} ] ; then
+if [ -z ${LIBS_DIR} ] ; then
    BUILD_ROOT=${PWD%/*}
-   NCEP_DIR=${BUILD_ROOT}/Build
+   LIBS_DIR=${BUILD_ROOT}/Build
    if [ ! -z ${EXTERNAL_LIBS} ] ; then
-   NCEP_DIR=${EXTERNAL_LIBS}
+   LIBS_DIR=${EXTERNAL_LIBS}
    fi
    # load the proper environment for your machine
    . ${BUILD_ROOT}/site/environment.${compiler}.sh
 fi
 
-nceplibs_dir=${NCEP_DIR}/nceplibs/${compiler}
+nceplibs_dir=${LIBS_DIR}/nceplibs/${compiler}
 \rm -rf $nceplibs_dir
 mkdir -p $nceplibs_dir
 cd $nceplibs_dir
