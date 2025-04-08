@@ -150,7 +150,7 @@ fi
 export BUILD_ROOT=${PWD%/*}
 export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
 export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
-export NCEP_DIR=${BUILD_ROOT}/Build
+export LIBS_DIR=${BUILD_ROOT}/Build
 
 #
 # load the proper environment for your machine
@@ -197,8 +197,8 @@ fi
      \rm -rf libFMS/${compiler}/*
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
      \rm -rf nceplibs/${compiler}/*
-     \rm -rf mom6/*
-     \rm -rf sis2/*
+     \rm -rf mom6/${compiler}/*
+     \rm -rf sis2/${compiler}/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
@@ -206,39 +206,40 @@ fi
   elif [ ${clean} = "cleanmom" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
-     \rm -rf mom6/*
-     \rm -rf sis2/*
+     \rm -rf mom6/${compiler}/*
+     \rm -rf sis2/${compiler}/*
+     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
   fi
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
 #    EXTERNAL_LIBS as the location of nceplibs and libFMS
   if [ ! -z ${EXTERNAL_LIBS} ] ; then
     echo " External Libraries are being used: ${EXTERNAL_LIBS}"
-    export NCEP_DIR=${EXTERNAL_LIBS}
+    export LIBS_DIR=${EXTERNAL_LIBS}
   fi
 #
 # check to make sure libFMS exists
-  if [ -d ${NCEP_DIR}/libFMS/${compiler} ] && [ -e ${NCEP_DIR}/libFMS/${compiler}/32bit/libFMS.a ] && \
-     [ -e ${NCEP_DIR}/libFMS/${compiler}/64bit/libFMS.a ] ; then
-     echo " pre-built ${NCEP_DIR}/libFMS/${compiler} exists"
+  if [ -d ${LIBS_DIR}/libFMS/${compiler} ] && [ -e ${LIBS_DIR}/libFMS/${compiler}/32bit/libFMS.a ] && \
+     [ -e ${LIBS_DIR}/libFMS/${compiler}/64bit/libFMS.a ] ; then
+     echo " pre-built ${LIBS_DIR}/libFMS/${compiler} exists"
   else
-     echo " ${NCEP_DIR}/libFMS/${compiler} does not exist"
+     echo " ${LIBS_DIR}/libFMS/${compiler} does not exist"
      ./BUILDlibfms ${compiler} ${pic}
      if [ $? -ne 0 ] ; then
-        echo ">>> ${NCEP_DIR}/Libfms/${compiler} build failed"
+        echo ">>> ${LIBS_DIR}/Libfms/${compiler} build failed"
         exit 2
      fi
   fi
 # check to make sure nceplibs exists
-  if [ -d ${NCEP_DIR}/nceplibs/${compiler} ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && \
-     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libsp_d.a ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libw3emc_d.a ] && \
-     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libw3nco_d.a ] ; then
-     echo " pre-built ${NCEP_DIR}/nceplibs/${compiler} exists"
+  if [ -d ${LIBS_DIR}/nceplibs/${compiler} ] && [ -e ${LIBS_DIR}/nceplibs/${compiler}/libbacio.a ] && \
+     [ -e ${LIBS_DIR}/nceplibs/${compiler}/libsp_d.a ] && [ -e ${LIBS_DIR}/nceplibs/${compiler}/libw3emc_d.a ] && \
+     [ -e ${LIBS_DIR}/nceplibs/${compiler}/libw3nco_d.a ] ; then
+     echo " pre-built ${LIBS_DIR}/nceplibs/${compiler} exists"
   else
-     echo " ${NCEP_DIR}/nceplibs/${compiler} does not exist"
+     echo " ${LIBS_DIR}/nceplibs/${compiler} does not exist"
      ./BUILDnceplibs ${compiler} ${pic}
      if [ $? -ne 0 ] ; then
-        echo ">>> ${NCEP_DIR}/ncepdir/${compiler} build failed"
+        echo ">>> ${LIBS_DIR}/ncepdir/${compiler} build failed"
         exit 3
      fi
   fi
@@ -247,20 +248,30 @@ if [ $config = "shiemom" ] ; then
 # from lauren
   # I think mom6 needs to be built in 64bit for now?
   # I can only get it to compiler with 64bit FMS
-  ./BUILDmom6 ${comp} ${compiler}
+  if [ -d ${LIBS_DIR}/mom6/${compiler} ] && [ -e ${LIBS_DIR}/mom6/${compiler}/libmom6.a ] ; then
+     echo " pre-built ${LIBS_DIR}/mom6/${compiler} exists"
+  else
+     echo " ${LIBS_DIR}/mom6/${compiler} does not exist"
+     ./BUILDmom6 ${comp} ${compiler}
      if [ $? -ne 0 ] ; then
         echo " MOM6 build failed"
         exit
      fi
      echo "DONE WITH MOM6"
+  fi
 
 # for sis2
-  ./BUILDsis2 ${comp} ${compiler}
+  if [ -d ${LIBS_DIR}/sis2/${compiler} ] && [ -e ${LIBS_DIR}/sis2/${compiler}/libsis2.a ] ; then
+     echo " pre-built ${LIBS_DIR}/sis2/${compiler} exists"
+  else
+     echo " ${LIBS_DIR}/sis2/${compiler} does not exist"
+     ./BUILDsis2 ${comp} ${compiler}
      if [ $? -ne 0 ] ; then
         echo " SIS2 build failed"
         exit
      fi
      echo "DONE WITH SIS2"
+  fi
 fi
 
 #
