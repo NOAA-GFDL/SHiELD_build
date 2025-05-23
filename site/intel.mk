@@ -77,7 +77,7 @@ TRANSCENDENTALS := -fast-transcendentals
 FFLAGS_OPENMP = -qopenmp
 FFLAGS_VERBOSE = -v -V -what
 
-CFLAGS := -D__IFC -sox -msse2 -fp-model source
+CFLAGS := -D__IFC -sox -msse2
 ifeq ($(AVX2),Y)
 #CFLAGS += -xHOST -xCORE-AVX2 -qno-opt-dynamic-align
 endif

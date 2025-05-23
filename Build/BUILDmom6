@@ -67,9 +67,9 @@ if [ -z ${BUILD_ROOT} ] ; then
    export BUILD_ROOT=${PWD%/*}
    export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
    export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
-   export NCEP_DIR=${BUILD_ROOT}/Build
+   export LIBS_DIR=${BUILD_ROOT}/Build
    if [ ! -z ${EXTERNAL_LIBS} ] ; then
-      export NCEP_DIR=${EXTERNAL_LIBS}
+      export LIBS_DIR=${EXTERNAL_LIBS}
    fi
    # load the proper environment for your machine
    . ${BUILD_ROOT}/site/environment.${COMPILER}.sh
@@ -77,8 +77,8 @@ fi
 
 
 
-mkdir -p ${BUILD_ROOT}/Build/mom6
-list_paths -l -o ${BUILD_ROOT}/Build/mom6/pathnames_mom6 \
+mkdir -p ${LIBS_DIR}/mom6/${COMPILER}
+list_paths -l -o ${LIBS_DIR}/mom6/${COMPILER}/pathnames_mom6 \
     ${SHiELD_SRC}/MOM6/config_src/memory/dynamic_nonsymmetric \
     ${SHiELD_SRC}/MOM6/config_src/drivers/FMS_cap \
     ${SHiELD_SRC}/MOM6/src/*/ \
@@ -90,16 +90,16 @@ list_paths -l -o ${BUILD_ROOT}/Build/mom6/pathnames_mom6 \
     ${SHiELD_SRC}/MOM6/config_src/external/GFDL_ocean_BGC \
     ${SHiELD_SRC}/MOM6/pkg/GSW-Fortran/*/ \
     ${SHiELD_SRC}/MOM6/config_src/infra/FMS2
-cd ${BUILD_ROOT}/Build
+cd ${LIBS_DIR}
 
-pushd mom6
+pushd mom6/${COMPILER}
 
 mkmf -m Makefile -a ${SHiELD_SRC} -p libmom6.a -t "${BUILD_ROOT}/${TEMPLATE}" \
-     -c "-DINTERNAL_FILE_NML -g -DMAX_FIELDS_=100 -DNOT_SET_AFFINITY -D_USE_MOM6_DIAG -D_USE_GENERIC_TRACER -DUSE_PRECISION=2 -I${NCEP_DIR}/libFMS/${COMPILER}/${BIT}" \
+     -c "-DINTERNAL_FILE_NML -g -DMAX_FIELDS_=100 -DNOT_SET_AFFINITY -D_USE_MOM6_DIAG -D_USE_GENERIC_TRACER -DUSE_PRECISION=2 -I${LIBS_DIR}/libFMS/${COMPILER}/${BIT}" \
      -I${SHiELD_SRC}/FMS/axis_utils/include -I${SHiELD_SRC}/FMS/diag_manager/include -I${SHiELD_SRC}/FMS/fms/include -I${SHiELD_SRC}/FMS/fms2_io/include \
      -I${SHiELD_SRC}/FMS/horiz_interp/include -I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/FMS/mpp/include -I${SHiELD_SRC}/FMS/sat_vapor_pres/include \
      -I${SHiELD_SRC}/FMS/string_utils/include -I${SHiELD_SRC}/FMS/test_fms/fms/include  \
-     -I${SHiELD_SRC}/MOM6/src/framework ${BUILD_ROOT}/Build/mom6/pathnames_mom6
+     -I${SHiELD_SRC}/MOM6/src/framework ${LIBS_DIR}/mom6/${COMPILER}/pathnames_mom6
 
 make -j8 ${COMP} AVX=Y NETCDF=3 Makefile libmom6.a >& Build_mom6.out
 
@@ -109,7 +109,7 @@ make -j8 ${COMP} AVX=Y NETCDF=3 Makefile libmom6.a >& Build_mom6.out
 
 # test and report on libFMS build success
 if [ $? -ne 0 ] ; then
-  echo ">>> ${BUILD_ROOT}/Build/mom6 build failed"
+  echo ">>> ${LIBS_DIR}/mom6/${COMPILER} build failed"
   exit 1
 fi
 echo " libmom6 build successful"
