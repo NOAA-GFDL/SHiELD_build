@@ -64,13 +64,10 @@ spin()
   for arg in "$@"
   do
       case $arg in
-          shield|solo|shieldfull|shiemom)
+          shield|solo|shield|shiemom)
              config="${arg#*=}"
              if [ $config = 'solo' ] ; then
                config_name="SOLO"
-             fi
-             if [ $config = 'shieldfull' ] ; then
-               config_name="SHiELDFULL"
              fi
              if [ $config = 'shiemom' ] ; then
                config_name="SHiEMOM"
@@ -121,7 +118,7 @@ spin()
           fi
           echo -e ' '
           echo -e "valid options are:"
-          echo -e "\t[shield(D) | shieldfull | solo | shiemom] \t\t\t configuration"
+          echo -e "\t[shield(D)  | solo | shiemom] \t\t\t configuration"
           echo -e "\t[nh(D) | hydro | sw] \t\t\t executable configuration"
           echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
           echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
