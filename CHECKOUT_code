@@ -39,16 +39,13 @@ config_name="SHiELD"
 for arg in "$@"
   do
       case $arg in
-          solo|shield|shieldfull|shiemom)
+          solo|shield|shiemom)
              config="${arg#*=}"
              if [ $config = 'solo' ] ; then
                config_name="SOLO"
              fi
              if [ $config = 'shield' ] ; then
                config_name="SHiELD"
-             fi
-             if [ $config = 'shieldfull' ] ; then
-               config_name="SHiELDFULL"
              fi
              if [ $config = 'shiemom' ] ; then
                config_name="SHiEMOM"
@@ -63,7 +60,6 @@ for arg in "$@"
           echo -e "valid options are:"
           echo -e "\t[solo]       \t\t\t SOLO FV3 configuration"
           echo -e "\t[shield]     \t\t\t SHiELD configuration"
-          echo -e "\t[shieldfull] \t\t\t SHiELD with the full coupler configuration"
           echo -e "\t[shiemom]    \t\t\t SHiEMOM (SHiELD+MOM6/SIS2) configuration"
           echo -e "\n"
           exit
@@ -90,12 +86,12 @@ git clone -b ${fv3_release} https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
 git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
 
-if [ $config_name = 'SHiELD' ] || [ $config_name = 'SHiELDFULL' ] || [ $config_name = 'SHiEMOM' ] ; then
+if [ $config_name = 'SHiELD' ] || [ $config_name = 'SHiEMOM' ] ; then
    git clone -b ${phy_release} https://github.com/NOAA-GFDL/SHiELD_physics
    git clone -b ${fms_c_release} https://github.com/NOAA-GFDL/FMSCoupler
 fi
 
-if [ $config_name = 'SHiELDFULL' ] ; then
+if [ $config_name = 'SHiELD' ] ; then
    git clone  https://github.com/NOAA-GFDL/ocean_null
    git clone  https://github.com/NOAA-GFDL/land_null
    git clone  https://github.com/NOAA-GFDL/ice_null
