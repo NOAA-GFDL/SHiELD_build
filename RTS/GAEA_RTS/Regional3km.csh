@@ -448,12 +448,19 @@ cat >! input.nml <<EOF
        minutes = $minutes
        seconds = $seconds
        dt_atmos = $dt_atmos
-       dt_ocean = $dt_atmos
+       !dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
        !memuse_verbose = .T.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
+       ice_npes = -1
+       land_npes = -1
+       do_ocean=.False.
+       dt_cpld = $dt_atmos
+       do_flux=.False.
+       do_land=.False.
+       do_ice=.False.
 /
 
  &external_ic_nml 
