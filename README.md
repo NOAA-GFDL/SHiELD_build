@@ -29,8 +29,7 @@ Be sure to download the mkmf submodule prior to beginning.  To use:
  2) cd Build and execute ./COMPILE script with the --help option to see usage
 
  3) COMPILE:
-    - ./COMPILE shield:     will compile shield with simple coupler
-    - ./COMPILE shieldfull: will compile shield with full coupler (utilizing null modules for ocean, land, ice)
+    - ./COMPILE shield: will compile shield with full coupler (utilizing null modules for ocean, land, ice)
     - ./COMPILE shiemom:    will compile mom6, sis2, fv3, gfs as libraries and link them to the full coupler (no null ocean and ice modules.)
 
       Example: ./COMPILE shield nh repro 32bit intel
