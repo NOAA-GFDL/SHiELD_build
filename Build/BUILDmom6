@@ -88,6 +88,7 @@ list_paths -l -o ${LIBS_DIR}/mom6/${COMPILER}/pathnames_mom6 \
     ${SHiELD_SRC}/MOM6/config_src/external/drifters \
     ${SHiELD_SRC}/MOM6/config_src/external/stochastic_physics \
     ${SHiELD_SRC}/MOM6/config_src/external/GFDL_ocean_BGC \
+    ${SHiELD_SRC}/MOM6/config_src/external/MARBL \
     ${SHiELD_SRC}/MOM6/pkg/GSW-Fortran/*/ \
     ${SHiELD_SRC}/MOM6/config_src/infra/FMS2
 cd ${LIBS_DIR}
