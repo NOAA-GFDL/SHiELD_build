@@ -36,10 +36,10 @@ case $hostname in
        module load   PrgEnv-gnu
        module rm gcc
        module load gcc-native/13.2
-       module load cray-hdf5/1.12.2.11
-       module load cray-netcdf/4.9.0.11
+       module load cray-hdf5/1.14.3.5
+       module load cray-netcdf/4.9.0.17
        module load craype-hugepages4M
-       module load cmake/3.23.1
+       module load cmake/3.27.9
        module load libyaml/0.2.5
 
        # Add -DHAVE_GETTID to the FMS cppDefs
