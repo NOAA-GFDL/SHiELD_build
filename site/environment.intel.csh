@@ -88,8 +88,9 @@ switch ($hostname)
       module load cmake/3.19.7
       module load intel/2021.1.2
       module load openmpi/intel-2021.1/4.1.2
-      module load netcdf/intel-2021.1/hdf5-1.10.6/4.7.4
       module load hdf5/intel-2021.1/1.10.6
+      module load netcdf/intel-2021.1/hdf5-1.10.6/4.7.4
+
 
       setenv FMS_CPPDEFS=""
 
