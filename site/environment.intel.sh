@@ -75,7 +75,7 @@ case $hostname in
       module rm gcc
       module load intel-classic/2023.2.0
       module unload cray-libsci
-      module load cray-hdf5/1.12.2.1
+      module load cray-hdf5/1.12.2.11
       module load cray-netcdf/4.9.0.9
       module load craype-hugepages4M
       module load cmake/3.27.9
