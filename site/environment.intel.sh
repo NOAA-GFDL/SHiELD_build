@@ -57,6 +57,9 @@ case $hostname in
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
 
+      #need to add this for dynamically linking on GAEA
+      export LD_LIBRARY_PATH=${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
+
       # highest level of AVX support
       export AVX_LEVEL=-march=core-avx-i
       echo -e ' '
@@ -93,6 +96,9 @@ case $hostname in
       export LD=ftn
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
+
+      #need to add this for dynamically linking on GAEA
+      export LD_LIBRARY_PATH=${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
       # highest level of AVX support
       export AVX_LEVEL=-march=core-avx-i

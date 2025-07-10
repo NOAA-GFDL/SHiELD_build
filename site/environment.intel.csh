@@ -48,7 +48,7 @@ switch ($hostname)
       #module load libyaml/0.2.5
 
       setenv LAUNCHER "srun"
-      setenv LD_LIBRARY_PATH ${NETCDF_DIR}/lib:${HDF5_DIR}/lib:${LD_LIBRARY_PATH}
+      setenv LD_LIBRARY_PATH ${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
       echo -e ' '
       module list
@@ -77,7 +77,7 @@ switch ($hostname)
       setenv FI_VERBS_PREFER_XRC 0
 
       setenv LAUNCHER "srun"
-      setenv LD_LIBRARY_PATH ${NETCDF_DIR}/lib:${HDF5_DIR}/lib:${LD_LIBRARY_PATH}
+      setenv LD_LIBRARY_PATH ${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
       echo -e ' '
       module list
