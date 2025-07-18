@@ -64,13 +64,16 @@ spin()
   for arg in "$@"
   do
       case $arg in
-          shield|solo|shield|shiemom)
+          shield|solo|shield|shiemom|shiemom_lm4)
              config="${arg#*=}"
              if [ $config = 'solo' ] ; then
                config_name="SOLO"
              fi
              if [ $config = 'shiemom' ] ; then
                config_name="SHiEMOM"
+             fi
+             if [ $config = 'shiemom_lm4' ] ; then
+               config_name="SHiEMOM_LM4"
              fi
              shift # Remove "config" from processing
              ;;
@@ -118,7 +121,7 @@ spin()
           fi
           echo -e ' '
           echo -e "valid options are:"
-          echo -e "\t[shield(D)  | solo | shiemom] \t\t\t configuration"
+          echo -e "\t[shield(D)  | solo | shiemom | shiemom_lm4] \t\t\t configuration"
           echo -e "\t[nh(D) | hydro | sw] \t\t\t executable configuration"
           echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
           echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
@@ -141,6 +144,12 @@ if [ $compiler = "nvhpc" ] && [ $config = "shiemom" ] ; then
   echo -e ">>> option '$compiler' with '$config' is not a valid configuration"
   exit 1
 fi
+
+if [ $compiler = "nvhpc" ] && [ $config = "shiemom_lm4" ] ; then
+  echo -e ">>> option '$compiler' with '$config' is not a valid configuration"
+  exit 1
+fi
+
 
 #
 # set up some default variables for use within the helper scripts
@@ -241,7 +250,7 @@ fi
      fi
   fi
 
-if [ $config = "shiemom" ] ; then
+if [ $config = "shiemom" ] || [ $config = "shiemom_lm4" ]  ; then
 # from lauren
   # I think mom6 needs to be built in 64bit for now?
   # I can only get it to compiler with 64bit FMS
@@ -269,6 +278,20 @@ if [ $config = "shiemom" ] ; then
      fi
      echo "DONE WITH SIS2"
   fi
+fi
+
+if [ $config = "shiemom_lm4" ] ; then
+  if [ -d ${LIBS_DIR}/lm4/${compiler} ] && [ -e ${LIBS_DIR}/lm4/${compiler}/liblm4.a ] ; then
+       echo " pre-built ${LIBS_DIR}/lm4/${compiler} exists"
+    else
+       echo " ${LIBS_DIR}/lm4/${compiler} does not exist"
+       ./BUILDlm4 ${comp} ${compiler}
+       if [ $? -ne 0 ] ; then
+          echo " LM4 build failed"
+          exit
+       fi
+       echo "DONE WITH LM4"
+    fi
 fi
 
 #
