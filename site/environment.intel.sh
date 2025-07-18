@@ -40,10 +40,10 @@ case $hostname in
       module rm gcc
       module load intel-classic/2023.2.0
       module unload cray-libsci
-      module load cray-hdf5
-      module load cray-netcdf
+      module load cray-hdf5/1.12.2.11
+      module load cray-netcdf/4.9.0.9
       module load craype-hugepages4M
-      #module load cmake/3.23.1
+      #module load cmake/3.27.9
       #module load libyaml/0.2.5
 
       # Add -DHAVE_GETTID to the FMS cppDefs
@@ -56,6 +56,9 @@ case $hostname in
       export LD=ftn
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
+
+      #need to add this for dynamically linking on GAEA
+      export LD_LIBRARY_PATH=${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
       # highest level of AVX support
       export AVX_LEVEL=-march=core-avx-i
@@ -76,9 +79,9 @@ case $hostname in
       module load intel-classic/2023.2.0
       module unload cray-libsci
       module load cray-hdf5/1.12.2.11
-      module load cray-netcdf/4.9.0.11
+      module load cray-netcdf/4.9.0.9
       module load craype-hugepages4M
-      module load cmake/3.23.1
+      module load cmake/3.27.9
       module load libyaml/0.2.5
 
       # Add -DHAVE_GETTID to the FMS cppDefs
@@ -93,6 +96,9 @@ case $hostname in
       export LD=ftn
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
+
+      #need to add this for dynamically linking on GAEA
+      export LD_LIBRARY_PATH=${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
       # highest level of AVX support
       export AVX_LEVEL=-march=core-avx-i
