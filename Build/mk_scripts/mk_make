@@ -41,7 +41,7 @@ pic="nopic"
 for arg in "$@"
 do
     case $arg in
-        shield|solo|shiemom)
+        shield|solo|shiemom|shiemom_lm4)
           CONFIG="${arg#*=}"
           shift # Remove CONFIG from processing
           ;;
@@ -103,15 +103,23 @@ elif [ ${CONFIG} = 'shiemom'  ] ; then
   EXTERNALLIBS+=" ${LIBS_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
   EXTERNALLIBS+=" ./libgfs.a"
   EXTERNALLIBS+=" -L${LIBS_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+elif [ ${CONFIG} = 'shiemom_lm4'  ] ; then
+  EXTERNALLIBS="./libfv3.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/sis2/${COMPILER}/libsis2.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/mom6/${COMPILER}/libmom6.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/lm4/${COMPILER}/liblm4.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
+  EXTERNALLIBS+=" ./libgfs.a"
+  EXTERNALLIBS+=" -L${LIBS_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
 fi
 
-if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ]  ; then
+if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] ||  [ ${CONFIG} = 'shiemom_lm4' ]   ; then
   (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} PIC=${PIC} -f Makefile_gfs)
 fi
 
 (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_fv3)
 
-if   [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] ; then
+if   [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] || [ ${CONFIG} = 'shiemom_lm4' ]  ; then
    (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} PIC=${PIC} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_driver)
 fi
 exit 0
