@@ -129,7 +129,6 @@ elif  [ ${CONFIG} = 'shiemom_lm4' ] ; then
       GFDL_atmos_cubed_sphere/driver/SHiELD/atmosphere.F90
 
   list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \
-      LM4p/ \
       atmos_drivers/SHiELD/ \
       GFDL_atmos_cubed_sphere/driver/SHiELD/atmosphere.F90 \
       FMSCoupler/full/ \
