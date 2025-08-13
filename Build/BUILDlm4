@@ -42,21 +42,21 @@ set -x
           fi
           shift # Remove COMP from processing
           ;;
-          intel|gnu)
-             COMPILER="${arg#*=}"
-             shift # Remove "compiler" from processing
-             ;;
-          *)
-          if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
-            echo "option "${arg#}" not found"
-          fi
-          echo -e ' '
-          echo -e "valid options are:"
-          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
-          echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
-          echo -e "\n"
-          exit
+        intel|gnu)
+          COMPILER="${arg#*=}"
+          shift # Remove "compiler" from processing
           ;;
+        *)
+        if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
+          echo "option "${arg#}" not found"
+        fi
+        echo -e ' '
+        echo -e "valid options are:"
+        echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+        echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
+        echo -e "\n"
+        exit
+        ;;
       esac
   done
 
