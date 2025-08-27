@@ -1,6 +1,6 @@
 # SHiELD Build System
 
-The scripts contained herein can be used to build GFDL's SHiELD and FV3 Solo models.
+The scripts contained herein can be used to build GFDL's [SHiELD](https://www.gfdl.noaa.gov/shield/) and [FV3](https://www.gfdl.noaa.gov/fv3) solo_core models.
 
 # What files are what
 
@@ -10,7 +10,7 @@ The top level directory structure groups source code and input files as follow:
 | --------------       | ------- |
 | ```LICENSE.md```     | copy of the Gnu Lesser General Public license, version 3 |
 | ```README.md```      | this file with basic pointers to more information |
-| ```CHECKOUT_code```  | script to download necessary source for proper build GFDL's SHield and FV3 Solo models <sup>*</sup>|
+| ```CHECKOUT_code```  | script to download necessary source for proper build GFDL's SHiELD and FV3 solo_core models <sup>*</sup>|
 | ```Build/```         | contains scripts used for building models listed above |
 | ```mkmf/```          | submodule entry point for the externally managed [mkmf software](https://github.com/NOAA-GFDL/mkmf) |
 | ```RTS/```           | contains scripts for use in CI software regression testing (see [RTS/README.md](https://github.com/NOAA-GFDL/SHiELD_build/blob/main/RTS/README.md))|
@@ -35,6 +35,8 @@ Be sure to download the mkmf submodule prior to beginning.  To use:
       Example: ./COMPILE shield nh repro 32bit intel
 
 For instructions on transitioning or running SHiELD with the FMS full coupler infrastructure, please refer to the documentation and resources available at [doi.org/10.25923/ezfm-az21](https://repository.library.noaa.gov/view/noaa/66759)
+
+SHiELD uses the [GFDL FRE-NCtools](https://github.com/NOAA-GFDL/FRE-NCtools) to create grids and mosaics and to perform post-processing, [UFS_UTILS](https://github.com/ufs-community/UFS_UTILS) to create initial and boundary conditions from global analyses, and [fixed input files](https://noaa-ufs-srw-pds.s3.amazonaws.com/index.html#develop-20250702/fix/) from the UFS applications. A container, [SHiELD-in-a-Box](https://shield.gfdl.noaa.gov/shield-in-a-box/), is provided to ease deployment of either SHiELD or the FV3 solo_core on a variety of computing systems.
 
 # Disclaimer
 
