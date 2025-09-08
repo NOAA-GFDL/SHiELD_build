@@ -64,7 +64,7 @@ spin()
   for arg in "$@"
   do
       case $arg in
-          shield|solo|shield|shiemom|shiemom_lm4)
+          shield|solo|shiemom|shiemom_lm4)
              config="${arg#*=}"
              if [ $config = 'solo' ] ; then
                config_name="SOLO"

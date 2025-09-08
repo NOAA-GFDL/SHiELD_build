@@ -503,7 +503,7 @@ cat >! input.nml <<EOF
        minutes = $minutes
        seconds = $seconds
        dt_atmos = $dt_atmos
-       dt_ocean = $dt_atmos
+       !dt_ocean = $dt_atmos
        current_date =  $curr_date
        calendar = 'julian'
        !memuse_verbose = .T.
