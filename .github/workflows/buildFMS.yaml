@@ -1,0 +1,32 @@
+name: Build FMS
+
+
+# This GitHub Action Workflow is running on the cloud gclustercishieldbuild cluster
+# The tests are run inside of a container with the following software/libraries:
+# -intel: 2023.2.0
+# -hdf5: 1.14.0
+# -netcdf-c: 4.9.2
+# -netcdf-fortran: 4.6.0
+# -cmake
+# -libyaml
+
+on:
+  pull_request:
+    branches:
+      - main
+
+#this should cancel in progress ci runs for the same PR 
+#(e.g. a second commit on the same PR comes in while CI is still running)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  FMS:
+    if: github.repository == 'NOAA-GFDL/SHiELD_build'
+    runs-on: [shieldbuild]
+    name: Build FMS
+    steps:
+      - run: /contrib/fv3/SHiELD_build_CI/checkout_fms.sh -b $GITHUB_REF -h $GITHUB_SHA
+      
+      
