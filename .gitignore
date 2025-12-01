@@ -8,3 +8,7 @@ libFMS
 nceplibs
 *.out
 .lib*
+sis2
+mom6
+lm4
+release
