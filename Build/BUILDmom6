@@ -79,7 +79,7 @@ fi
 
 mkdir -p ${LIBS_DIR}/mom6/${COMPILER}
 list_paths -l -o ${LIBS_DIR}/mom6/${COMPILER}/pathnames_mom6 \
-    ${SHiELD_SRC}/MOM6/config_src/memory/dynamic_nonsymmetric \
+    ${SHiELD_SRC}/MOM6/config_src/memory/dynamic_symmetric \
     ${SHiELD_SRC}/MOM6/config_src/drivers/FMS_cap \
     ${SHiELD_SRC}/MOM6/src/*/ \
     ${SHiELD_SRC}/MOM6/src/*/*/ \
