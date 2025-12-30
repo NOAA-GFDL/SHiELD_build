@@ -110,7 +110,7 @@ elif [ ${CONFIG} = 'shiemom' ]; then
            -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
   mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
-           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMPILER} -I${LIBS_DIR}/sis2/${COMPILER}" \
+           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER}" \
            ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
 
 elif [ ${CONFIG} = 'shiemom_lm4' ]; then
@@ -122,7 +122,7 @@ elif [ ${CONFIG} = 'shiemom_lm4' ]; then
            -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
   mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
-           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMPILER} -I${LIBS_DIR}/sis2/${COMPILER} -I${LIBS_DIR}/lm4/${COMPILER}" \
+           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER}" \
            ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
 
 
