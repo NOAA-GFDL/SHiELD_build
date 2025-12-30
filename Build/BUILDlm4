@@ -29,6 +29,7 @@ set -x
   COMPILER="intel"
   BIT="64bit"
   COMP="" # implies PROD=Y
+  TARGET="prod"
 #
 # parse arguments
   for arg in "$@"
@@ -40,15 +41,12 @@ set -x
           elif [ ${arg#} = 'debug' ] ; then
             COMP="DEBUG=Y"
           fi
+	  TARGET="${arg#*=}"
           shift # Remove COMP from processing
           ;;
         intel|gnu)
           COMPILER="${arg#*=}"
           shift # Remove "compiler" from processing
-          ;;
-        32bit|64bit)
-          BIT="${arg#*=}"
-          shift
           ;;
         shield|solo|shiemom|shiemom_lm4)
           CONFIG="${arg#*=}"
@@ -88,12 +86,12 @@ fi
 
 
 
-mkdir -p ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}
-list_paths -l -o ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_lm4 \
+mkdir -p ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}
+list_paths -l -o ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}/pathnames_lm4 \
     ${SHiELD_SRC}/LM4p 
 cd ${LIBS_DIR}
 
-pushd lm4/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}
+pushd lm4/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}
 
  
 mkmf -m Makefile -a ${SHiELD_SRC} -p liblm4.a -t "${BUILD_ROOT}/${TEMPLATE}" \
@@ -103,7 +101,7 @@ mkmf -m Makefile -a ${SHiELD_SRC} -p liblm4.a -t "${BUILD_ROOT}/${TEMPLATE}" \
      -I${SHiELD_SRC}/FMS/fms/include -I${SHiELD_SRC}/FMS/fms2_io/include -I${SHiELD_SRC}/FMS/horiz_interp/include -I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/FMS/interpolator/include \
      -I${SHiELD_SRC}/FMS/monin_obukhov/include -I${SHiELD_SRC}/FMS/mosaic2/include -I${SHiELD_SRC}/FMS/mpp/include -I${SHiELD_SRC}/FMS/random_numbers/include -I${SHiELD_SRC}/FMS/sat_vapor_pres/include \
      -I${SHiELD_SRC}/FMS/string_utils/include -I${SHiELD_SRC}/FMS/test_fms/data_override/include -I${SHiELD_SRC}/FMS/test_fms/fms/include -I${SHiELD_SRC}/FMS/time_interp/include \
-     -I${SHiELD_SRC}/FMS/topography/include -I${SHiELD_SRC}/FMS/tracer_manager/include -I${SHiELD_SRC}/FMS/tridiagonal/include ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_lm4
+     -I${SHiELD_SRC}/FMS/topography/include -I${SHiELD_SRC}/FMS/tracer_manager/include -I${SHiELD_SRC}/FMS/tridiagonal/include ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}/pathnames_lm4
  
 make -j8 ${COMP} AVX=Y NETCDF=3 Makefile liblm4.a >& Build_lm4.out
 
@@ -113,7 +111,7 @@ make -j8 ${COMP} AVX=Y NETCDF=3 Makefile liblm4.a >& Build_lm4.out
 
 # test and report on libFMS build success
 if [ $? -ne 0 ] ; then
-  echo ">>> ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER} build failed"
+  echo ">>> ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER} build failed"
   exit 1
 fi
 echo " liblm4 build successful"

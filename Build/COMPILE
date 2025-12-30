@@ -107,7 +107,7 @@ spin()
                sleep 20
              fi
              ;;
-          noclean|clean|cleanmom|cleanall)
+          noclean|clean|cleanall)
              clean="${arg#*=}"
              shift # Remove "clean" from processing
              ;;
@@ -203,17 +203,15 @@ fi
      \rm -rf libFMS/${compiler}/*
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
      \rm -rf nceplibs/${compiler}/*
-     \rm -rf mom6/${compiler}/*
-     \rm -rf sis2/${compiler}/*
+     \rm -rf mom6/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+     \rm -rf sis2/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+     \rm -rf lm4/${config}_${hydro}.${comp}.${bit}.${compiler}/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
-     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
-  elif [ ${clean} = "cleanmom" ] ; then
-     echo " cleaning build directory in 2 seconds"
-     sleep 2
-     \rm -rf mom6/${compiler}/*
-     \rm -rf sis2/${compiler}/*
+     \rm -rf mom6/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+     \rm -rf lm4/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+     \rm -rf sis2/${config}_${hydro}.${comp}.${bit}.${compiler}/*
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
   fi
 
@@ -254,11 +252,11 @@ if [ $config = "shiemom" ] || [ $config = "shiemom_lm4" ]  ; then
 # from lauren
   # I think mom6 needs to be built in 64bit for now?
   # I can only get it to compiler with 64bit FMS
-  if [ -d ${LIBS_DIR}/mom6/${compiler} ] && [ -e ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${compiler}/libmom6.a ] ; then
-     echo " pre-built ${LIBS_DIR}/mom6/${compiler} exists"
+  if [ -d ${LIBS_DIR}/mom6/${config}_${hydro}.${comp}.64bit.${compiler} ] && [ -e ${LIBS_DIR}/mom6/${config}_${hydro}.${comp}.64bit.${compiler}/libmom6.a ] ; then
+     echo " pre-built ${LIBS_DIR}/mom6/${config}_${hydro}.${comp}.64bit.${compiler} exists"
   else
-     echo " ${LIBS_DIR}/mom6/${compiler} does not exist"
-     ./BUILDmom6 ${comp} ${compiler}
+     echo " ${LIBS_DIR}/mom6/${config}_${hydro}.${comp}.64bit.${compiler} does not exist"
+     ./BUILDmom6 ${config} ${hydro} ${comp} ${compiler}
      if [ $? -ne 0 ] ; then
         echo " MOM6 build failed"
         exit
@@ -267,11 +265,11 @@ if [ $config = "shiemom" ] || [ $config = "shiemom_lm4" ]  ; then
   fi
 
 # for sis2
-  if [ -d ${LIBS_DIR}/sis2/${compiler} ] && [ -e ${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${compiler}/libsis2.a ] ; then
+  if [ -d ${LIBS_DIR}/sis2/${config}_${hydro}.${comp}.64bit.${compiler} ] && [ -e ${LIBS_DIR}/sis2/${config}_${hydro}.${comp}.64bit.${compiler}/libsis2.a ] ; then
      echo " pre-built ${LIBS_DIR}/sis2/${compiler} exists"
   else
-     echo " ${LIBS_DIR}/sis2/${compiler} does not exist"
-     ./BUILDsis2 ${comp} ${compiler}
+     echo " ${LIBS_DIR}/sis2/${config}_${hydro}.${comp}.64bit.${compiler} does not exist"
+     ./BUILDsis2 ${config} ${hydro} ${comp} ${compiler}
      if [ $? -ne 0 ] ; then
         echo " SIS2 build failed"
         exit
@@ -281,11 +279,11 @@ if [ $config = "shiemom" ] || [ $config = "shiemom_lm4" ]  ; then
 fi
 
 if [ $config = "shiemom_lm4" ] ; then
-  if [ -d ${LIBS_DIR}/lm4/${compiler} ] && [ -e ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${compiler}/liblm4.a ] ; then
-       echo " pre-built ${LIBS_DIR}/lm4/${compiler} exists"
+  if [ -d ${LIBS_DIR}/lm4/${config}_${hydro}.${comp}.64bit.${compiler} ] && [ -e ${LIBS_DIR}/lm4/${config}_${hydro}.${comp}.64bit.${compiler}/liblm4.a ] ; then
+       echo " pre-built ${LIBS_DIR}/lm4/${config}_${hydro}.${comp}.64bit.${compiler} exists"
     else
        echo " ${LIBS_DIR}/lm4/${compiler} does not exist"
-       ./BUILDlm4 ${comp} ${compiler}
+       ./BUILDlm4 ${config} ${hydro} ${comp} ${compiler}
        if [ $? -ne 0 ] ; then
           echo " LM4 build failed"
           exit

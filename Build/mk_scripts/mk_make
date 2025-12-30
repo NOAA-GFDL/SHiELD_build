@@ -28,6 +28,7 @@
 CONFIG="shield"
 HYDRO="nh"
 COMP=""
+TARGET="prod"
 BIT="32BIT=Y"
 AVX="Y"
 COMPILER="intel"
@@ -56,6 +57,7 @@ do
           elif [ ${arg#} = 'debug' ] ; then
             COMP="DEBUG=Y"
           fi
+	  TARGET="${arg#*=}"
           shift # Remove COMP from processing
           ;;
         32bit|64bit)
@@ -98,16 +100,16 @@ elif [ ${CONFIG} = 'solo'  ] ; then
   EXTERNALLIBS=${LIBS_DIR}/libFMS/${COMPILER}/${bit}/libFMS.a
 elif [ ${CONFIG} = 'shiemom'  ] ; then
   EXTERNALLIBS="./libfv3.a"
-  EXTERNALLIBS+=" ${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/libsis2.a"
-  EXTERNALLIBS+=" ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/libmom6.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${TARGET}.64bit.${COMPILER}/libsis2.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${TARGET}.64bit.${COMPILER}/libmom6.a"
   EXTERNALLIBS+=" ${LIBS_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
   EXTERNALLIBS+=" ./libgfs.a"
   EXTERNALLIBS+=" -L${LIBS_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
 elif [ ${CONFIG} = 'shiemom_lm4'  ] ; then
   EXTERNALLIBS="./libfv3.a"
-  EXTERNALLIBS+=" ${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/libsis2.a"
-  EXTERNALLIBS+=" ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/libmom6.a"
-  EXTERNALLIBS+=" ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/liblm4.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${TARGET}.64bit.${COMPILER}/libsis2.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${TARGET}.64bit.${COMPILER}/libmom6.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${TARGET}.64bit.${COMPILER}/liblm4.a"
   EXTERNALLIBS+=" ${LIBS_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
   EXTERNALLIBS+=" ./libgfs.a"
   EXTERNALLIBS+=" -L${LIBS_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"

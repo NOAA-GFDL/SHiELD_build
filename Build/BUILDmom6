@@ -29,6 +29,7 @@ set -x
   COMPILER="intel"
   BIT="64bit"
   COMP="" # implies PROD=Y
+  TARGET="prod"
 #
 # parse arguments
   for arg in "$@"
@@ -40,15 +41,12 @@ set -x
           elif [ ${arg#} = 'debug' ] ; then
             COMP="DEBUG=Y"
           fi
+	  TARGET="${arg#*=}"
           shift # Remove COMP from processing
           ;;
         intel|gnu)
           COMPILER="${arg#*=}"
           shift # Remove "compiler" from processing
-          ;;
-        32bit|64bit)
-          BIT="${arg#*=}"
-          shift
           ;;
         shield|solo|shiemom|shiemom_lm4)
           CONFIG="${arg#*=}"
@@ -89,8 +87,8 @@ fi
 
 
 
-mkdir -p ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}
-list_paths -l -o ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_mom6 \
+mkdir -p ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}
+list_paths -l -o ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}/pathnames_mom6 \
     ${SHiELD_SRC}/MOM6/config_src/memory/dynamic_nonsymmetric \
     ${SHiELD_SRC}/MOM6/config_src/drivers/FMS_cap \
     ${SHiELD_SRC}/MOM6/src/*/ \
@@ -105,14 +103,14 @@ list_paths -l -o ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/
     ${SHiELD_SRC}/MOM6/config_src/infra/FMS2
 cd ${LIBS_DIR}
 
-pushd mom6/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}
+pushd mom6/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}
 
 mkmf -m Makefile -a ${SHiELD_SRC} -p libmom6.a -t "${BUILD_ROOT}/${TEMPLATE}" \
      -c "-DINTERNAL_FILE_NML -g -DMAX_FIELDS_=100 -DNOT_SET_AFFINITY -D_USE_MOM6_DIAG -D_USE_GENERIC_TRACER -DUSE_PRECISION=2 -I${LIBS_DIR}/libFMS/${COMPILER}/${BIT}" \
      -I${SHiELD_SRC}/FMS/axis_utils/include -I${SHiELD_SRC}/FMS/diag_manager/include -I${SHiELD_SRC}/FMS/fms/include -I${SHiELD_SRC}/FMS/fms2_io/include \
      -I${SHiELD_SRC}/FMS/horiz_interp/include -I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/FMS/mpp/include -I${SHiELD_SRC}/FMS/sat_vapor_pres/include \
      -I${SHiELD_SRC}/FMS/string_utils/include -I${SHiELD_SRC}/FMS/test_fms/fms/include  \
-     -I${SHiELD_SRC}/MOM6/src/framework ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_mom6
+     -I${SHiELD_SRC}/MOM6/src/framework ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}/pathnames_mom6
 
 make -j8 ${COMP} AVX=Y NETCDF=3 Makefile libmom6.a >& Build_mom6.out
 
@@ -122,7 +120,7 @@ make -j8 ${COMP} AVX=Y NETCDF=3 Makefile libmom6.a >& Build_mom6.out
 
 # test and report on libFMS build success
 if [ $? -ne 0 ] ; then
-  echo ">>> ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER} build failed"
+  echo ">>> ${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER} build failed"
   exit 1
 fi
 echo " libmom6 build successful"
