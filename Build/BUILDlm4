@@ -41,7 +41,7 @@ set -x
           elif [ ${arg#} = 'debug' ] ; then
             COMP="DEBUG=Y"
           fi
-	  TARGET="${arg#*=}"
+          TARGET="${arg#*=}"
           shift # Remove COMP from processing
           ;;
         intel|gnu)
