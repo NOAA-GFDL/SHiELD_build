@@ -29,6 +29,7 @@ set -x
   COMPILER="intel"
   BIT="64bit"
   COMP="" # implies PROD=Y
+  TARGET="prod"
 #
 # parse arguments
   for arg in "$@"
@@ -40,13 +41,22 @@ set -x
           elif [ ${arg#} = 'debug' ] ; then
             COMP="DEBUG=Y"
           fi
+          TARGET="${arg#*=}"
           shift # Remove COMP from processing
           ;;
-          intel|gnu)
-             COMPILER="${arg#*=}"
-             shift # Remove "compiler" from processing
-             ;;
-          *)
+        intel|gnu)
+          COMPILER="${arg#*=}"
+          shift # Remove "compiler" from processing
+          ;;
+        shield|solo|shiemom|shiemom_lm4)
+          CONFIG="${arg#*=}"
+          shift
+          ;;
+        nh|hydro|sw)
+          HYDRO="${arg#*=}"
+          shift # remove "hydro" from processing
+          ;;
+        *)
           if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
             echo "option "${arg#}" not found"
           fi
@@ -75,8 +85,8 @@ if [ -z ${BUILD_ROOT} ] ; then
 fi
 
 
-mkdir -p ${LIBS_DIR}/sis2/${COMPILER}
-list_paths -l -o ${LIBS_DIR}/sis2/${COMPILER}/pathnames_sis2 \
+mkdir -p ${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}
+list_paths -l -o ${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}/pathnames_sis2 \
     ${SHiELD_SRC}/SIS2/config_src/dynamic_symmetric \
     ${SHiELD_SRC}/SIS2/config_src/external/Icepack_interfaces \
     ${SHiELD_SRC}/SIS2/src \
@@ -85,14 +95,14 @@ list_paths -l -o ${LIBS_DIR}/sis2/${COMPILER}/pathnames_sis2 \
 
 cd ${LIBS_DIR}
 
-pushd sis2/${COMPILER}
+pushd sis2/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}
 
 mkmf -m Makefile -a ${SHiELD_SRC} -p libsis2.a -t "${BUILD_ROOT}/${TEMPLATE}" \
-     -c "-DINTERNAL_FILE_NML -g -DUSE_FMS2_IO -I${LIBS_DIR}/mom6/${COMPILER} -I${LIBS_DIR}/libFMS/${COMPILER}/${BIT}" -I${SHiELD_SRC}/FMS/axis_utils/include \
+     -c "-DINTERNAL_FILE_NML -g -DUSE_FMS2_IO -I${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER} -I${LIBS_DIR}/libFMS/${COMPILER}/${BIT}" -I${SHiELD_SRC}/FMS/axis_utils/include \
      -I${SHiELD_SRC}/FMS/diag_manager/include -I${SHiELD_SRC}/FMS/fms/include -I${SHiELD_SRC}/FMS/fms2_io/include -I${SHiELD_SRC}/FMS/horiz_interp/include \
      -I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/FMS/mpp/include -I${SHiELD_SRC}/FMS/sat_vapor_pres/include -I${SHiELD_SRC}/FMS/string_utils/include \
      -I${SHiELD_SRC}/FMS/test_fms/fms/include -I${SHiELD_SRC}/MOM6/pkg/CVMix-src/include \
-     -I${SHiELD_SRC}/MOM6/src/framework ${LIBS_DIR}/sis2/${COMPILER}/pathnames_sis2
+     -I${SHiELD_SRC}/MOM6/src/framework ${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER}/pathnames_sis2
 
 
 make -j8  ${COMP} AVX=Y NETCDF=3 Makefile libsis2.a >& Build_sis2.out
@@ -100,7 +110,7 @@ make -j8  ${COMP} AVX=Y NETCDF=3 Makefile libsis2.a >& Build_sis2.out
 #
 # test and report on libsis2 build success
 if [ $? -ne 0 ] ; then
-  echo ">>> ${LIBS_DIR}/sis2/${COMPILER} build failed"
+  echo ">>> ${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${TARGET}.${BIT}.${COMPILER} build failed"
   exit 1
 fi
 echo " libsis2 build successful"
