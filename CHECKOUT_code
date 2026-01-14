@@ -78,14 +78,14 @@ echo ' '
 echo 'Checking out files for: '$config_name
 echo ' '
 
-release="FV3-202411-public"
+release="main"
 
 fv3_release=$release
 phy_release=$release
-fms_release="2025.01"
-fms_c_release="2025.01.01"
+fms_release="2025.04"
+fms_c_release="2025.04"
 drivers_release=$release
-land_release="2025.02"
+land_release="2025.04"
 
 git clone -b ${fv3_release} https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
