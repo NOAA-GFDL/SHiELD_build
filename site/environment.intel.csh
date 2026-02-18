@@ -41,13 +41,14 @@ switch ($hostname)
       module rm gcc
       module load intel-classic/2023.2.0
       module unload cray-libsci
-      module load cray-hdf5
-      module load cray-netcdf
+      module load cray-hdf5/1.12.2.11
+      module load cray-netcdf/4.9.0.9
       module load craype-hugepages4M
       #module load cmake/3.23.1
       #module load libyaml/0.2.5
 
       setenv LAUNCHER "srun"
+      setenv LD_LIBRARY_PATH ${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
       echo -e ' '
       module list
@@ -66,8 +67,8 @@ switch ($hostname)
       module rm gcc
       module load intel-classic/2023.2.0
       module unload cray-libsci
-      module load cray-hdf5/1.14.3.5
-      module load cray-netcdf/4.9.0.17
+      module load cray-hdf5/1.12.2.11
+      module load cray-netcdf/4.9.0.9
       module load craype-hugepages4M
       module load cmake/3.27.9
       module load libyaml/0.2.5
@@ -76,8 +77,34 @@ switch ($hostname)
       setenv FI_VERBS_PREFER_XRC 0
 
       setenv LAUNCHER "srun"
+      setenv LD_LIBRARY_PATH ${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
       echo -e ' '
+      module list
+      breaksw
+ case stellar*:
+      echo " Stellar environment "
+
+      source ${MODULESHOME}/init/csh
+      module purge
+      module load cmake/3.19.7
+      module load intel/2021.1.2
+      module load openmpi/intel-2021.1/4.1.2
+      module load hdf5/intel-2021.1/1.10.6
+      module load netcdf/intel-2021.1/hdf5-1.10.6/4.7.4
+
+
+      setenv FMS_CPPDEFS=""
+
+      setenv FC mpif90
+      setenv CC mpicc
+      setenv CXX mpicxx
+      setenv LD mpif90
+      setenv TEMPLATE site/intel.mk
+      setenv LAUNCHER srun
+      setenv AVX_LEVEL -march=core-avx2
+
+      echo -e " "
       module list
       breaksw
    default:

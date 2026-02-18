@@ -36,7 +36,7 @@ COMPILER="intel"
 for arg in "$@"
 do
     case $arg in
-        shield|solo|shiemom)
+        shield|solo|shiemom|shiemom_lm4)
         CONFIG="${arg#*=}"
         shift # Remove CONFIG from processing
         ;;
@@ -69,8 +69,10 @@ GFS_cppDefs="-DNEW_TAUCTMAX -DNEMS_GSM -DINTERNAL_FILE_NML"
 # FV3 CPPDEFS
 FV3_cppDefs="-Duse_libMPI -Duse_netCDF -DHAVE_SCHED_GETAFFINITY -DSPMD -Duse_LARGEFILE -DINTERNAL_FILE_NML"
 
-if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ]  ; then
+if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ]; then
   FV3_cppDefs+=" -DGFS_PHYS -DUSE_GFSL63 -D_USE_LEGACY_LAND_"
+elif [ ${CONFIG} = 'shiemom_lm4' ] ; then
+  FV3_cppDefs+=" -DGFS_PHYS -DUSE_GFSL63"
 elif [ ${CONFIG} = 'solo' ] ; then
   FV3_cppDefs+=" -DDCMIP -DDYCORE_SOLO -DHIWPP"
 fi
@@ -99,7 +101,7 @@ if [ ${CONFIG} = 'shield' ]  ; then
              -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" \
              ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
 
-elif [ ${CONFIG} = 'shiemom' ] ; then
+elif [ ${CONFIG} = 'shiemom' ]; then
   mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -o "-cpp" -c "${GFS_cppDefs}" \
            -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs
 
@@ -110,6 +112,19 @@ elif [ ${CONFIG} = 'shiemom' ] ; then
   mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
            -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMPILER} -I${LIBS_DIR}/sis2/${COMPILER}" \
            ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
+
+elif [ ${CONFIG} = 'shiemom_lm4' ]; then
+  mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -o "-cpp" -c "${GFS_cppDefs}" \
+           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs
+
+  mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" \
+           -o "-I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/GFDL_atmos_cubed_sphere/driver/SHiELD/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" -c "${FV3_cppDefs}" \
+           -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
+
+  mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
+           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMPILER} -I${LIBS_DIR}/sis2/${COMPILER} -I${LIBS_DIR}/lm4/${COMPILER}" \
+           ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
+
 
 elif [ ${CONFIG} = 'solo' ] ; then
   mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
@@ -123,7 +138,7 @@ fi
 sed 's/LDFLAGS/EXTERNALLIBS) $(LDFLAGS/g' < Makefile_fv3 > OUT
 mv OUT Makefile_fv3
 
-if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] ; then
+if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] || [ ${CONFIG} = 'shiemom_lm4' ]; then
   sed 's/LDFLAGS/EXTERNALLIBS) $(LDFLAGS/g' < Makefile_driver > OUT
   mv OUT Makefile_driver
 fi
@@ -131,7 +146,7 @@ fi
 #---COMPILE -O0 (for speed)
 #---GFS_diagnostics.F90
 ############################
-if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] ; then
+if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] || [ ${CONFIG} = 'shiemom_lm4' ]; then
   sed -i 's"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c\t$(SRCROOT)SHiELD_physics/GFS_layer/GFS_diagnostics.F90" $(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -O0 -c\t$(SRCROOT)SHiELD_physics/GFS_layer/GFS_diagnostics.F90" ' Makefile_gfs
 fi
 
