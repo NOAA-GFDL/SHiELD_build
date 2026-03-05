@@ -41,7 +41,7 @@ pic="nopic"
 for arg in "$@"
 do
     case $arg in
-        shield|solo|shiemom|shiemom_lm4)
+        shield|solo|shiemom|shiemom_lm4|shieldda)
           CONFIG="${arg#*=}"
           shift # Remove CONFIG from processing
           ;;
@@ -111,15 +111,25 @@ elif [ ${CONFIG} = 'shiemom_lm4'  ] ; then
   EXTERNALLIBS+=" ${LIBS_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
   EXTERNALLIBS+=" ./libgfs.a"
   EXTERNALLIBS+=" -L${LIBS_DIR}/nceplibs/${COMPILER}/ -lbacio  -lsp_d  -lw3emc_d  -lw3nco_d"
+elif [ ${CONFIG} = 'shieldda' ] ; then
+  EXTERNALLIBS="./libfv3.a"
+  EXTERNALLIBS+=" ./libfv3core.a"
+  EXTERNALLIBS+=" ${LIBS_DIR}/libFMS/${COMPILER}/64bit/libFMS.a"
+  EXTERNALLIBS+=" ./libgfs.a ./libstochastic_physics.a"
 fi
 
-if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] ||  [ ${CONFIG} = 'shiemom_lm4' ]   ; then
+if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] ||  [ ${CONFIG} = 'shiemom_lm4' ] || [ ${CONFIG} = 'shieldda' ]   ; then
   (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} PIC=${PIC} -f Makefile_gfs)
+fi
+
+if [ ${CONFIG} = 'shieldda' ] ; then
+  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_fv3core)
+  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} -f Makefile_stochastic_physics)
 fi
 
 (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_fv3)
 
-if   [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] || [ ${CONFIG} = 'shiemom_lm4' ]  ; then
+if   [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] || [ ${CONFIG} = 'shiemom_lm4' ] || [ ${CONFIG} = 'shieldda' ]  ; then
    (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} PIC=${PIC} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_driver)
 fi
 exit 0

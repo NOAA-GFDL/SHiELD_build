@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #***********************************************************************
 #*                   GNU Lesser General Public License
 #*
@@ -45,6 +45,18 @@ case $hostname in
       module load craype-hugepages4M
       #module load cmake/3.27.9
       #module load libyaml/0.2.5
+
+      if [[ ${DACONFIG:-"N"} == "Y" ]]; then
+        module use /ncrc/proj/epic/spack-stack/c6/spack-stack-1.9.2/envs/ue-intel-2023.2.0/install/modulefiles/Core
+        module load stack-intel/2023.2.0
+        module load stack-cray-mpich/8.1.30
+
+        module load esmf/8.8.0
+
+        module load bacio/2.4.1
+        module load sp/2.5.0
+        module load w3emc/2.10.0
+      fi
 
       # Add -DHAVE_GETTID to the FMS cppDefs
       export FMS_CPPDEFS=-DHAVE_GETTID
@@ -161,29 +173,44 @@ case $hostname in
       echo -e ' '
       module list
       ;;
-   h* )
-      echo " hera environment "
+   h* | u*)
+      echo " hera or ursa environment "
 
-      source $MODULESHOME/init/sh
-      module load intel/15.1.133
-      module load netcdf/4.3.0
-      module load hdf5/1.8.14
-      module load cmake/3.20.1
+      if ( ! eval module help > /dev/null 2>&1 ) ; then
+          source /apps/lmod/lmod/init/bash
+      fi
+      module purge
 
+      module use /contrib/spack-stack/spack-stack-1.9.2/envs/ue-oneapi-2024.2.1/install/modulefiles/Core
+      module load stack-oneapi/2024.2.1
+      module load stack-intel-oneapi-mpi/2021.13
+  
+      module load hdf5/1.14.3
+      module load netcdf-c/4.9.2
+      module load netcdf-fortran/4.6.1
+
+      module load esmf/8.8.0
+
+      module load bacio/2.4.1
+      module load sp/2.5.0
+      module load w3emc/2.10.0
+
+      export CPATH="$NETCDF/include:$CPATH"
+      export HDF5=${HDF5_ROOT}
       export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
       export NETCDF_DIR=${NETCDF}
       export FMS_CPPDEFS=""
 
       # make your compiler selections here
       export FC=mpiifort
-      export CC=mpiicc
-      export CXX=mpicpc
+      export CC=mpiicx
+      export CXX=mpicpx
       export LD=mpiifort
-      export TEMPLATE=site/intel.mk
+      export TEMPLATE=site/intel.mk.icx
       export LAUNCHER=srun
 
       # highest level of AVX support
-      export AVX_LEVEL=-xSKYLAKE-AVX512
+      export AVX_LEVEL=-march=core-avx2
       echo -e ' '
       module list
       ;;
@@ -245,7 +272,6 @@ case $hostname in
       export AVX_LEVEL=-march=core-avx2
       echo -e ' '
       module list  
- 
       ;;
    * )
       echo " no environment available based on the hostname "
