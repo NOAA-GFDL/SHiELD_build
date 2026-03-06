@@ -56,6 +56,8 @@ case $hostname in
         module load bacio/2.4.1
         module load sp/2.5.0
         module load w3emc/2.10.0
+
+        module unload cray-libsci
       fi
 
       # Add -DHAVE_GETTID to the FMS cppDefs
