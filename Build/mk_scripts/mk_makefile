@@ -25,6 +25,8 @@
 
 #
 ## set default values
+CONFIG="shield"
+HYDRO="nh"
 COMP="prod"
 BIT="32bit"
 COMPILER="intel"
@@ -37,6 +39,14 @@ do
         shield|solo|shiemom|shiemom_lm4)
         CONFIG="${arg#*=}"
         shift # Remove CONFIG from processing
+        ;;
+        nh|hydro|sw)
+        HYDRO="${arg#*=}"
+        shift # Remove HYDRO from processing
+        ;;
+        prod|repro|debug)
+        COMP="${arg#*=}"
+        shift # remove "comp" from processing
         ;;
         32bit|64bit)
         BIT="${arg#*=}"
@@ -75,7 +85,7 @@ elif [ ${HYDRO} = 'sw' ] ; then
   FV3_cppDefs+=" -DSW_DYNAMICS -DDYNAMICS_ZS"
 fi
 
-pushd exec/${COMP}.${BIT}.${COMPILER}/
+pushd exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/
 
 ############################
 #---CREATE MAKEFILES
