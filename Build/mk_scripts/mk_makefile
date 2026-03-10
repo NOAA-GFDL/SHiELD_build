@@ -25,8 +25,6 @@
 
 #
 ## set default values
-CONFIG="shield"
-HYDRO="nh"
 COMP="prod"
 BIT="32bit"
 COMPILER="intel"
@@ -39,14 +37,6 @@ do
         shield|solo|shiemom|shiemom_lm4)
         CONFIG="${arg#*=}"
         shift # Remove CONFIG from processing
-        ;;
-        nh|hydro|sw)
-        HYDRO="${arg#*=}"
-        shift # Remove HYDRO from processing
-        ;;
-        prod|repro|debug)
-        COMP="${arg#*=}"
-        shift # remove "comp" from processing
         ;;
         32bit|64bit)
         BIT="${arg#*=}"
@@ -85,51 +75,51 @@ elif [ ${HYDRO} = 'sw' ] ; then
   FV3_cppDefs+=" -DSW_DYNAMICS -DDYNAMICS_ZS"
 fi
 
-pushd exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/
+pushd exec/${COMP}.${BIT}.${COMPILER}/
 
 ############################
 #---CREATE MAKEFILES
 ############################
 if [ ${CONFIG} = 'shield' ]  ; then
    mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -o "-cpp" -c "${GFS_cppDefs}" \
-           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs
+           -p libgfs.a ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_gfs
 
    mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" \
              -o "-I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/GFDL_atmos_cubed_sphere/driver/SHiELD/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" -c "${FV3_cppDefs}" \
-             -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
+             -p libfv3.a ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_fv3
    mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
              -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" \
-             ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
+             ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_driver
 
 elif [ ${CONFIG} = 'shiemom' ]; then
   mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -o "-cpp" -c "${GFS_cppDefs}" \
-           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs
+           -p libgfs.a ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_gfs
 
   mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" \
            -o "-I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/GFDL_atmos_cubed_sphere/driver/SHiELD/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" -c "${FV3_cppDefs}" \
-           -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
+           -p libfv3.a ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
   mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
-           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER}" \
-           ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
+           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/sis2/${COMP}.64bit.${COMPILER}" \
+           ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_driver
 
 elif [ ${CONFIG} = 'shiemom_lm4' ]; then
   mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -o "-cpp" -c "${GFS_cppDefs}" \
-           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs
+           -p libgfs.a ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_gfs
 
   mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" \
            -o "-I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/GFDL_atmos_cubed_sphere/driver/SHiELD/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" -c "${FV3_cppDefs}" \
-           -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
+           -p libfv3.a ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
   mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
-           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/sis2/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/lm4/${CONFIG}_${HYDRO}.${COMP}.64bit.${COMPILER}" \
-           ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
+           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/sis2/${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/lm4/${COMP}.64bit.${COMPILER}" \
+           ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_driver
 
 
 elif [ ${CONFIG} = 'solo' ] ; then
   mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/${BIT}" \
-            ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
+            ${BUILD_ROOT}/Build/exec/${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 fi
 
 ############################
