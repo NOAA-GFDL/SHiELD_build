@@ -49,7 +49,7 @@ do
         nh|hydro|sw)
           HYDRO="${arg#*=}"
           shift # remove "hydro" from processing
-	  ;;
+          ;;
         prod|repro|debug)
           comp="${arg#*=}"
           if [ ${arg#} = 'repro' ] ; then
