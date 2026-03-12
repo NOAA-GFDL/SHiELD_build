@@ -294,7 +294,7 @@ fi
 
 #
 # ensure the build and final executable locations are available
-  mkdir -p ./exec/${comp}.${bit}.${compiler}
+  mkdir -p ./exec/${config}_${hydro}.${comp}.${bit}.${compiler}
   mkdir -p ./bin/
 
 # build the model
