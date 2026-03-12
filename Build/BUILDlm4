@@ -49,16 +49,16 @@ set -x
           shift # Remove "compiler" from processing
           ;;
         *)
-          if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
-            echo "option "${arg#}" not found"
-          fi
-          echo -e ' '
-          echo -e "valid options are:"
-          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
-          echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
-          echo -e "\n"
-          exit
-          ;;
+        if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
+          echo "option "${arg#}" not found"
+        fi
+        echo -e ' '
+        echo -e "valid options are:"
+        echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+        echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
+        echo -e "\n"
+        exit
+        ;;
       esac
   done
 #
@@ -93,7 +93,7 @@ mkmf -m Makefile -a ${SHiELD_SRC} -p liblm4.a -t "${BUILD_ROOT}/${TEMPLATE}" \
      -I${SHiELD_SRC}/FMS/fms/include -I${SHiELD_SRC}/FMS/fms2_io/include -I${SHiELD_SRC}/FMS/horiz_interp/include -I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/FMS/interpolator/include \
      -I${SHiELD_SRC}/FMS/monin_obukhov/include -I${SHiELD_SRC}/FMS/mosaic2/include -I${SHiELD_SRC}/FMS/mpp/include -I${SHiELD_SRC}/FMS/random_numbers/include -I${SHiELD_SRC}/FMS/sat_vapor_pres/include \
      -I${SHiELD_SRC}/FMS/string_utils/include -I${SHiELD_SRC}/FMS/test_fms/data_override/include -I${SHiELD_SRC}/FMS/test_fms/fms/include -I${SHiELD_SRC}/FMS/time_interp/include \
-     -I${SHiELD_SRC}/FMS/topography/include -I${SHiELD_SRC}/FMS/tracer_manager/include -I${SHiELD_SRC}/FMS/tridiagonal/include ${LIBS_DIR}/lm4/${TARGET}.${BIT}.${COMPILER}/pathnames_lm4
+     -I${SHiELD_SRC}/FMS/topography/include -I${SHiELD_SRC}/FMS/tracer_manager/include -I${SHiELD_SRC}/FMS/tridiagonal/include ${LIBS_DIR}/lm4/${comp}.${BIT}.${COMPILER}/pathnames_lm4
  
 make -j8 ${COMP} AVX=Y NETCDF=3 Makefile liblm4.a >& Build_lm4.out
 

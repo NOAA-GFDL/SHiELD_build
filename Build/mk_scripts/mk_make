@@ -56,7 +56,6 @@ do
           elif [ ${arg#} = 'debug' ] ; then
             COMP="DEBUG=Y"
           fi
-          comp="${arg#*=}"
           shift # Remove COMP from processing
           ;;
         32bit|64bit)
