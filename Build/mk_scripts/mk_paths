@@ -99,7 +99,8 @@ elif [ ${CONFIG} = 'shieldda' ]; then
       SHiELD_physics/GFS_layer/ \
       SHiELD_physics/IPD_layer/
 
-  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3core \
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 \
+      SHiELD_physics/FV3GFS/ \
       GFDL_atmos_cubed_sphere/tools/ \
       GFDL_atmos_cubed_sphere/model/ \
       SHiELD_physics/atmos_shared/ \
@@ -125,8 +126,7 @@ elif [ ${CONFIG} = 'shieldda' ]; then
       stochastic_physics/stochy_patterngenerator.F90 \
       stochastic_physics/update_ca.F90
 
-  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 \
-      SHiELD_physics/FV3GFS/ \
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_stochastic_physics_wrapper \
       SHiELD_physics/stochastic_physics/
 
   list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \

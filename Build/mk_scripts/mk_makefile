@@ -110,17 +110,18 @@ elif [ ${CONFIG} = 'shieldda' ]; then
    mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -o "-cpp" -c "${GFS_cppDefs}" \
            -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs
 
-   mkmf -m Makefile_fv3core -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" \
+   mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" \
              -o "-I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/GFDL_atmos_cubed_sphere/driver/SHiELD/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" -c "${FV3_cppDefs}" \
-             -p libfv3core.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3core
+             -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
    mkmf -m Makefile_stochastic_physics -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}"  -o "-cpp" -c "${GFS_cppDefs}" \
              -o "-I${SHiELD_SRC}/FMS/include -I${BUILD_ROOT}/Build/libFMS/${COMPILER}/${BIT}" \
              -p libstochastic_physics.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_stochastic_physics
 
-   mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" \
+   mkmf -m Makefile_stochastic_physics_wrapper -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" \
              -o "-I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/GFDL_atmos_cubed_sphere/driver/SHiELD/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" -c "${FV3_cppDefs}" \
-             -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
+             -p libstochastic_physics_wrapper.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_stochastic_physics_wrapper
+
    mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
              -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" \
              ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
@@ -178,15 +179,10 @@ fi
 #---model/nh_utils.F90
 #---model/fv_mapz.F90
 ############################
-if [ ${CONFIG} = 'shieldda' ] ; then
-  sed -i 's"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c\t$(SRCROOT)atmos_cubed_sphere/model/nh_utils.F90"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(FAST) -c\t$(SRCROOT)atmos_cubed_sphere/model/nh_utils.F90"' Makefile_fv3core
+sed -i 's"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c\t$(SRCROOT)atmos_cubed_sphere/model/nh_utils.F90"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(FAST) -c\t$(SRCROOT)atmos_cubed_sphere/model/nh_utils.F90"' Makefile_fv3
 
-  sed -i 's"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c\t$(SRCROOT)atmos_cubed_sphere/model/fv_mapz.F90"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(FAST) -c\t$(SRCROOT)atmos_cubed_sphere/model/fv_mapz.F90"' Makefile_fv3core
-else
-  sed -i 's"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c\t$(SRCROOT)atmos_cubed_sphere/model/nh_utils.F90"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(FAST) -c\t$(SRCROOT)atmos_cubed_sphere/model/nh_utils.F90"' Makefile_fv3
+sed -i 's"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c\t$(SRCROOT)atmos_cubed_sphere/model/fv_mapz.F90"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(FAST) -c\t$(SRCROOT)atmos_cubed_sphere/model/fv_mapz.F90"' Makefile_fv3
 
-  sed -i 's"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) -c\t$(SRCROOT)atmos_cubed_sphere/model/fv_mapz.F90"$(FC) $(CPPDEFS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(FAST) -c\t$(SRCROOT)atmos_cubed_sphere/model/fv_mapz.F90"' Makefile_fv3
-fi
 ############################
 
 popd
