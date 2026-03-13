@@ -73,15 +73,17 @@ CFLAGS += -fPIC
 CPPFLAGS += -fPIC
 endif
 
-FFLAGS_OPT = -O2 -debug minimal -fp-model source -qoverride-limits -qopt-prefetch=3
-FFLAGS_REPRO = -O2 -debug minimal -fp-model source -qoverride-limits #-fpe0 #causes problems??
+FP_MODEL_VAR ?= source
+
+FFLAGS_OPT = -O2 -debug minimal -fp-model $(FP_MODEL_VAR) -qoverride-limits -qopt-prefetch=3
+FFLAGS_REPRO = -O2 -debug minimal -fp-model $(FP_MODEL_VAR) -qoverride-limits #-fpe0 #causes problems??
 FFLAGS_DEBUG = -g -O0 -debug -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fp-stack-check -fstack-protector-all -fpe0 -ftrapuv
 
 TRANSCENDENTALS := -fast-transcendentals
 FFLAGS_OPENMP = -qopenmp
 FFLAGS_VERBOSE = -v -V -what
 
-CFLAGS := -D__IFC -sox -msse2 -fp-model source
+CFLAGS := -D__IFC -sox -msse2 -fp-model $(FP_MODEL_VAR)
 ifeq ($(AVX2),Y)
 #CFLAGS += -xHOST -xCORE-AVX2 -qno-opt-dynamic-align
 endif
@@ -93,7 +95,7 @@ CFLAGS_DEBUG = -O0 -g -ftrapuv -traceback
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
 # *_TEST will match the production if no new option(s) is(are) to be tested.
-FFLAGS_TEST = -O3 -debug minimal -fp-model source -qoverride-limits
+FFLAGS_TEST = -O3 -debug minimal -fp-model $(FP_MODEL_VAR) -qoverride-limits
 CFLAGS_TEST = -O2
 
 LDFLAGS :=

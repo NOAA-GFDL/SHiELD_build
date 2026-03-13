@@ -208,11 +208,12 @@ case $hostname in
       export CC=mpiicx
       export CXX=mpicpx
       export LD=mpiifort
-      export TEMPLATE=site/intel.mk.icx
+      export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
 
       # highest level of AVX support
       export AVX_LEVEL=-march=core-avx2
+      export FP_MODEL_VAR=precise
       echo -e ' '
       module list
       ;;
