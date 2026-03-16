@@ -212,7 +212,7 @@ fi
      \rm -rf mom6/${comp}.${bit}.${compiler}/*
      \rm -rf lm4/${comp}.${bit}.${compiler}/*
      \rm -rf sis2/${comp}.${bit}.${compiler}/*
-     \rm -rf exec/${comp}.${bit}.${compiler}/*
+     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
   fi
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
