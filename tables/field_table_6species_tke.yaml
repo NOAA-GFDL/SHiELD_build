@@ -45,27 +45,15 @@ field_table:
       profile_type:
       - value: fixed
         surface_value: 1.e30
-    - variable: sgs_tke
-      longname: TKE
-      units: m**2/s**2
-      profile_type:
-      - value: fixed
-        surface_value: 100.0
-    - variable: itcz_clock
-      longname: ITCZ clock tracer
-      units: s*1.e-6
-      profile_type:
-      - value: fixed
-        surface_value: 0.0
-    - variable: sfc_clock
-      longname: sfc clock tracer
-      units: s*1.e-6
-      profile_type:
-      - value: fixed
-        surface_value: 0.0
     - variable: cld_amt
       longname: cloud amount
       units: 1
       profile_type:
       - value: fixed
         surface_value: 1.e30
+    - variable: sgs_tke
+      longname: TKE
+      units: m**2/s**2
+      profile_type:
+      - value: fixed
+        surface_value: 100.0

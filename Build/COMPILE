@@ -55,7 +55,6 @@ spin()
   avx="Y"
   compiler="intel"
   clean="noclean"
-  yaml="noyaml"
   pic="nopic"
 
   config_name="SHiELD"
@@ -65,16 +64,16 @@ spin()
   for arg in "$@"
   do
       case $arg in
-          shield|solo|shieldfull|shiemom)
+          shield|solo|shiemom|shiemom_lm4)
              config="${arg#*=}"
              if [ $config = 'solo' ] ; then
                config_name="SOLO"
              fi
-             if [ $config = 'shieldfull' ] ; then
-               config_name="SHiELDFULL"
-             fi
              if [ $config = 'shiemom' ] ; then
                config_name="SHiEMOM"
+             fi
+             if [ $config = 'shiemom_lm4' ] ; then
+               config_name="SHiEMOM_LM4"
              fi
              shift # Remove "config" from processing
              ;;
@@ -112,10 +111,6 @@ spin()
              clean="${arg#*=}"
              shift # Remove "clean" from processing
              ;;
-	  noyaml|yaml)
-             yaml="${arg#*=}"
-	     shift # Remove "yaml" from processing
-	     ;;
           nopic|pic)
              pic="${arg#*=}"
              shift # Remove "pic" from processing
@@ -126,14 +121,13 @@ spin()
           fi
           echo -e ' '
           echo -e "valid options are:"
-          echo -e "\t[shield(D) | solo] \t\t\t configuration"
+          echo -e "\t[shield(D)  | solo | shiemom | shiemom_lm4] \t\t\t configuration"
           echo -e "\t[nh(D) | hydro | sw] \t\t\t executable configuration"
           echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
           echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
           echo -e "\t[avx(D) | noavx] \t\t\t use AVX_LEVEL defined in site/environment.<compiler>.sh"
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
-	  echo -e "\t[noyaml(D) | yaml] \t will build the FMS library with the -Duse_yaml library.  Default is no yaml"
           echo -e "\t[nopic(D) | pic] \t whether to build all components with the -fPIC flag (position independent code)"
           echo -e "\n"
           exit
@@ -151,12 +145,18 @@ if [ $compiler = "nvhpc" ] && [ $config = "shiemom" ] ; then
   exit 1
 fi
 
+if [ $compiler = "nvhpc" ] && [ $config = "shiemom_lm4" ] ; then
+  echo -e ">>> option '$compiler' with '$config' is not a valid configuration"
+  exit 1
+fi
+
+
 #
 # set up some default variables for use within the helper scripts
 export BUILD_ROOT=${PWD%/*}
 export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
 export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
-export NCEP_DIR=${BUILD_ROOT}/Build
+export LIBS_DIR=${BUILD_ROOT}/Build
 
 #
 # load the proper environment for your machine
@@ -173,7 +173,6 @@ echo -e "\tbit      = $bit"
 echo -e "\tavx      = $avx"
 echo -e "\tcompiler = $compiler"
 echo -e "\tclean    = $clean"
-echo -e "\tyaml     = $yaml"
 echo -e "\tpic      = $pic"
 echo -e "\n"
 sleep 5
@@ -204,8 +203,8 @@ fi
      \rm -rf libFMS/${compiler}/*
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
      \rm -rf nceplibs/${compiler}/*
-     \rm -rf mom6/*
-     \rm -rf sis2/*
+     \rm -rf mom6/${compiler}/*
+     \rm -rf sis2/${compiler}/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
@@ -213,61 +212,86 @@ fi
   elif [ ${clean} = "cleanmom" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
-     \rm -rf mom6/*
-     \rm -rf sis2/*
+     \rm -rf mom6/${compiler}/*
+     \rm -rf sis2/${compiler}/*
+     \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
   fi
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
 #    EXTERNAL_LIBS as the location of nceplibs and libFMS
   if [ ! -z ${EXTERNAL_LIBS} ] ; then
     echo " External Libraries are being used: ${EXTERNAL_LIBS}"
-    export NCEP_DIR=${EXTERNAL_LIBS}
+    export LIBS_DIR=${EXTERNAL_LIBS}
   fi
 #
 # check to make sure libFMS exists
-  if [ -d ${NCEP_DIR}/libFMS/${compiler} ] && [ -e ${NCEP_DIR}/libFMS/${compiler}/32bit/libFMS.a ] && \
-     [ -e ${NCEP_DIR}/libFMS/${compiler}/64bit/libFMS.a ] ; then
-     echo " pre-built ${NCEP_DIR}/libFMS/${compiler} exists"
+  if [ -d ${LIBS_DIR}/libFMS/${compiler} ] && [ -e ${LIBS_DIR}/libFMS/${compiler}/32bit/libFMS.a ] && \
+     [ -e ${LIBS_DIR}/libFMS/${compiler}/64bit/libFMS.a ] ; then
+     echo " pre-built ${LIBS_DIR}/libFMS/${compiler} exists"
   else
-     echo " ${NCEP_DIR}/libFMS/${compiler} does not exist"
-     ./BUILDlibfms ${compiler} ${yaml} ${pic}
+     echo " ${LIBS_DIR}/libFMS/${compiler} does not exist"
+     ./BUILDlibfms ${compiler} ${pic}
      if [ $? -ne 0 ] ; then
-        echo ">>> ${NCEP_DIR}/Libfms/${compiler} build failed"
+        echo ">>> ${LIBS_DIR}/Libfms/${compiler} build failed"
         exit 2
      fi
   fi
 # check to make sure nceplibs exists
-  if [ -d ${NCEP_DIR}/nceplibs/${compiler} ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libbacio.a ] && \
-     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libsp_d.a ] && [ -e ${NCEP_DIR}/nceplibs/${compiler}/libw3emc_d.a ] && \
-     [ -e ${NCEP_DIR}/nceplibs/${compiler}/libw3nco_d.a ] ; then
-     echo " pre-built ${NCEP_DIR}/nceplibs/${compiler} exists"
+  if [ -d ${LIBS_DIR}/nceplibs/${compiler} ] && [ -e ${LIBS_DIR}/nceplibs/${compiler}/libbacio.a ] && \
+     [ -e ${LIBS_DIR}/nceplibs/${compiler}/libsp_d.a ] && [ -e ${LIBS_DIR}/nceplibs/${compiler}/libw3emc_d.a ] && \
+     [ -e ${LIBS_DIR}/nceplibs/${compiler}/libw3nco_d.a ] ; then
+     echo " pre-built ${LIBS_DIR}/nceplibs/${compiler} exists"
   else
-     echo " ${NCEP_DIR}/nceplibs/${compiler} does not exist"
+     echo " ${LIBS_DIR}/nceplibs/${compiler} does not exist"
      ./BUILDnceplibs ${compiler} ${pic}
      if [ $? -ne 0 ] ; then
-        echo ">>> ${NCEP_DIR}/ncepdir/${compiler} build failed"
+        echo ">>> ${LIBS_DIR}/ncepdir/${compiler} build failed"
         exit 3
      fi
   fi
 
-if [ $config = "shiemom" ] ; then
+if [ $config = "shiemom" ] || [ $config = "shiemom_lm4" ]  ; then
 # from lauren
   # I think mom6 needs to be built in 64bit for now?
   # I can only get it to compiler with 64bit FMS
-  ./BUILDmom6 ${comp} ${compiler}
+  if [ -d ${LIBS_DIR}/mom6/${compiler} ] && [ -e ${LIBS_DIR}/mom6/${compiler}/libmom6.a ] ; then
+     echo " pre-built ${LIBS_DIR}/mom6/${compiler} exists"
+  else
+     echo " ${LIBS_DIR}/mom6/${compiler} does not exist"
+     ./BUILDmom6 ${comp} ${compiler}
      if [ $? -ne 0 ] ; then
         echo " MOM6 build failed"
         exit
      fi
      echo "DONE WITH MOM6"
+  fi
 
 # for sis2
-  ./BUILDsis2 ${comp} ${compiler}
+  if [ -d ${LIBS_DIR}/sis2/${compiler} ] && [ -e ${LIBS_DIR}/sis2/${compiler}/libsis2.a ] ; then
+     echo " pre-built ${LIBS_DIR}/sis2/${compiler} exists"
+  else
+     echo " ${LIBS_DIR}/sis2/${compiler} does not exist"
+     ./BUILDsis2 ${comp} ${compiler}
      if [ $? -ne 0 ] ; then
         echo " SIS2 build failed"
         exit
      fi
      echo "DONE WITH SIS2"
+  fi
+fi
+
+if [ $config = "shiemom_lm4" ] ; then
+  if [ -d ${LIBS_DIR}/lm4/${compiler} ] && [ -e ${LIBS_DIR}/lm4/${compiler}/liblm4.a ] ; then
+       echo " pre-built ${LIBS_DIR}/lm4/${compiler} exists"
+    else
+       echo " ${LIBS_DIR}/lm4/${compiler} does not exist"
+       ./BUILDlm4 ${comp} ${compiler}
+       if [ $? -ne 0 ] ; then
+          echo " LM4 build failed"
+          exit
+       fi
+       echo "DONE WITH LM4"
+    fi
 fi
 
 #

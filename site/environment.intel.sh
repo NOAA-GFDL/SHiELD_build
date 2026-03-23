@@ -40,10 +40,10 @@ case $hostname in
       module rm gcc
       module load intel-classic/2023.2.0
       module unload cray-libsci
-      module load cray-hdf5
-      module load cray-netcdf
+      module load cray-hdf5/1.12.2.11
+      module load cray-netcdf/4.9.0.9
       module load craype-hugepages4M
-      #module load cmake/3.23.1
+      #module load cmake/3.27.9
       #module load libyaml/0.2.5
 
       # Add -DHAVE_GETTID to the FMS cppDefs
@@ -57,8 +57,11 @@ case $hostname in
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
 
+      #need to add this for dynamically linking on GAEA
+      export LD_LIBRARY_PATH=${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
+
       # highest level of AVX support
-      export AVX_LEVEL=-march=core-avx2
+      export AVX_LEVEL=-march=core-avx-i
       echo -e ' '
       module list
       ;;
@@ -76,9 +79,9 @@ case $hostname in
       module load intel-classic/2023.2.0
       module unload cray-libsci
       module load cray-hdf5/1.12.2.11
-      module load cray-netcdf/4.9.0.11
+      module load cray-netcdf/4.9.0.9
       module load craype-hugepages4M
-      module load cmake/3.23.1
+      module load cmake/3.27.9
       module load libyaml/0.2.5
 
       # Add -DHAVE_GETTID to the FMS cppDefs
@@ -94,41 +97,11 @@ case $hostname in
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
 
-      # highest level of AVX support
-      export AVX_LEVEL=-march=core-avx2
-      echo -e ' '
-      module list
-      ;;
-   gaea1? | nid* )
-      echo " gaea C3/C4 environment "
-
-      . ${MODULESHOME}/init/sh
-      module unload PrgEnv-pgi PrgEnv-intel PrgEnv-gnu
-      module load   PrgEnv-intel
-      module rm intel-classic
-      module rm intel-oneapi
-      module rm intel
-      module rm gcc
-      module load intel-classic/2022.0.2
-      module load cray-hdf5/1.12.1.3
-      module load cray-netcdf/4.8.1.3
-      module load craype-hugepages4M
-      module load cmake/3.20.1
-      module load libyaml/0.2.5
-
-      # Add -DHAVE_GETTID to the FMS cppDefs
-      export FMS_CPPDEFS=-DHAVE_GETTID
-
-      # make your compiler selections here
-      export FC=ftn
-      export CC=cc
-      export CXX=CC
-      export LD=ftn
-      export TEMPLATE=site/intel.mk
-      export LAUNCHER=srun
+      #need to add this for dynamically linking on GAEA
+      export LD_LIBRARY_PATH=${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
 
       # highest level of AVX support
-      export AVX_LEVEL=-xCORE-AVX2
+      export AVX_LEVEL=-march=core-avx-i
       echo -e ' '
       module list
       ;;
@@ -218,12 +191,13 @@ case $hostname in
       echo " lsc environment "
 
       source $MODULESHOME/init/sh
-      module load oneapi/2023.0
-      module load compiler/2023.0.0
-      module load mpi/2021.8.0
-      module load netcdf/4.9.0
-      module load hdf5/1.12.0
-      module load cmake/3.18.2
+      module load oneapi/2024.2
+      module load compiler/2024.2.0
+      module load mpi/2021.13
+      module load netcdf/4.9.2
+      module load hdf5/1.14.5
+      module load cmake/3.30.0
+      module load libyaml/0.2.5
 
       export CPATH="${NETCDF_ROOT}/include:${CPATH}"
       export NETCDF_DIR=${NETCDF_ROOT}
@@ -231,7 +205,7 @@ case $hostname in
 
       # make your compiler selections here
       export FC=mpiifort
-      export CC=mpiicc
+      export CC=mpiicx
       export CXX=mpicpc
       export LD=mpiifort
       export TEMPLATE=site/intel.mk

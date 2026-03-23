@@ -42,21 +42,21 @@ set -x
           fi
           shift # Remove COMP from processing
           ;;
-          intel|gnu)
-             COMPILER="${arg#*=}"
-             shift # Remove "compiler" from processing
-             ;;
-          *)
-          if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
-            echo "option "${arg#}" not found"
-          fi
-          echo -e ' '
-          echo -e "valid options are:"
-          echo -e "\t[intel(D) | gnu] \t\t\t compiler"
-          echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
-          echo -e "\n"
-          exit
+        intel|gnu)
+          COMPILER="${arg#*=}"
+          shift # Remove "compiler" from processing
           ;;
+        *)
+        if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
+          echo "option "${arg#}" not found"
+        fi
+        echo -e ' '
+        echo -e "valid options are:"
+        echo -e "\t[intel(D) | gnu] \t\t\t compiler"
+        echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
+        echo -e "\n"
+        exit
+        ;;
       esac
   done
 
@@ -77,32 +77,24 @@ fi
 
 
 
-mkdir -p ${LIBS_DIR}/mom6/${COMPILER}
-list_paths -l -o ${LIBS_DIR}/mom6/${COMPILER}/pathnames_mom6 \
-    ${SHiELD_SRC}/MOM6/config_src/memory/dynamic_symmetric \
-    ${SHiELD_SRC}/MOM6/config_src/drivers/FMS_cap \
-    ${SHiELD_SRC}/MOM6/src/*/ \
-    ${SHiELD_SRC}/MOM6/src/*/*/ \
-    ${SHiELD_SRC}/MOM6/config_src/external/ODA_hooks \
-    ${SHiELD_SRC}/MOM6/config_src/external/database_comms \
-    ${SHiELD_SRC}/MOM6/config_src/external/drifters \
-    ${SHiELD_SRC}/MOM6/config_src/external/stochastic_physics \
-    ${SHiELD_SRC}/MOM6/config_src/external/GFDL_ocean_BGC \
-    ${SHiELD_SRC}/MOM6/config_src/external/MARBL \
-    ${SHiELD_SRC}/MOM6/pkg/GSW-Fortran/*/ \
-    ${SHiELD_SRC}/MOM6/config_src/infra/FMS2
+mkdir -p ${LIBS_DIR}/lm4/${COMPILER}
+list_paths -l -o ${LIBS_DIR}/lm4/${COMPILER}/pathnames_lm4 \
+    ${SHiELD_SRC}/LM4p 
 cd ${LIBS_DIR}
 
-pushd mom6/${COMPILER}
+pushd lm4/${COMPILER}
 
-mkmf -m Makefile -a ${SHiELD_SRC} -p libmom6.a -t "${BUILD_ROOT}/${TEMPLATE}" \
-     -c "-DINTERNAL_FILE_NML -g -DMAX_FIELDS_=100 -DNOT_SET_AFFINITY -D_USE_MOM6_DIAG -D_USE_GENERIC_TRACER -DUSE_PRECISION=2 -I${LIBS_DIR}/libFMS/${COMPILER}/${BIT}" \
-     -I${SHiELD_SRC}/FMS/axis_utils/include -I${SHiELD_SRC}/FMS/diag_manager/include -I${SHiELD_SRC}/FMS/fms/include -I${SHiELD_SRC}/FMS/fms2_io/include \
-     -I${SHiELD_SRC}/FMS/horiz_interp/include -I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/FMS/mpp/include -I${SHiELD_SRC}/FMS/sat_vapor_pres/include \
-     -I${SHiELD_SRC}/FMS/string_utils/include -I${SHiELD_SRC}/FMS/test_fms/fms/include  \
-     -I${SHiELD_SRC}/MOM6/src/framework ${LIBS_DIR}/mom6/${COMPILER}/pathnames_mom6
-
-make -j8 ${COMP} AVX=Y NETCDF=3 Makefile libmom6.a >& Build_mom6.out
+ 
+mkmf -m Makefile -a ${SHiELD_SRC} -p liblm4.a -t "${BUILD_ROOT}/${TEMPLATE}" \
+     -c "-DINTERNAL_FILE_NML -Duse_yaml -Duse_netCDF -DDEBUG_LAND_TILE_DIAG" -o "-I${LIBS_DIR}/libFMS/${COMPILER}/${BIT}/"  -I${SHiELD_SRC}/FMS/amip_interp/include  -I${SHiELD_SRC}/FMS/astronomy/include \
+     -I${SHiELD_SRC}/FMS/axis_utils/include -I${SHiELD_SRC}/FMS/column_diagnostics/include -I${SHiELD_SRC}/FMS/include \
+     -I${SHiELD_SRC}/FMS/data_override/include -I${SHiELD_SRC}/FMS/diag_integral/include -I${SHiELD_SRC}/FMS/diag_manager/include -I${SHiELD_SRC}/FMS/field_manager/include \
+     -I${SHiELD_SRC}/FMS/fms/include -I${SHiELD_SRC}/FMS/fms2_io/include -I${SHiELD_SRC}/FMS/horiz_interp/include -I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/FMS/interpolator/include \
+     -I${SHiELD_SRC}/FMS/monin_obukhov/include -I${SHiELD_SRC}/FMS/mosaic2/include -I${SHiELD_SRC}/FMS/mpp/include -I${SHiELD_SRC}/FMS/random_numbers/include -I${SHiELD_SRC}/FMS/sat_vapor_pres/include \
+     -I${SHiELD_SRC}/FMS/string_utils/include -I${SHiELD_SRC}/FMS/test_fms/data_override/include -I${SHiELD_SRC}/FMS/test_fms/fms/include -I${SHiELD_SRC}/FMS/time_interp/include \
+     -I${SHiELD_SRC}/FMS/topography/include -I${SHiELD_SRC}/FMS/tracer_manager/include -I${SHiELD_SRC}/FMS/tridiagonal/include ${LIBS_DIR}/lm4/${COMPILER}/pathnames_lm4
+ 
+make -j8 ${COMP} AVX=Y NETCDF=3 Makefile liblm4.a >& Build_lm4.out
 
 ################
 #will get noise with openmp in debugmode
@@ -110,9 +102,9 @@ make -j8 ${COMP} AVX=Y NETCDF=3 Makefile libmom6.a >& Build_mom6.out
 
 # test and report on libFMS build success
 if [ $? -ne 0 ] ; then
-  echo ">>> ${LIBS_DIR}/mom6/${COMPILER} build failed"
+  echo ">>> ${LIBS_DIR}/lm4/${COMPILER} build failed"
   exit 1
 fi
-echo " libmom6 build successful"
+echo " liblm4 build successful"
 
 popd
