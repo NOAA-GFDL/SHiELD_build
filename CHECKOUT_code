@@ -31,16 +31,19 @@ export SHiELD_SRC=${PWD%/*}/SHiELD_SRC/
 mkdir -p ${SHiELD_SRC}
 cd ${SHiELD_SRC}
 
-config="shield"
-config_name="SHiELD"
+config="all"
+config_name="all"
 
 #Check input argument
 ######################
 for arg in "$@"
   do
       case $arg in
-          solo|shield|shiemom|shiemom_lm4)
+          all|solo|shield|shiemom|shiemom_lm4)
              config="${arg#*=}"
+             if [ $config = 'all' ] ; then
+               config_name="all"
+             fi
              if [ $config = 'solo' ] ; then
                config_name="SOLO"
              fi
@@ -65,6 +68,7 @@ for arg in "$@"
           echo -e "\t[shield]     \t\t\t SHiELD configuration"
           echo -e "\t[shiemom]    \t\t\t SHiEMOM (SHiELD+MOM6/SIS2) configuration"
           echo -e "\t[shiemom_lm4]    \t\t\t SHiEMOM_LM4 (SHiELD+MOM6/SIS2+LM4) configuration"
+          echo -e "\t[all]    \t\t\t Checks out the source code for all configurations"
           echo -e "\n"
           exit
           ;;
@@ -92,7 +96,7 @@ git clone -b ${fv3_release} https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
 git clone -b ${drivers_release}   https://github.com/NOAA-GFDL/atmos_drivers
 
-if [ $config_name = 'SHiELD' ] || [ $config_name = 'SHiEMOM' ] || [ $config_name = 'SHiEMOM_LM4' ] ; then
+if [ $config_name = 'SHiELD' ] || [ $config_name = 'SHiEMOM' ] || [ $config_name = 'SHiEMOM_LM4' ] || [ $config_name = 'all' ]; then
    git clone -b ${phy_release} https://github.com/NOAA-GFDL/SHiELD_physics
    git clone -b ${fms_c_release} https://github.com/NOAA-GFDL/FMSCoupler
    git clone  https://github.com/NOAA-GFDL/ice_param
@@ -111,6 +115,15 @@ if [ $config_name = 'SHiEMOM' ] ; then
 fi
 
 if [ $config_name = 'SHiEMOM_LM4' ] ; then
+   git clone --recursive -b ${land_release} http://gitlab.gfdl.noaa.gov/fms/lm4p.git LM4p
+   cd ../SHiELD_build/
+   ./CHECKOUT_mom6.csh
+fi
+
+if [ $config_name = 'all' ] ; then
+   git clone  https://github.com/NOAA-GFDL/ocean_null
+   git clone  https://github.com/NOAA-GFDL/land_null
+   git clone  https://github.com/NOAA-GFDL/ice_null
    git clone --recursive -b ${land_release} http://gitlab.gfdl.noaa.gov/fms/lm4p.git LM4p
    cd ../SHiELD_build/
    ./CHECKOUT_mom6.csh
