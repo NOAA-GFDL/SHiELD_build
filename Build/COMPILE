@@ -249,11 +249,7 @@ fi
      echo " pre-built ${LIBS_DIR}/nceplibs/${compiler} exists"
   else
      echo " ${LIBS_DIR}/nceplibs/${compiler} does not exist"
-     if [ ${DACONFIG:-"N"} = "Y" ] ; then
-        echo " Use spack-stack libraries"
-     else
-        ./BUILDnceplibs ${compiler} ${pic}
-     fi
+     ./BUILDnceplibs ${compiler} ${pic}
      if [ $? -ne 0 ] ; then
         echo ">>> ${LIBS_DIR}/ncepdir/${compiler} build failed"
         exit 3

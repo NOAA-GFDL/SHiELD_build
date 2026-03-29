@@ -46,20 +46,6 @@ case $hostname in
       #module load cmake/3.27.9
       #module load libyaml/0.2.5
 
-      if [[ ${DACONFIG:-"N"} == "Y" ]]; then
-        module use /ncrc/proj/epic/spack-stack/c6/spack-stack-1.9.2/envs/ue-intel-2023.2.0/install/modulefiles/Core
-        module load stack-intel/2023.2.0
-        module load stack-cray-mpich/8.1.30
-
-        module load esmf/8.8.0
-
-        module load bacio/2.4.1
-        module load sp/2.5.0
-        module load w3emc/2.10.0
-
-        module unload cray-libsci
-      fi
-
       # Add -DHAVE_GETTID to the FMS cppDefs
       export FMS_CPPDEFS=-DHAVE_GETTID
 
