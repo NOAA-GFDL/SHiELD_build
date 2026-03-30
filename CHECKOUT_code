@@ -90,7 +90,7 @@ fms_release="2025.04"
 fms_c_release="2025.04"
 drivers_release=$release
 land_release="2025.04"
-stoch_release="fad2fe9"
+stoch_release="gfdl/shield"
 
 git clone -b ${fv3_release} https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
@@ -121,9 +121,7 @@ if [ $config_name = 'SHiEMOM_LM4' ] ; then
 fi
 
 if [ $config_name = 'SHiELDDA' ]; then
-   git clone https://github.com/NOAA-PSL/stochastic_physics
-   cd stochastic_physics
-   git checkout ${stoch_release}
+   git clone -b ${stoch_release} https://github.com/MingjingTong-NOAA/stochastic_physics.git
 fi
 
 #Automatic release tracking from Matt M.

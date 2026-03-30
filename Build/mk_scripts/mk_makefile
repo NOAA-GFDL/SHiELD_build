@@ -114,7 +114,7 @@ elif [ ${CONFIG} = 'shieldda' ]; then
              -o "-I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/GFDL_atmos_cubed_sphere/driver/SHiELD/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" -c "${FV3_cppDefs}" \
              -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
-   mkmf -m Makefile_stochastic_physics -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}"  -o "-cpp" -c "${GFS_cppDefs}" \
+   mkmf -m Makefile_stochastic_physics -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}"  -o "-cpp" -c "${GFS_cppDefs} -DCESMCOUPLED" \
              -o "-I${SHiELD_SRC}/FMS/include -I${BUILD_ROOT}/Build/libFMS/${COMPILER}/${BIT}" \
              -p libstochastic_physics.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_stochastic_physics
 
