@@ -161,30 +161,52 @@ case $hostname in
       echo -e ' '
       module list
       ;;
-   h* | u*)
-      echo " hera or ursa environment "
+   h* )
+      echo " hera environment "
 
-      if ( ! eval module help > /dev/null 2>&1 ) ; then
-          source /apps/lmod/lmod/init/bash
-      fi
+      . $MODULESHOME/init/sh
       module purge
+      module load intel/2024.2.1
+      module load impi/2024.2.1
+      module load mkl/2024.2.1
+      module load netcdf-fortran/4.6.1b
+      module load netcdf-c/4.9.2b
+      module load hdf5parallel/1.14.5
+      module load cmake/3.28.1
 
-      module use /contrib/spack-stack/spack-stack-1.9.2/envs/ue-oneapi-2024.2.1/install/modulefiles/Core
-      module load stack-oneapi/2024.2.1
-      module load stack-intel-oneapi-mpi/2021.13
-  
-      module load hdf5/1.14.3
-      module load netcdf-c/4.9.2
+      export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
+      export NETCDF_DIR=${NETCDF}
+      export FMS_CPPDEFS=""
+
+      # make your compiler selections here
+      export FC=mpiifort
+      export CC=mpiicx
+      export I_MPI_CC=icx
+      export CXX=mpicpx
+      export I_MPI_CXX=icpx
+      export LD=mpiifort
+      export TEMPLATE=site/intel.mk
+      export LAUNCHER=srun
+
+      # highest level of AVX support
+      export AVX_LEVEL=-march=core-avx2
+      export FP_MODEL_VAR=precise
+      echo -e ' '
+      module list
+      ;;
+   u* )
+      echo " ursa environment "
+
+      . $MODULESHOME/init/sh
+      module purge
+      module load intel-oneapi-compilers/2024.2.1
+      module load intel-oneapi-mpi/2021.13.1
+      module load intel-oneapi-mkl/2024.2.1
       module load netcdf-fortran/4.6.1
+      module load netcdf-c/4.9.2
+      module load hdf5/1.14.3
+      module load cmake/3.30.2
 
-      module load esmf/8.8.0
-
-      module load bacio/2.4.1
-      module load sp/2.5.0
-      module load w3emc/2.10.0
-
-      export CPATH="$NETCDF/include:$CPATH"
-      export HDF5=${HDF5_ROOT}
       export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
       export NETCDF_DIR=${NETCDF}
       export FMS_CPPDEFS=""

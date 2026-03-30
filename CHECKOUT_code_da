@@ -87,18 +87,18 @@ release="main"
 fv3_release=$release
 phy_release="shield_da_merge"
 fms_release="2025.04"
-fms_c_release="shield_da_merge"
+fms_c_release="2025.04"
 drivers_release="shield_da_merge"
 land_release="2025.04"
-stoch_release="fad2fe9"
+stoch_release="gfdl/shield"
 
 git clone -b ${fv3_release} https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
 git clone -b ${fms_release}   https://github.com/NOAA-GFDL/FMS
-git clone -b ${drivers_release}   https://github.com/MingjingTong-NOAA/atmos_drivers.git
+git clone -b ${drivers_release}   https://github.com/MingjingTong-NOAA/atmos_drivers
 
 if [ $config_name = 'SHiELD' ] || [ $config_name = 'SHiEMOM' ] || [ $config_name = 'SHiEMOM_LM4' ] || [ $config_name = 'SHiELDDA' ] ; then
-   git clone -b ${phy_release} https://github.com/MingjingTong-NOAA/SHiELD_physics.git
-   git clone -b ${fms_c_release} https://github.com/MingjingTong-NOAA/FMSCoupler.git
+   git clone -b ${phy_release} https://github.com/MingjingTong-NOAA/SHiELD_physics
+   git clone -b ${fms_c_release} https://github.com/NOAA-GFDL/FMSCoupler
    git clone  https://github.com/NOAA-GFDL/ice_param
 fi
 
@@ -121,9 +121,7 @@ if [ $config_name = 'SHiEMOM_LM4' ] ; then
 fi
 
 if [ $config_name = 'SHiELDDA' ]; then
-   git clone https://github.com/NOAA-PSL/stochastic_physics
-   cd stochastic_physics
-   git checkout ${stoch_release}
+   git clone -b ${stoch_release} https://github.com/MingjingTong-NOAA/stochastic_physics.git
 fi
 
 #Automatic release tracking from Matt M.
