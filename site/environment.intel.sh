@@ -165,10 +165,12 @@ case $hostname in
       echo " hera environment "
 
       source $MODULESHOME/init/sh
-      module load intel/15.1.133
-      module load netcdf/4.3.0
-      module load hdf5/1.8.14
-      module load cmake/3.20.1
+      module load gnu
+      module load intel/2023.2.0
+      module load impi/2023.2.0
+      module load netcdf/4.7.0
+      module load hdf5/1.14.5
+      module load cmake/3.28.1
 
       export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
       export NETCDF_DIR=${NETCDF}
@@ -176,7 +178,7 @@ case $hostname in
 
       # make your compiler selections here
       export FC=mpiifort
-      export CC=mpiicc
+      export CC=mpiicx
       export CXX=mpicpc
       export LD=mpiifort
       export TEMPLATE=site/intel.mk
