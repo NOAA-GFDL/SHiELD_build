@@ -164,14 +164,12 @@ case $hostname in
    h* )
       echo " hera environment "
 
-      . $MODULESHOME/init/sh
-      module purge
-      module load intel/2024.2.1
-      module load impi/2024.2.1
-      module load mkl/2024.2.1
-      module load netcdf-fortran/4.6.1b
-      module load netcdf-c/4.9.2b
-      module load hdf5parallel/1.14.5
+      source $MODULESHOME/init/sh
+      module load gnu
+      module load intel/2023.2.0
+      module load impi/2023.2.0
+      module load netcdf/4.7.0
+      module load hdf5/1.14.5
       module load cmake/3.28.1
 
       export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
@@ -181,9 +179,7 @@ case $hostname in
       # make your compiler selections here
       export FC=mpiifort
       export CC=mpiicx
-      export I_MPI_CC=icx
-      export CXX=mpicpx
-      export I_MPI_CXX=icpx
+      export CXX=mpicpc
       export LD=mpiifort
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
