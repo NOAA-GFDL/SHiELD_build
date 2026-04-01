@@ -221,6 +221,35 @@ case $hostname in
       echo -e ' '
       module list
       ;;
+   u* )
+      echo " ursa environment "
+
+      source $MODULESHOME/init/sh
+      module load intel-oneapi-compilers/2025.3.1
+      module load intel-oneapi-mpi/2021.17.1
+      module load hdf5/1.14.3
+      module load netcdf-c/4.9.2
+      module load netcdf-fortran/4.6.1
+      module load cmake/3.30.2
+
+      export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
+      export NETCDF_DIR=${NETCDF}
+      export FMS_CPPDEFS=""
+      # Add -DHAVE_GETTID to the FMS cppDefs
+      export FMS_CPPDEFS=-DHAVE_GETTID
+
+      # make your compiler selections here
+      export FC=mpiifx
+      export CC=mpiicx
+      export CXX=mpicpc
+      export LD=mpiifx
+      export TEMPLATE=site/intel.mk
+      export LAUNCHER=srun
+
+      export AVX_LEVEL=-xHOST
+      echo -e ''
+      module list
+      ;;
    lsc* )
       echo " lsc environment "
 
