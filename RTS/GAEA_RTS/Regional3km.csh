@@ -1,17 +1,32 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=Regional3km
-#SBATCH --clusters=c5
+##SBATCH --clusters=c5
 #SBATCH --time=00:30:00
 #SBATCH --nodes=8
 
 # see run_tests.sh for an example of how to run these tests
-
+#
 set echo
-set YourGroup  = "gfdl_f" #modify this to be your own group on f5
-set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
+
+echo $BUILD_AREA
+echo $cluster
+
+# uncomment these if running without run_test.sh
+#################################################
+#set YourGroup  = "gfdl_w"
+#set BUILD_AREA = "/ncrc/home2/${USER}/github_shield/SHiELD_build/"
+
+if ( $cluster == 'c5' ) then
+  set BASEDIR    = "/gpfs/f5/gfdl_w/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA"
+endif
+if ( $cluster == 'c6' ) then
+  set BASEDIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
+endif
+
 set INPUT_DATA = "/ncrc/home1/Lauren.Chilutti/Alaska_c3072/SHiELD_IC/Alaska_c3072"
-set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
 
 if ( ! $?COMPILER ) then
   set COMPILER = "intel"
@@ -45,8 +60,14 @@ set executable = ${BUILD_AREA}/Build/bin/SHiELD_${TYPE}.${COMP}.${MODE}.${COMPIL
 
 # input filesets
 set ICS  = ${INPUT_DATA}/${NAME}_IC/
-set FIX  = /gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/fix.v201810
-set GFS  = /gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
+if ( $cluster == 'c5' ) then
+  set FIX  = /gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/fix.v201810
+  set GFS  = /gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
+endif
+if ( $cluster == 'c6' ) then
+  set FIX  = /gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/fvGFS_INPUT_DATA/fix.v201810
+  set GFS  = /gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
+endif
 set GRID = ${INPUT_DATA}/GRID/
 
 # sending file to gfdl
