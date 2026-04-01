@@ -17,10 +17,6 @@ VERBOSE =
 OPENMP =
 PIC =
 
-include       $(ESMFMKFILE)
-ESMF_INC=$(ESMF_F90COMPILEPATHS)
-ESMF_LIB=$(ESMF_F90ESMFLINKPATHS) $(ESMF_F90ESMFLINKRPATHS) $(ESMF_F90ESMFLINKLIBS) $(ESMF_F90LINKPATHS) $(ESMF_F90LINKLIBS) $(ESMF_F90LINKOPTS)
-
 ##############################################
 # Need to use at least GNU Make version 3.81 #
 ##############################################
@@ -73,17 +69,15 @@ CFLAGS += -fPIC
 CPPFLAGS += -fPIC
 endif
 
-FP_MODEL_VAR ?= source
-
-FFLAGS_OPT = -O2 -debug minimal -fp-model $(FP_MODEL_VAR) -qoverride-limits -qopt-prefetch=3
-FFLAGS_REPRO = -O2 -debug minimal -fp-model $(FP_MODEL_VAR) -qoverride-limits #-fpe0 #causes problems??
+FFLAGS_OPT = -O2 -debug minimal -fp-model source -qoverride-limits -qopt-prefetch=3
+FFLAGS_REPRO = -O2 -debug minimal -fp-model source -qoverride-limits #-fpe0 #causes problems??
 FFLAGS_DEBUG = -g -O0 -debug -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fp-stack-check -fstack-protector-all -fpe0 -ftrapuv
 
 TRANSCENDENTALS := -fast-transcendentals
 FFLAGS_OPENMP = -qopenmp
 FFLAGS_VERBOSE = -v -V -what
 
-CFLAGS := -D__IFC -sox -msse2 -fp-model $(FP_MODEL_VAR)
+CFLAGS := -D__IFC -sox -msse2
 ifeq ($(AVX2),Y)
 #CFLAGS += -xHOST -xCORE-AVX2 -qno-opt-dynamic-align
 endif
@@ -95,7 +89,7 @@ CFLAGS_DEBUG = -O0 -g -ftrapuv -traceback
 
 # Optional Testing compile flags.  Mutually exclusive from DEBUG, REPRO, and OPT
 # *_TEST will match the production if no new option(s) is(are) to be tested.
-FFLAGS_TEST = -O3 -debug minimal -fp-model $(FP_MODEL_VAR) -qoverride-limits
+FFLAGS_TEST = -O3 -debug minimal -fp-model source -qoverride-limits
 CFLAGS_TEST = -O2
 
 LDFLAGS :=
@@ -140,11 +134,8 @@ ifeq ($(NETCDF),3)
 endif
 
 ifeq ($(DACONFIG), Y)
-  #LDFLAGS += $(BACIO_LIB4) $(SP_LIBd) $(W3EMC_LIBd) $(W3NCO_LIBd) $(ESMF_LIB)
   LDFLAGS += -qmkl
 endif
-
-$(info   LDFLAGS is $(LDFLAGS))
 
 LIBS += $(shell pkg-config --libs yaml-0.1)
 LDFLAGS += $(LIBS)

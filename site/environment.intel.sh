@@ -193,40 +193,10 @@ case $hostname in
    u* )
       echo " ursa environment "
 
-      . $MODULESHOME/init/sh
-      module purge
-      module load intel-oneapi-compilers/2024.2.1
-      module load intel-oneapi-mpi/2021.13.1
-      module load intel-oneapi-mkl/2024.2.1
-      module load netcdf-fortran/4.6.1
-      module load netcdf-c/4.9.2
-      module load hdf5/1.14.3
-      module load cmake/3.30.2
-
-      export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
-      export NETCDF_DIR=${NETCDF}
-      export FMS_CPPDEFS=""
-
-      # make your compiler selections here
-      export FC=mpiifort
-      export CC=mpiicx
-      export CXX=mpicpx
-      export LD=mpiifort
-      export TEMPLATE=site/intel.mk
-      export LAUNCHER=srun
-
-      # highest level of AVX support
-      export AVX_LEVEL=-march=core-avx2
-      export FP_MODEL_VAR=precise
-      echo -e ' '
-      module list
-      ;;
-   u* )
-      echo " ursa environment "
-
       source $MODULESHOME/init/sh
       module load intel-oneapi-compilers/2025.3.1
       module load intel-oneapi-mpi/2021.17.1
+      module load intel-oneapi-mkl/2025.3.0
       module load hdf5/1.14.3
       module load netcdf-c/4.9.2
       module load netcdf-fortran/4.6.1
