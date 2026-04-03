@@ -1,0 +1,42 @@
+name: Build SHiELD
+
+on:
+  pull_request:
+    branches:
+      - main
+
+#this should cancel in progress ci runs for the same PR 
+#(e.g. a second commit on the same PR comes in while CI is still running)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+  
+jobs:
+  checkout:
+    if: github.repository == 'NOAA-GFDL/SHiELD_build'
+    runs-on: [self-hosted]
+    name: Checkout SHiELD and Build FMS
+    steps:
+      - run: /contrib/fv3/SHiELD_build_CI/checkout_fms.sh -b $GITHUB_REF -h $GITHUB_SHA  
+  build:
+    if: github.repository == 'NOAA-GFDL/SHiELD_build'
+    runs-on: [self-hosted]
+    name: SOLO SHiELD build
+    needs: [checkout]
+    strategy:
+      fail-fast: true
+      max-parallel: 4
+      matrix:
+        runscript: [/contrib/fv3/SHiELD_build_CI/compile.sh]
+        config: [shield, solo, shiemom, shiemom_lm4]
+        hydro: [nh]
+        bit: [32bit]
+        mode: [repro]
+    steps:
+      - env:
+          RUNSCRIPT: ${{ matrix.runscript }}
+          CONFIG: ${{ matrix.config }}
+          HYDRO: ${{ matrix.hydro }}
+          BIT: ${{ matrix.bit }}
+          MODE: ${{ matrix.mode }}
+        run: $RUNSCRIPT -b $GITHUB_REF -h $GITHUB_SHA -c $CONFIG --hydro $HYDRO --bit $BIT -m $MODE
