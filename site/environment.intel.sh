@@ -186,7 +186,6 @@ case $hostname in
 
       # highest level of AVX support
       export AVX_LEVEL=-march=core-avx2
-      export FP_MODEL_VAR=precise
       echo -e ' '
       module list
       ;;
