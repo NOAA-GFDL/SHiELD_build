@@ -25,6 +25,7 @@ Be sure to download the mkmf submodule prior to beginning.  To use:
  1) Checkout code via CHECKOUT_code script
     - ./CHECKOUT_code will checkout necessary files for shield
     - ./CHECKOUT_code will automatically run ./CHECKOUT_mom6 for mom6/sis2 files for the coupled version
+    - ./CHECKOUT_code shieldda will checkout additional stochastic physics package for shield DA
 
  2) cd Build and execute ./COMPILE script with the --help option to see usage
 
