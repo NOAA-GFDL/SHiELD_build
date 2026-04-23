@@ -1,0 +1,125 @@
+#!/bin/bash
+#***********************************************************************
+#*                   GNU Lesser General Public License
+#*
+#* This file is part of the SHiELD Build System.
+#*
+#* The SHiELD Build System free software: you can redistribute it
+#* and/or modify it under the terms of the
+#* GNU Lesser General Public License as published by the
+#* Free Software Foundation, either version 3 of the License, or
+#* (at your option) any later version.
+#*
+#* The SHiELD Build System distributed in the hope that it will be
+#* useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+#* of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#* See the GNU General Public License for more details.
+#*
+#* You should have received a copy of the GNU Lesser General Public
+#* License along with theSHiELD Build System
+#* If not, see <http://www.gnu.org/licenses/>.
+#***********************************************************************
+#
+#  DISCLAIMER: This script is provided as-is and as such is unsupported.
+#
+
+set -x
+
+# set default values
+compiler="intel"
+
+#define versions to checkout
+version_serialbox="v2.6.2"
+
+# parse arguments
+  for arg in "$@"
+  do
+      case $arg in
+          intel|gnu)
+             compiler="${arg#*=}"
+             shift # Remove "compiler" from processing
+             ;;
+          *)
+          if [ ${arg#} != '--help' ] && [ ${arg#} != '-h' ] ; then
+            echo "option "${arg#}" not found"
+          fi
+          echo -e ' '
+          echo -e "valid options are:"
+          echo -e "\t[intel(D) | gnu ] \t\t\t compiler"
+          echo -e "\n"
+          exit
+          ;;
+      esac
+  done
+
+# set up some default variables if not called from COMPILE
+# LIBS_DIR is set if this script is called from the COMPILE script
+# EXTERNAL_LIBS is set if using external location for storage of nceplibs
+if [ -z ${LIBS_DIR} ] ; then
+   BUILD_ROOT=${PWD%/*}
+   LIBS_DIR=${BUILD_ROOT}/Build
+   if [ ! -z ${EXTERNAL_LIBS} ] ; then
+   LIBS_DIR=${EXTERNAL_LIBS}
+   fi
+   # load the proper environment for your machine
+   . ${BUILD_ROOT}/site/environment.${compiler}.sh
+fi
+
+serialbox_dir=${LIBS_DIR}/serialbox/${compiler}
+\rm -rf $serialbox_dir
+mkdir -p $serialbox_dir
+cd $serialbox_dir
+
+
+git clone -b $version_serialbox https://github.com/eth-cscs/serialbox2.git
+cd serialbox2
+mkdir build
+cd build
+
+# TODO: Make this better. For now, I'm putting in what I tried from my notes...
+
+if [ ${compiler} = 'intel' ] ; then
+
+    # Start temporary environment block. There seems to be a mismatch between the SHiELD_build environment
+    # variables and what's needed to build SerialBox.
+    (
+        # Switch INTEL_COMPILER_TYPE from CLASSIC to ONEAPI
+        export INTEL_COMPILER_TYPE=ONEAPI
+
+        source /opt/intel/oneapi/setvars.sh --force --oneapi-version 2025.2
+
+        rm -rf CMakeCache.txt CMakeFiles
+
+        #cmake ../ \
+        #  -DCMAKE_INSTALL_PREFIX=install \
+        #  -DCMAKE_C_COMPILER=icx \
+        #  -DCMAKE_CXX_COMPILER=icpx \
+        #  -DCMAKE_Fortran_COMPILER=ifx \
+        #  -DCMAKE_Fortran_COMPILER_WORKS=ON \
+        #  -DSERIALBOX_ENABLE_FORTRAN=ON \
+        #  -DSERIALBOX_EXAMPLES=OFF \
+        #  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+        #  -DCMAKE_VERBOSE_MAKEFILE=ON \
+        #  -DCMAKE_CXX_STANDARD=17
+
+        cmake ../ \
+          -DCMAKE_INSTALL_PREFIX=install \
+          -DCMAKE_C_COMPILER=cc \
+          -DCMAKE_CXX_COMPILER=CC \
+          -DCMAKE_Fortran_COMPILER=ftn \
+          -DCMAKE_Fortran_COMPILER_WORKS=ON \
+          -DSERIALBOX_ENABLE_FORTRAN=ON \
+          -DSERIALBOX_EXAMPLES=OFF \
+          -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+          -DCMAKE_VERBOSE_MAKEFILE=ON \
+          -DCMAKE_CXX_STANDARD=14 \
+
+        cmake --build .
+        cmake --build . --target install
+    )
+else # ${compiler} = 'gnu'
+  export FC=gfortran
+  cmake ../ -DSERIALBOX_ENABLE_FORTRAN=ON -DSERIALBOX_EXAMPLES=OFF
+  make
+  make install
+fi

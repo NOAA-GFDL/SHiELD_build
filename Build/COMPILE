@@ -55,6 +55,7 @@ spin()
   avx="Y"
   compiler="intel"
   clean="noclean"
+  serial="noserial"
   pic="nopic"
 
   config_name="SHiELD"
@@ -111,6 +112,10 @@ spin()
              clean="${arg#*=}"
              shift # Remove "clean" from processing
              ;;
+          noserial|serial)
+             serial="${arg#*=}"
+             shift # Remove "serial" from processing
+             ;;
           nopic|pic)
              pic="${arg#*=}"
              shift # Remove "pic" from processing
@@ -128,6 +133,7 @@ spin()
           echo -e "\t[avx(D) | noavx] \t\t\t use AVX_LEVEL defined in site/environment.<compiler>.sh"
           echo -e "\t[intel(D) | gnu | nvhpc] \t\t\t compiler"
           echo -e "\t[noclean(D) | clean | cleanall] \t cleans exec area"
+          echo -e "\t[noserial(D) | serial] \t\t\t SerialBox support (for Pace validation/comparison)"
           echo -e "\t[nopic(D) | pic] \t whether to build all components with the -fPIC flag (position independent code)"
           echo -e "\n"
           exit
@@ -158,6 +164,14 @@ export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
 export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
 export LIBS_DIR=${BUILD_ROOT}/Build
 
+export SERIALBOX_ROOT=${LIBS_DIR}/serialbox/${compiler}/serialbox2/build/install
+export PP_SER=${SERIALBOX_ROOT}/python/pp_ser/pp_ser.py
+export PPSER_FLAGS="--verbose --ignore-identical -m utils_ppser_kbuff"
+export SHiELD_SRC_SER=${PWD%/*/*}/SHiELD_SRC_SER
+
+echo SHiELD_SRC=${SHiELD_SRC}
+echo SHiELD_SRC_SER=${SHiELD_SRC_SER}
+
 #
 # load the proper environment for your machine
 . ${BUILD_ROOT}/site/environment.${compiler}.sh
@@ -173,6 +187,7 @@ echo -e "\tbit      = $bit"
 echo -e "\tavx      = $avx"
 echo -e "\tcompiler = $compiler"
 echo -e "\tclean    = $clean"
+echo -e "\tserial   = $serial"
 echo -e "\tpic      = $pic"
 echo -e "\n"
 sleep 5
@@ -206,6 +221,8 @@ fi
      \rm -rf mom6/${comp}.${bit}.${compiler}/*
      \rm -rf sis2/${comp}.${bit}.${compiler}/*
      \rm -rf lm4/${comp}.${bit}.${compiler}/*
+     \rm -rf serialbox/${compiler}/*
+     \rm -rf ${SHiELD_SRC_SER}/*
   elif [ ${clean} = "clean" ] ; then
      echo " cleaning build directory in 2 seconds"
      sleep 2
@@ -213,6 +230,8 @@ fi
      \rm -rf lm4/${comp}.${bit}.${compiler}/*
      \rm -rf sis2/${comp}.${bit}.${compiler}/*
      \rm -rf exec/${config}_${hydro}.${comp}.${bit}.${compiler}/*
+     \rm -rf serialbox/${compiler}/*
+     \rm -rf ${SHiELD_SRC_SER}/*
   fi
 
 # If EXTERNAL_LIBS is set, then the program will use the path defined by
@@ -246,6 +265,19 @@ fi
         echo ">>> ${LIBS_DIR}/ncepdir/${compiler} build failed"
         exit 3
      fi
+  fi
+# check to make sure serialbox exists
+  if [ -d ${LIBS_DIR}/serialbox/${compiler} ] && [ -d ${LIBS_DIR}/serialbox/${compiler}/serialbox2/build/install ] && \
+     [ -e ${LIBS_DIR}/serialbox/${compiler}/serialbox2/build/install/lib/libSerialboxFortran.so.2.6.2 ] && \
+     [ -e ${LIBS_DIR}/serialbox/${compiler}/serialbox2/build/install/python/pp_ser/pp_ser.py ] ; then
+      echo " pre-built ${LIBS_DIR}/serialbox/${compiler} exists"
+  else
+      echo " ${LIBS_DIR}/serialbox/${compiler} does not exist"
+      ./BUILDserialbox ${compiler}
+      if [ $? -ne 0 ] ; then
+         echo ">>> ${LIBS_DIR}/serialbox/${compiler} build failed"
+         exit 2
+      fi
   fi
 
 if [ $config = "shiemom" ] || [ $config = "shiemom_lm4" ]  ; then
@@ -297,8 +329,39 @@ fi
   mkdir -p ./exec/${config}_${hydro}.${comp}.${bit}.${compiler}
   mkdir -p ./bin/
 
+#
+# optionally run serialbox preprocessor and update SHiELD_SRC to SHiELD_SRC_SER
+  if [ $serial = "serial" ] ; then
+    echo -e ">>> preprocessing code for serialization"
+    echo SHiELD_SRC=${SHiELD_SRC}
+    echo SHiELD_SRC_SER=${SHiELD_SRC_SER}
+
+    mkdir -p ${SHiELD_SRC_SER}
+    rsync -a --log-file=/ncrc/home1/Janice.Kim/work/20260129_translate_tests/PRs/serialbox_src_rsync.log ${SHiELD_SRC} ${SHiELD_SRC_SER}
+
+    # Run preprocessor on SHiELD_SRC *.F90 and *.F files and write the output to SHiELD_SRC_SER
+    find "${SHiELD_SRC}" -type f \( -name "*.F90" -o -name "*.F" \) -printf "%P\n" | while read -r rel; do
+	infile=${SHiELD_SRC}/${rel}
+	outfile=${SHiELD_SRC_SER}/${rel}
+
+	rm ${outfile}
+	echo "Removing ${outfile}"
+	echo "command: python3 $PP_SER $PPSER_FLAGS ${infile} -o ${outfile}"
+
+	if ! python3 $PP_SER $PPSER_FLAGS "${infile}" -o "${outfile}"; then
+	    echo "PP_SER failed on $rel. Copying unmodified version instead."
+	    cp "${infile}" "${outfile}"
+	fi
+    done
+
+    # Change the SHiELD_SRC to the SerialBox-preprocessed code
+    export SHiELD_SRC=${SHiELD_SRC_SER}
+    echo -e "${SHiELD_SRC} is now ${SHiELD_SRC_SER}"
+    echo -e "Finished preprocessing for serialization"
+  fi
+
 # build the model
-echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
+echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `date`"
   #
   # create the file list for the build
     mk_paths ${config} ${hydro} ${comp} ${bit} ${compiler}       > build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
@@ -308,7 +371,7 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
     fi
   #
   # create the library makefiles
-    mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> makefile creation failed"
        exit 5
@@ -323,10 +386,10 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
 #
 # test and report on build success
   if [ $? -ne 0 ] ; then
-     echo ">>> ${config_name} build ${hydro} ${comp} ${bit} ${compiler} failed"
+     echo ">>> ${config_name} build ${hydro} ${comp} ${bit} ${compiler} ${serial} failed"
      exit 6
   else
-     echo " ${config_name} build ${hydro} ${comp} ${bit} ${compiler} successful"
+     echo " ${config_name} build ${hydro} ${comp} ${bit} ${compiler} ${serial} successful"
   fi
 
 exit 0

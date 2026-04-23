@@ -45,6 +45,7 @@ case $hostname in
       module load craype-hugepages4M
       #module load cmake/3.27.9
       #module load libyaml/0.2.5
+      module load boost
 
       # Add -DHAVE_GETTID to the FMS cppDefs
       export FMS_CPPDEFS=-DHAVE_GETTID
@@ -83,6 +84,7 @@ case $hostname in
       module load craype-hugepages4M
       module load cmake/3.27.9
       module load libyaml/0.2.5
+      module load boost
 
       # Add -DHAVE_GETTID to the FMS cppDefs
       export FMS_CPPDEFS=-DHAVE_GETTID

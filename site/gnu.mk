@@ -29,7 +29,7 @@ endif
 MAKEFLAGS += --jobs=8
 
 NETCDF_ROOT = $(NETCDF_DIR)
-MPI_ROOT    = $(MPICH_DIR)
+MPI_ROOT = $(MPICH_DIR)
 # start with blank LIB
 LIBS :=
 
@@ -40,6 +40,10 @@ else
   INCLUDE = -I$(NETCDF_ROOT)/include
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
+
+LIBSERIALBOX := -L$(SERIALBOX_ROOT)/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
+INCLUDE += -I$(SERIALBOX_ROOT)/include
+
 INCLUDE += $(shell pkg-config --cflags yaml-0.1)
 FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
 CPPFLAGS := $(shell pkg-config --cflags yaml-0.1)
@@ -130,8 +134,9 @@ ifeq ($(NETCDF),3)
     CPPDEFS += -Duse_LARGEFILE
   endif
 endif
+
 LIBS += $(shell pkg-config --libs yaml-0.1)
-LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib
+LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib $(LIBSERIALBOX)
 
 #---------------------------------------------------------------------------
 # you should never need to change any lines below.
