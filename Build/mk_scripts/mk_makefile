@@ -30,7 +30,6 @@ HYDRO="nh"
 COMP="prod"
 BIT="32bit"
 COMPILER="intel"
-SERIAL="noserial"
 
 #
 ### parse arguments
@@ -57,10 +56,6 @@ do
         COMPILER="${arg#*=}"
         shift # Remove compiler from processing
         ;;
-        noserial|serial)
-        SERIAL="${arg#*=}"
-        shift # Remove serial from processing
-        ;;
     esac
 done
 
@@ -69,10 +64,6 @@ set -x
 #
 # GFS CPPDEFS
 GFS_cppDefs="-DNEW_TAUCTMAX -DNEMS_GSM -DINTERNAL_FILE_NML"
-# optionally add serialization
-if [ ${SERIAL} = 'serial' ] ; then
-    GFS_cppDefs+=" -DSERIALIZE"
-fi
 
 #
 # FV3 CPPDEFS
@@ -85,10 +76,6 @@ elif [ ${CONFIG} = 'shiemom_lm4' ] ; then
 elif [ ${CONFIG} = 'solo' ] ; then
   FV3_cppDefs+=" -DDCMIP -DDYCORE_SOLO -DHIWPP"
 fi
-# optionally add serialization
-if [ ${SERIAL} = 'serial' ] ; then
-    FV3_cppDefs+=" -DSERIALIZE"
-fi
 
 #
 # add non-hydrostatic or shallow-water CPPDEFS
@@ -98,27 +85,18 @@ elif [ ${HYDRO} = 'sw' ] ; then
   FV3_cppDefs+=" -DSW_DYNAMICS -DDYNAMICS_ZS"
 fi
 
-#
-# optionally link serialbox modules for data serialization
-SERIAL_I_FLAGS=""
-SERIAL_L_FLAGS=""
-if [ ${SERIAL} = 'serial' ] ; then
-  SERIAL_I_FLAGS+="-I${SERIALBOX_ROOT}/include"
-  SERIAL_L_FLAGS+="-L${SERIALBOX_ROOT}/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore"
-fi
-
 pushd exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/
 
 ############################
 #---CREATE MAKEFILES
 ############################
 if [ ${CONFIG} = 'shield' ]  ; then
-   mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" ${SERIAL_I_FLAGS} -o "-cpp" -c "${GFS_cppDefs}" \
-           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs ${SERIAL_L_FLAGS}
+   mkmf -m Makefile_gfs -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -o "-cpp" -c "${GFS_cppDefs}" \
+           -p libgfs.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs
 
-   mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" ${SERIAL_I_FLAGS} \
+   mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" \
              -o "-I${SHiELD_SRC}/FMS/include -I${SHiELD_SRC}/GFDL_atmos_cubed_sphere/driver/SHiELD/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" -c "${FV3_cppDefs}" \
-             -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 ${SERIAL_L_FLAGS}
+             -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
    mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
              -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit" \
              ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
@@ -132,7 +110,7 @@ elif [ ${CONFIG} = 'shiemom' ]; then
            -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
   mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
-           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMPILER} -I${LIBS_DIR}/sis2/${COMPILER}" \
+           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/sis2/${COMP}.64bit.${COMPILER}" \
            ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
 
 elif [ ${CONFIG} = 'shiemom_lm4' ]; then
@@ -144,14 +122,14 @@ elif [ ${CONFIG} = 'shiemom_lm4' ]; then
            -p libfv3.a ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 
   mkmf -m Makefile_driver -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
-           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMPILER} -I${LIBS_DIR}/sis2/${COMPILER} -I${LIBS_DIR}/lm4/${COMPILER}" \
+           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/64bit -I${LIBS_DIR}/mom6/${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/sis2/${COMP}.64bit.${COMPILER} -I${LIBS_DIR}/lm4/${COMP}.64bit.${COMPILER}" \
            ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver
 
 
 elif [ ${CONFIG} = 'solo' ] ; then
-  mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" ${SERIAL_I_FLAGS} -c "${FV3_cppDefs}" \
+  mkmf -m Makefile_fv3 -a ${SHiELD_SRC} -t "${BUILD_ROOT}/${TEMPLATE}" -c "${FV3_cppDefs}" \
           -p test.x -o "-I${SHiELD_SRC}/FMS/include -I${LIBS_DIR}/libFMS/${COMPILER}/${BIT}" \
-            ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 ${SERIAL_L_FLAGS}
+            ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3
 fi
 
 ############################

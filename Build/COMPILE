@@ -330,24 +330,26 @@ fi
   mkdir -p ./bin/
 
 #
-# optionally run serialbox preprocessor and update SHiELD_SRC to SHiELD_SRC_SER
+# optionally run serialbox preprocessor on a new source code tree
+# and update SHiELD_SRC to SHiELD_SRC_SER
   if [ $serial = "serial" ] ; then
     echo -e ">>> preprocessing code for serialization"
     echo SHiELD_SRC=${SHiELD_SRC}
     echo SHiELD_SRC_SER=${SHiELD_SRC_SER}
 
     mkdir -p ${SHiELD_SRC_SER}
-    rsync -a --log-file=/ncrc/home1/Janice.Kim/work/20260129_translate_tests/PRs/serialbox_src_rsync.log ${SHiELD_SRC} ${SHiELD_SRC_SER}
+    rsync -a --log-file=serialbox_src_rsync.out ${SHiELD_SRC} ${SHiELD_SRC_SER}
 
     # Run preprocessor on SHiELD_SRC *.F90 and *.F files and write the output to SHiELD_SRC_SER
     find "${SHiELD_SRC}" -type f \( -name "*.F90" -o -name "*.F" \) -printf "%P\n" | while read -r rel; do
 	infile=${SHiELD_SRC}/${rel}
 	outfile=${SHiELD_SRC_SER}/${rel}
 
-	rm ${outfile}
+	# NOTE: I can't get PP_SER to work properly without deleting the file first.
 	echo "Removing ${outfile}"
+	rm ${outfile}
+	
 	echo "command: python3 $PP_SER $PPSER_FLAGS ${infile} -o ${outfile}"
-
 	if ! python3 $PP_SER $PPSER_FLAGS "${infile}" -o "${outfile}"; then
 	    echo "PP_SER failed on $rel. Copying unmodified version instead."
 	    cp "${infile}" "${outfile}"
@@ -356,7 +358,7 @@ fi
 
     # Change the SHiELD_SRC to the SerialBox-preprocessed code
     export SHiELD_SRC=${SHiELD_SRC_SER}
-    echo -e "${SHiELD_SRC} is now ${SHiELD_SRC_SER}"
+    echo -e "SHiELD_SRC is now pointing at ${SHiELD_SRC_SER}"
     echo -e "Finished preprocessing for serialization"
   fi
 
@@ -371,14 +373,14 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial} \t `
     fi
   #
   # create the library makefiles
-    mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler} ${serial}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_makefile ${config} ${hydro} ${comp} ${bit} ${compiler}    >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
     if [ $? -ne 0 ] ; then
        echo ">>> makefile creation failed"
        exit 5
     fi
   #
   # build the configuration
-    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} ${pic} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
+    mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} ${pic} ${serial} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
   #
   # move the executable to an accessible area
     mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x

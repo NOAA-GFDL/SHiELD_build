@@ -16,6 +16,7 @@ REPRO =
 VERBOSE =
 OPENMP =
 PIC =
+SERIAL =
 
 ##############################################
 # Need to use at least GNU Make version 3.81 #
@@ -41,8 +42,15 @@ else
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
 
-LIBS += -L$(SERIALBOX_ROOT)/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
-INCLUDE += -I$(SERIALBOX_ROOT)/include
+# For SerialBox Support (e.g., Serialization used for validation between Pace and
+# SHiELD), setting the SERIAL option to 'Y' with this Makefile template will
+# enable this.
+$(warning SERIAL = $(SERIAL))
+ifeq ($(SERIAL),Y)
+  INCLUDE += -I$(SERIALBOX_ROOT)/include
+  LIBS += -L$(SERIALBOX_ROOT)/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
+  CPPFLAGS += -DSERIALIZE
+endif
 
 INCLUDE += $(shell pkg-config --cflags yaml-0.1)
 FPPFLAGS := -fpp -Wp,-w $(INCLUDE)

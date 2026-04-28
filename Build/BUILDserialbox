@@ -66,7 +66,7 @@ if [ -z ${LIBS_DIR} ] ; then
 fi
 
 serialbox_dir=${LIBS_DIR}/serialbox/${compiler}
-\rm -rf $serialbox_dir
+rm -rf $serialbox_dir
 mkdir -p $serialbox_dir
 cd $serialbox_dir
 
@@ -89,18 +89,6 @@ if [ ${compiler} = 'intel' ] ; then
         source /opt/intel/oneapi/setvars.sh --force --oneapi-version 2025.2
 
         rm -rf CMakeCache.txt CMakeFiles
-
-        #cmake ../ \
-        #  -DCMAKE_INSTALL_PREFIX=install \
-        #  -DCMAKE_C_COMPILER=icx \
-        #  -DCMAKE_CXX_COMPILER=icpx \
-        #  -DCMAKE_Fortran_COMPILER=ifx \
-        #  -DCMAKE_Fortran_COMPILER_WORKS=ON \
-        #  -DSERIALBOX_ENABLE_FORTRAN=ON \
-        #  -DSERIALBOX_EXAMPLES=OFF \
-        #  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-        #  -DCMAKE_VERBOSE_MAKEFILE=ON \
-        #  -DCMAKE_CXX_STANDARD=17
 
         cmake ../ \
           -DCMAKE_INSTALL_PREFIX=install \

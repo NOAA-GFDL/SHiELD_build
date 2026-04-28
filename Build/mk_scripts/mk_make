@@ -35,6 +35,7 @@ COMPILER="intel"
 bit="32bit"
 comp="prod"
 pic="nopic"
+serial="noserial"
 
 #
 ## parse arguments
@@ -81,6 +82,14 @@ do
           fi
           shift # Remove PIC from processing
           ;;
+        noserial|serial)
+          if [ "${arg#*=}" = 'serial' ] ; then
+            SERIAL=Y
+          else
+            SERIAL=N
+          fi
+          shift # Remove SERIAL from processing
+          ;;
     esac
 done
 
@@ -114,12 +123,12 @@ elif [ ${CONFIG} = 'shiemom_lm4'  ] ; then
 fi
 
 if [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] ||  [ ${CONFIG} = 'shiemom_lm4' ]   ; then
-  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} PIC=${PIC} -f Makefile_gfs)
+  (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y ${COMP} AVX=${AVX} PIC=${PIC} SERIAL=${SERIAL} -f Makefile_gfs)
 fi
 
-(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_fv3)
+(cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} ${BIT} PIC=${PIC} SERIAL=${SERIAL} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_fv3)
 
 if   [ ${CONFIG} = 'shield' ] || [ ${CONFIG} = 'shiemom' ] || [ ${CONFIG} = 'shiemom_lm4' ]  ; then
-   (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} PIC=${PIC} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_driver)
+   (cd exec/${CONFIG}_${HYDRO}.${comp}.${bit}.${COMPILER} ; make -j 8 OPENMP=Y NETCDF=3 ${COMP} AVX=${AVX} PIC=${PIC} SERIAL=${SERIAL} EXTERNALLIBS="${EXTERNALLIBS}" -f Makefile_driver)
 fi
 exit 0
