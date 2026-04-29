@@ -16,6 +16,7 @@ REPRO =
 VERBOSE =
 OPENMP =
 PIC =
+SERIAL =
 
 ##############################################
 # Need to use at least GNU Make version 3.81 #
@@ -40,9 +41,6 @@ else
   INCLUDE = -I$(NETCDF_ROOT)/include
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
-
-LIBSERIALBOX := -L$(SERIALBOX_ROOT)/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
-INCLUDE += -I$(SERIALBOX_ROOT)/include
 
 INCLUDE += $(shell pkg-config --cflags yaml-0.1)
 FPPFLAGS := -cpp -Wp,-w $(INCLUDE)
@@ -73,6 +71,18 @@ FFLAGS += -fPIC
 CFLAGS += -fPIC
 CPPFLAGS += -fPIC
 endif
+
+# For SerialBox Support (e.g., Serialization used for validation between Pace and
+# SHiELD), setting the SERIAL option to 'Y' with this Makefile template will
+# enable this.
+$(warning SERIAL = $(SERIAL))
+ifeq ($(SERIAL),Y)
+  INCLUDE += -I$(SERIALBOX_ROOT)/include
+  LIBS += -L$(SERIALBOX_ROOT)/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs -Wl,-rpath,$(SERIALBOX_ROOT)/lib
+  CPPFLAGS += -DSERIALIZE
+endif
+#LIBSERIALBOX := -L$(SERIALBOX_ROOT)/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
+#INCLUDE += -I$(SERIALBOX_ROOT)/include
 
 FFLAGS_OPT = -O2 -fno-range-check
 FFLAGS_REPRO = -O2 -ggdb -fno-range-check
@@ -136,7 +146,8 @@ ifeq ($(NETCDF),3)
 endif
 
 LIBS += $(shell pkg-config --libs yaml-0.1)
-LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib $(LIBSERIALBOX)
+#LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib $(LIBSERIALBOX)
+LDFLAGS += $(LIBS) -L$(NETCDF_ROOT)/lib -L$(HDF5_DIR)/lib
 
 #---------------------------------------------------------------------------
 # you should never need to change any lines below.

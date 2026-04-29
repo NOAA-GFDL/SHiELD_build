@@ -107,7 +107,12 @@ if [ ${compiler} = 'intel' ] ; then
     )
 else # ${compiler} = 'gnu'
   export FC=gfortran
-  cmake ../ -DSERIALBOX_ENABLE_FORTRAN=ON -DSERIALBOX_EXAMPLES=OFF
+
+  cmake ../ \
+    -DSERIALBOX_ENABLE_FORTRAN=ON \
+    -DSERIALBOX_EXAMPLES=OFF \
+    -DCMAKE_INSTALL_PREFIX=install \
+
   make
   make install
 fi
