@@ -2,12 +2,12 @@
 FV3-202604-public --- April 2026 
 Primary Point of Contact: Lucas Harris, GFDL lucas.harris@noaa.gov  
 
-This version has been tested with:
+This version has been tested with:  
 FV3 release FV3-202604-public from https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere  
 SHiELD physics release FV3-202604-public from https://github.com/NOAA-GFDL/SHiELD_physics  
 FMS release 2026.01 from https://github.com/NOAA-GFDL/FMS  
 FMS Coupler release 2026.01 from https://github.com/NOAA-GFDL/FMScoupler  
-Atmos Drivers release FV3-20264-public from https://github.com/NOAA-GFDL/atmos_drivers  
+Atmos Drivers release FV3-202604-public from https://github.com/NOAA-GFDL/atmos_drivers  
 
 This release includes the following:
 - Significant updates to support full FMSCoupler with SHiELD support (@JosephMouallem)
