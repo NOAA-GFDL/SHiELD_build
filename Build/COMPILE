@@ -169,8 +169,6 @@ export PP_SER=${SERIALBOX_ROOT}/python/pp_ser/pp_ser.py
 export PPSER_FLAGS="--verbose --ignore-identical -m utils_ppser_kbuff"
 export SHiELD_SRC_SER=${PWD%/*/*}/SHiELD_SRC_SER
 
-echo SHiELD_SRC=${SHiELD_SRC}
-echo SHiELD_SRC_SER=${SHiELD_SRC_SER}
 
 #
 # load the proper environment for your machine
@@ -266,7 +264,9 @@ fi
         exit 3
      fi
   fi
+
 # check to make sure serialbox exists
+if [ $serial = "serial" ] ; then
   if [ -d ${LIBS_DIR}/serialbox/${compiler} ] && [ -d ${LIBS_DIR}/serialbox/${compiler}/serialbox2/build/install ] && \
      [ -e ${LIBS_DIR}/serialbox/${compiler}/serialbox2/build/install/lib/libSerialboxFortran.so.2.6.2 ] && \
      [ -e ${LIBS_DIR}/serialbox/${compiler}/serialbox2/build/install/python/pp_ser/pp_ser.py ] ; then
@@ -279,6 +279,7 @@ fi
          exit 2
       fi
   fi
+fi
 
 if [ $config = "shiemom" ] || [ $config = "shiemom_lm4" ]  ; then
 # from lauren
@@ -334,26 +335,26 @@ fi
 # and update SHiELD_SRC to SHiELD_SRC_SER
   if [ $serial = "serial" ] ; then
     echo -e ">>> preprocessing code for serialization"
-    echo SHiELD_SRC=${SHiELD_SRC}
-    echo SHiELD_SRC_SER=${SHiELD_SRC_SER}
 
     mkdir -p ${SHiELD_SRC_SER}
     rsync -a --log-file=serialbox_src_rsync.out ${SHiELD_SRC} ${SHiELD_SRC_SER}
 
     # Run preprocessor on SHiELD_SRC *.F90 and *.F files and write the output to SHiELD_SRC_SER
-    find "${SHiELD_SRC}" -type f \( -name "*.F90" -o -name "*.F" \) -printf "%P\n" | while read -r rel; do
-	infile=${SHiELD_SRC}/${rel}
-	outfile=${SHiELD_SRC_SER}/${rel}
+    find "${SHiELD_SRC}" -type f \( -name "*.F90" -o -name "*.F" \) -printf "%P\n" | while read -r rel
+    do
+        infile=${SHiELD_SRC}/${rel}
+        outfile=${SHiELD_SRC_SER}/${rel}
 
-	# NOTE: I can't get PP_SER to work properly without deleting the file first.
-	echo "Removing ${outfile}"
-	rm ${outfile}
+        echo "Processing ${rel}"
+
+        # NOTE: I can't get PP_SER to work properly without deleting the file first.
+        rm ${outfile}
 	
-	echo "command: python3 $PP_SER $PPSER_FLAGS ${infile} -o ${outfile}"
-	if ! python3 $PP_SER $PPSER_FLAGS "${infile}" -o "${outfile}"; then
-	    echo "PP_SER failed on $rel. Copying unmodified version instead."
-	    cp "${infile}" "${outfile}"
-	fi
+        echo "command: python3 ${PP_SER} ${PPSER_FLAGS} ${infile} -o ${outfile}"
+        if ! python3 ${PP_SER} ${PPSER_FLAGS} "${infile}" -o "${outfile}" ; then
+            echo "PP_SER failed on ${rel}. Copying unmodified version instead."
+            cp "${infile}"  "${outfile}"
+        fi
     done
 
     # Change the SHiELD_SRC to the SerialBox-preprocessed code
