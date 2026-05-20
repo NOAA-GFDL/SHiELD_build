@@ -34,7 +34,7 @@ COMPILER="intel"
 for arg in "$@"
 do
     case $arg in
-        shield|solo|shiemom|shiemom_lm4)
+        shield|solo|shiemom|shiemom_lm4|shieldda)
         CONFIG="${arg#*=}"
         shift # Remove CONFIG from processing
         ;;
@@ -83,6 +83,51 @@ elif [ ${CONFIG} = 'shield' ] ; then
       GFDL_atmos_cubed_sphere/model/ \
       SHiELD_physics/atmos_shared/  \
       GFDL_atmos_cubed_sphere/driver/SHiELD/atmosphere.F90
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \
+      ocean_null/ \
+      ice_null/ \
+      ice_param/ \
+      land_null/ \
+      atmos_drivers/SHiELD/ \
+      FMSCoupler/full/ \
+      FMSCoupler/shared/
+
+elif [ ${CONFIG} = 'shieldda' ]; then
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_gfs \
+      SHiELD_physics/gsmphys/  \
+      SHiELD_physics/GFS_layer/ \
+      SHiELD_physics/IPD_layer/
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_fv3 \
+      SHiELD_physics/FV3GFS/ \
+      GFDL_atmos_cubed_sphere/tools/ \
+      GFDL_atmos_cubed_sphere/model/ \
+      SHiELD_physics/atmos_shared/ \
+      GFDL_atmos_cubed_sphere/driver/SHiELD/atmosphere.F90
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_stochastic_physics \
+      stochastic_physics/cellular_automata_global.F90 \
+      stochastic_physics/cellular_automata_sgs.F90 \
+      stochastic_physics/compns_stochy.F90 \
+      stochastic_physics/get_stochy_pattern.F90 \
+      stochastic_physics/halo_exchange.fv3.F90 \
+      stochastic_physics/kinddef.F90 \
+      stochastic_physics/lndp_apply_perts.F90 \
+      stochastic_physics/mersenne_twister.F90 \
+      stochastic_physics/mpi_wrapper.F90 \
+      stochastic_physics/plumes.F90 \
+      stochastic_physics/random_numbers.F90 \
+      stochastic_physics/spectral_transforms.F90 \
+      stochastic_physics/stochastic_physics.F90 \
+      stochastic_physics/stochy_data_mod.F90 \
+      stochastic_physics/stochy_internal_state_mod.F90 \
+      stochastic_physics/stochy_namelist_def.F90 \
+      stochastic_physics/stochy_patterngenerator.F90 \
+      stochastic_physics/update_ca.F90
+
+  list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_stochastic_physics_wrapper \
+      SHiELD_physics/stochastic_physics/
 
   list_paths -o ${BUILD_ROOT}/Build/exec/${CONFIG}_${HYDRO}.${COMP}.${BIT}.${COMPILER}/pathnames_driver \
       ocean_null/ \

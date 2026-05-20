@@ -133,6 +133,10 @@ ifeq ($(NETCDF),3)
   endif
 endif
 
+ifeq ($(DACONFIG), Y)
+  LDFLAGS += -qmkl
+endif
+
 LIBS += $(shell pkg-config --libs yaml-0.1)
 LDFLAGS += $(LIBS)
 

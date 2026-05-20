@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #***********************************************************************
 #*                   GNU Lesser General Public License
 #*
@@ -165,10 +165,12 @@ case $hostname in
       echo " hera environment "
 
       source $MODULESHOME/init/sh
-      module load intel/15.1.133
-      module load netcdf/4.3.0
-      module load hdf5/1.8.14
-      module load cmake/3.20.1
+      module load gnu
+      module load intel/2023.2.0
+      module load impi/2023.2.0
+      module load netcdf/4.7.0
+      module load hdf5/1.14.5
+      module load cmake/3.28.1
 
       export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
       export NETCDF_DIR=${NETCDF}
@@ -176,15 +178,45 @@ case $hostname in
 
       # make your compiler selections here
       export FC=mpiifort
-      export CC=mpiicc
+      export CC=mpiicx
       export CXX=mpicpc
       export LD=mpiifort
       export TEMPLATE=site/intel.mk
       export LAUNCHER=srun
 
       # highest level of AVX support
-      export AVX_LEVEL=-xSKYLAKE-AVX512
+      export AVX_LEVEL=-march=core-avx2
       echo -e ' '
+      module list
+      ;;
+   u* )
+      echo " ursa environment "
+
+      source $MODULESHOME/init/sh
+      module load intel-oneapi-compilers/2025.3.1
+      module load intel-oneapi-mpi/2021.17.1
+      module load intel-oneapi-mkl/2025.3.0
+      module load hdf5/1.14.3
+      module load netcdf-c/4.9.2
+      module load netcdf-fortran/4.6.1
+      module load cmake/3.30.2
+
+      export LIBRARY_PATH="${LIBRARY_PATH}:${NETCDF}/lib:${HDF5}/lib"
+      export NETCDF_DIR=${NETCDF}
+      export FMS_CPPDEFS=""
+      # Add -DHAVE_GETTID to the FMS cppDefs
+      export FMS_CPPDEFS=-DHAVE_GETTID
+
+      # make your compiler selections here
+      export FC=mpiifx
+      export CC=mpiicx
+      export CXX=mpicpc
+      export LD=mpiifx
+      export TEMPLATE=site/intel.mk
+      export LAUNCHER=srun
+
+      export AVX_LEVEL=-xHOST
+      echo -e ''
       module list
       ;;
    lsc* )
@@ -245,7 +277,6 @@ case $hostname in
       export AVX_LEVEL=-march=core-avx2
       echo -e ' '
       module list  
- 
       ;;
    * )
       echo " no environment available based on the hostname "

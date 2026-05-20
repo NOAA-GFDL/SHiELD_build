@@ -64,7 +64,7 @@ spin()
   for arg in "$@"
   do
       case $arg in
-          shield|solo|shiemom|shiemom_lm4)
+          shield|solo|shiemom|shiemom_lm4|shieldda)
              config="${arg#*=}"
              if [ $config = 'solo' ] ; then
                config_name="SOLO"
@@ -74,6 +74,9 @@ spin()
              fi
              if [ $config = 'shiemom_lm4' ] ; then
                config_name="SHiEMOM_LM4"
+             fi
+             if [ $config = 'shieldda' ] ; then
+                 config_name="SHiELDDA"
              fi
              shift # Remove "config" from processing
              ;;
@@ -121,7 +124,7 @@ spin()
           fi
           echo -e ' '
           echo -e "valid options are:"
-          echo -e "\t[shield(D)  | solo | shiemom | shiemom_lm4] \t\t\t configuration"
+          echo -e "\t[shield(D)  | solo | shiemom | shiemom_lm4 | shieldda] \t\t\t configuration"
           echo -e "\t[nh(D) | hydro | sw] \t\t\t executable configuration"
           echo -e "\t[prod(D) | repro | debug] \t\t compiler option settings"
           echo -e "\t[32bit(D) | 64bit] \t\t\t FV3 precision option"
@@ -157,6 +160,9 @@ export BUILD_ROOT=${PWD%/*}
 export SHiELD_SRC=${PWD%/*/*}/SHiELD_SRC/
 export PATH="${BUILD_ROOT}/mkmf/bin:${BUILD_ROOT}/Build/mk_scripts:${PATH}"
 export LIBS_DIR=${BUILD_ROOT}/Build
+if [ $config = 'shieldda' ] ; then
+  export DACONFIG=Y
+fi
 
 #
 # load the proper environment for your machine
@@ -318,7 +324,12 @@ echo -e "  building ${config} ${hydro} ${comp} ${bit} ${compiler} \t `date`"
     mk_make ${config} ${hydro} ${comp} ${bit} ${avx} ${compiler} ${pic} >> build_${config}_${hydro}.${comp}.${bit}.${compiler}.out 2>&1
   #
   # move the executable to an accessible area
-    mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}/test.x bin/${config_name}_${hydro}.${comp}.${bit}.${compiler}.x
+    if [[ -z "${EXEC_NAME}" ]]; then
+      exec_name=${config_name}_${hydro}.${comp}.${bit}.${compiler}.x
+    else
+      exec_name=${EXEC_NAME}
+    fi
+    mv exec/${config}_${hydro}.${comp}.${bit}.${compiler}/test.x bin/${exec_name}
 
 #
 # test and report on build success
