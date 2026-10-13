@@ -25,12 +25,14 @@ Be sure to download the mkmf submodule prior to beginning.  To use:
  1) Checkout code via CHECKOUT_code script
     - ./CHECKOUT_code will checkout necessary files for shield
     - ./CHECKOUT_code will automatically run ./CHECKOUT_mom6 for mom6/sis2 files for the coupled version
+    - ./CHECKOUT_code shieldda will checkout additional stochastic physics package for shield DA
 
  2) cd Build and execute ./COMPILE script with the --help option to see usage
 
  3) COMPILE:
     - ./COMPILE shield: will compile shield with full coupler (utilizing null modules for ocean, land, ice)
     - ./COMPILE shiemom:    will compile mom6, sis2, fv3, gfs as libraries and link them to the full coupler (no null ocean and ice modules.)
+    - ./COMPILE shieldda: will compile shield with full coupler and da capabilities
 
       Example: ./COMPILE shield nh repro 32bit intel
 
