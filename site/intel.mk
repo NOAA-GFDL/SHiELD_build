@@ -16,6 +16,7 @@ REPRO =
 VERBOSE =
 OPENMP =
 PIC =
+SERIAL =
 
 ##############################################
 # Need to use at least GNU Make version 3.81 #
@@ -32,6 +33,7 @@ NETCDF_ROOT = $(NETCDF_DIR)
 MPI_ROOT    = $(MPICH_DIR)
 # start with blank LIB
 LIBS :=
+FFLAGS :=
 
 ifneq (`nc-config --libs`,)
   INCLUDE = `nf-config --fflags` `nc-config --cflags`
@@ -40,11 +42,22 @@ else
   INCLUDE = -I$(NETCDF_ROOT)/include
   LIBS += -lnetcdff -lnetcdf -lhdf5_hl -lhdf5 -lz
 endif
+
+# For SerialBox Support (e.g., Serialization used for validation between Pace and
+# SHiELD), setting the SERIAL option to 'Y' with this Makefile template will
+# enable this.
+$(warning SERIAL = $(SERIAL))
+ifeq ($(SERIAL),Y)
+  INCLUDE += -I$(SERIALBOX_ROOT)/include
+  LIBS += -L$(SERIALBOX_ROOT)/lib -lSerialboxFortran -lSerialboxC -lSerialboxCore -lpthread -lstdc++ -lstdc++fs
+  FFLAGS += -DSERIALIZE
+endif
+
 INCLUDE += $(shell pkg-config --cflags yaml-0.1)
 FPPFLAGS := -fpp -Wp,-w $(INCLUDE)
 CPPFLAGS := $(shell pkg-config --cflags yaml-0.1)
 
-FFLAGS := $(INCLUDE) -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -nowarn -sox -align array64byte -traceback
+FFLAGS += $(INCLUDE) -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -nowarn -sox -align array64byte -traceback
 
 ifeq ($(32BIT),Y)
 FFLAGS += -DOVERLOAD_R4 -DOVERLOAD_R8 -i4 -real-size 32

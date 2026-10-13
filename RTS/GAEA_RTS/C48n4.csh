@@ -1,17 +1,29 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C48n4
-#SBATCH --clusters=c5
+##SBATCH --clusters=c5
 #SBATCH --time=00:45:00
 #SBATCH --nodes=3
 
 # see run_tests.sh for an example of how to run these tests
 set echo
 
-set YourGroup  = "gfdl_f" #modify this to be your own group on f5
-set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
-set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/"
-set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
+echo $BUILD_AREA
+echo $cluster
+
+# uncomment these if running without run_test.sh
+#################################################
+#set YourGroup  = "gfdl_w"
+#set BUILD_AREA = "/ncrc/home2/${USER}/github_shield/SHiELD_build/"
+
+if ( $cluster == 'c5' ) then
+  set BASEDIR    = "/gpfs/f5/gfdl_w/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA"
+endif
+if ( $cluster == 'c6' ) then
+  set BASEDIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
+endif
 
 if ( ! $?COMPILER ) then
   set COMPILER = "intel"
@@ -494,8 +506,6 @@ cat >! input.nml <<EOF
 
 
 
-
-
  &coupler_nml
        months = $months
        days  = $days
@@ -509,7 +519,15 @@ cat >! input.nml <<EOF
        !memuse_verbose = .T.
        atmos_nthreads = $nthreads
        use_hyper_thread = $hyperthread
+       ice_npes = -1
+       land_npes = -1
+       do_ocean=.False.
+       dt_cpld = $dt_atmos
+       do_flux=.False.
+       do_land=.False.
+       do_ice=.False.
 /
+
 
  &external_ic_nml 
        filtered_terrain = $filtered_terrain
@@ -797,13 +815,6 @@ cat >! input_nest02.nml <<EOF
 /
 
 
-!&nest_nml
-!    ngrids = 2
-!    nest_pes = $npes_g1,$npes_g2
-!    p_split = 1
-!/
-
-
 &surf_map_nml
     zero_ocean = .F.
     cd4 = 0.12
@@ -813,30 +824,6 @@ cat >! input_nest02.nml <<EOF
     n_del4 = 1
     max_slope = 0.4
     peak_fac = 1.
-/
-
-
-
- &coupler_nml
-       months = $months
-       days  = $days
-       hours = $hours
-       minutes = $minutes
-       seconds = $seconds
-       dt_atmos = $dt_atmos
-       !dt_ocean = $dt_atmos
-       current_date =  $curr_date
-       calendar = 'julian'
-       memuse_verbose = .T.
-       atmos_nthreads = $nthreads
-       use_hyper_thread = $hyperthread
-       ice_npes = -1
-       land_npes = -1
-       do_ocean=.False.
-       dt_cpld = $dt_atmos
-       do_flux=.False.
-       do_land=.False.
-       do_ice=.False.
 /
 
  &external_ic_nml 

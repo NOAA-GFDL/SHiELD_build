@@ -1,8 +1,8 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
 #SBATCH --job-name=C48_test
-#SBATCH --clusters=c5
 #SBATCH --time=00:10:00
+##SBATCH --cluster=c5
 #SBATCH --nodes=2
 #SBATCH --exclusive
 
@@ -10,10 +10,22 @@
 #
 set echo
 
-set YourGroup  = "gfdl_f" #modify this to be your own group on f5
-set BASEDIR    = "/gpfs/f5/${YourGroup}/scratch/${USER}/"
-set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA/"
-set BUILD_AREA = "/ncrc/home1/${USER}/SHiELD_dev/SHiELD_build/"
+echo $BUILD_AREA
+echo $cluster
+
+# uncomment these if running without run_test.sh
+#################################################
+#set YourGroup  = "gfdl_w"
+#set BUILD_AREA = "/ncrc/home2/${USER}/github_shield/SHiELD_build/"
+
+if ( $cluster == 'c5' ) then
+  set BASEDIR    = "/gpfs/f5/gfdl_w/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/fvGFS_INPUT_DATA"
+endif
+if ( $cluster == 'c6' ) then
+  set BASEDIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
+endif
 
 if ( ! $?COMPILER ) then
   set COMPILER = "intel"
