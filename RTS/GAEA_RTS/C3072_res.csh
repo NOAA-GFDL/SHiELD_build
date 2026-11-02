@@ -26,7 +26,10 @@ if ( $cluster == 'c6' ) then
   set BASEDIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
   set INPUT_DATA = "/gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
 endif
-
+if ( $cluster == 'c7' ) then
+  set BASEDIR    = "/gpfs/f7/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f7/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
+endif
 if ( ! $?COMPILER ) then
   set COMPILER = "intel"
 endif
@@ -285,7 +288,7 @@ cat >! input.nml <<EOF
      chksum_debug = .F.
      dycore_only = .F.
      fdiag = $fdiag
-     first_time_step = .false.
+     !first_time_step = .false.
 /
 
  &fms_io_nml

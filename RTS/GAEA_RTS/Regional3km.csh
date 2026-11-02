@@ -25,6 +25,10 @@ if ( $cluster == 'c6' ) then
   set BASEDIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
   set INPUT_DATA = "/gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
 endif
+if ( $cluster == 'c7' ) then
+  set BASEDIR    = "/gpfs/f7/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f7/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
+endif
 
 set INPUT_DATA = "/ncrc/home1/Lauren.Chilutti/Alaska_c3072/SHiELD_IC/Alaska_c3072"
 
