@@ -27,6 +27,23 @@
 set hostname=`hostname`
 
 switch ($hostname)
+   case gaea7*:
+   case c7n*:
+      echo " gaea C7 environment "
+
+      source ${MODULESHOME}/init/csh
+      module load oneapi/2025.3.1
+      module load cray-mpich/9.2.0
+      module load hdf5/1.14.6
+      module load netcdf-c/4.10.0
+      module load netcdf-fortran/4.6.2
+
+      setenv LAUNCHER "srun"
+      setenv LD_LIBRARY_PATH ${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
+
+      echo -e ' '
+      module list
+      breaksw
    case gaea6?:
    case c6n*:
       echo " gaea C6 environment "

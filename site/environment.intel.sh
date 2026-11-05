@@ -27,6 +27,37 @@
 hostname=`hostname`
 
 case $hostname in
+   gaea7* | c7n* )
+      echo " gaea C7 environment "
+
+      . ${MODULESHOME}/init/sh
+      module load oneapi/2025.3.1
+      module load cray-mpich/9.2.0
+      module load hdf5/1.14.6
+      module load netcdf-c/4.10.0
+      module load netcdf-fortran/4.6.2
+      module load libyaml/0.2.5
+      module load boost
+
+      # Add -DHAVE_GETTID to the FMS cppDefs
+      export FMS_CPPDEFS=-DHAVE_GETTID
+
+      # make your compiler selections here
+      export FC=mpifort
+      export CC=mpicc
+      export CXX=mpicc
+      export LD=mpifort
+      export TEMPLATE=site/intel.mk
+      export LAUNCHER=srun
+
+      #need to add this for dynamically linking on GAEA
+      export LD_LIBRARY_PATH=${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
+
+      # highest level of AVX support
+      export AVX_LEVEL=-march=core-avx-i
+      echo -e ' '
+      module list
+      ;;
    gaea6? | c6n* )
       echo " gaea C6 environment "
 
