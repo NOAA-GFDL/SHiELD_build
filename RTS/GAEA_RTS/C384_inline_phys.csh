@@ -1,6 +1,6 @@
 #!/bin/tcsh
 #SBATCH --output=./stdout/%x.%j
-#SBATCH --job-name=C384
+#SBATCH --job-name=C384_inline
 ##SBATCH --clusters=c5
 #SBATCH --time=00:20:00
 #SBATCH --nodes=21
@@ -26,7 +26,10 @@ if ( $cluster == 'c6' ) then
   set BASEDIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
   set INPUT_DATA = "/gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
 endif
-
+if ( $cluster == 'c7' ) then
+  set BASEDIR    = "/gpfs/f7/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f7/bil-coastal-gfdl/world-shared/SHiELD_INPUT_DATA"
+endif
 if ( ! $?COMPILER ) then
   set COMPILER = "intel"
 endif
@@ -46,7 +49,7 @@ endif
 set MONO = "non-mono"   # choices:  mono, non-mono
 set CASE = "C$res"
 set NAME = "20160801.00Z"
-set MEMO = "$SLURM_JOB_NAME"
+set MEMO = "$SLURM_JOB_NAME.inline"
 set EXE = "x"
 set HYPT = "on"         # choices:  on, off  (controls hyperthreading)
 if ( ! $?COMP ) then
@@ -273,7 +276,7 @@ cat >! input.nml <<EOF
      chksum_debug = $chksum_debug
      dycore_only = $dycore_only
      fdiag = $fdiag
-     first_time_step = .false.
+     !first_time_step = .false.
 /
 
  &fms_io_nml

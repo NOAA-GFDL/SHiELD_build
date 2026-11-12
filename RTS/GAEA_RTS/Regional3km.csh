@@ -25,6 +25,10 @@ if ( $cluster == 'c6' ) then
   set BASEDIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
   set INPUT_DATA = "/gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA"
 endif
+if ( $cluster == 'c7' ) then
+  set BASEDIR    = "/gpfs/f7/bil-coastal-gfdl/scratch/${USER}/SHiELD_test/"
+  set INPUT_DATA = "/gpfs/f7/bil-coastal-gfdl/world-shared/SHiELD_INPUT_DATA"
+endif
 
 set INPUT_DATA = "/ncrc/home1/Lauren.Chilutti/Alaska_c3072/SHiELD_IC/Alaska_c3072"
 
@@ -67,6 +71,10 @@ endif
 if ( $cluster == 'c6' ) then
   set FIX  = /gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/fvGFS_INPUT_DATA/fix.v201810
   set GFS  = /gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/fvGFS_INPUT_DATA/GFS_STD_INPUT.20160311.tar
+endif
+if ( $cluster == 'c7' ) then
+  set FIX  = /gpfs/f7/bil-coastal-gfdl/world-shared/SHiELD_INPUT_DATA/fix.v201810
+  set GFS  = /gpfs/f7/bil-coastal-gfdl/world-shared/SHiELD_INPUT_DATA/GFS_STD_INPUT.20160311.tar
 endif
 set GRID = ${INPUT_DATA}/GRID/
 
