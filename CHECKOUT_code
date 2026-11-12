@@ -82,12 +82,12 @@ echo ' '
 echo 'Checking out files for: '$config_name
 echo ' '
 
-release="FV3-202604-public"
+release="main"
 
 fv3_release=$release
 phy_release=$release
-fms_release="2026.01"
-fms_c_release="2026.01"
+fms_release="2026.03"
+fms_c_release="2026.03"
 drivers_release=$release
 land_release="2025.04"
 stoch_release="gfdl/shield"
