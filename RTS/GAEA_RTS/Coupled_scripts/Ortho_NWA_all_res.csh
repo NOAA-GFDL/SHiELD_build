@@ -26,25 +26,25 @@ set res = 3200 # 3km
 echo "Cluster: $SLURM_CLUSTER_NAME"
 
 if (${SLURM_CLUSTER_NAME} == "c7") then
-set BASE_DIR    = "/gpfs/f7/bil-coastal-gfdl/scratch/Joseph.Mouallem/"           # Sim/work directory - to be set
+set BASE_DIR    = "/gpfs/f7/bil-coastal-gfdl/scratch/${USER}/"           # Sim/work directory - to be set
 set BUILD_DIR = "~${USER}/c7/SHiELD_build/"                  # Build directory - To be set
 set INPUT_DATA = "/gpfs/f7/bil-coastal-gfdl/world-shared/SHiELD_INPUT_DATA/"
 endif
 
 if (${SLURM_CLUSTER_NAME} == "c6") then
-set BASE_DIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/Joseph.Mouallem/"           # Sim/work directory - to be set
+set BASE_DIR    = "/gpfs/f6/bil-coastal-gfdl/scratch/${USER}/"           # Sim/work directory - to be set
 set BUILD_DIR = "~${USER}/shiemom_clean/SHiELD_build/"                  # Build directory - To be set
 set INPUT_DATA = "/gpfs/f6/bil-coastal-gfdl/proj-shared/gfdl_w/SHiELD_INPUT_DATA/"
 endif
 
 if (${SLURM_CLUSTER_NAME} == "c5") then
-set BASE_DIR    = "/gpfs/f5/gfdl_w/scratch/Joseph.Mouallem/"                     # Sim/work directory - to be set
+set BASE_DIR    = "/gpfs/f5/gfdl_w/scratch/${USER}/"                     # Sim/work directory - to be set
 set BUILD_DIR = "~${USER}/shiemom_clean/SHiELD_build/"                  # Build directory - To be set
 set INPUT_DATA = "/gpfs/f5/gfdl_w/proj-shared/SHiELD_INPUT_DATA/"
 endif
 
 if (${SLURM_CLUSTER_NAME} == "stellar") then
-set BASE_DIR    = "/scratch/cimes/mouallem/shiemom_runs/test/"
+set BASE_DIR    = "/scratch/cimes/${USER}/shiemom_runs/test/"
 set BUILD_DIR = "~${USER}/for_jinbo/SHiELD_build/"
 set INPUT_DATA = "/scratch/cimes/mouallem/from_gaea/Coupled_SHiELD/INPUT/"
 endif
