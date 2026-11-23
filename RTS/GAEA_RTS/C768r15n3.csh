@@ -126,7 +126,7 @@ set TIME_STAMP = ${BUILD_AREA}/site/time_stamp.csh
     # set various debug options
     set no_dycore = ".F."
     set dycore_only = ".F." 
-    set chksum_debug = ".true."
+    set chksum_debug = ".false."
     set print_freq = "-6"
 
     if (${TYPE} == "nh") then
