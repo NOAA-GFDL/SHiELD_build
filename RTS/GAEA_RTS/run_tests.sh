@@ -31,3 +31,4 @@ sbatch --export=ALL,YourGroup=$ACCOUNT,cluster=$cluster --mail-user=${USER}@noaa
 sbatch --export=ALL,YourGroup=$ACCOUNT,cluster=$cluster --mail-user=${USER}@noaa.gov --mail-type=fail --account=${ACCOUNT} --cluster=${cluster} C768r15n3.csh
 sbatch --export=ALL,YourGroup=$ACCOUNT,cluster=$cluster --mail-user=${USER}@noaa.gov --mail-type=fail --account=${ACCOUNT} --cluster=${cluster} C3072_res.csh
 sbatch --export=ALL,YourGroup=$ACCOUNT,cluster=$cluster --mail-user=${USER}@noaa.gov --mail-type=fail --account=${ACCOUNT} --cluster=${cluster} Regional3km.csh
+sbatch --export=ALL,YourGroup=$ACCOUNT,cluster=$cluster --mail-user=${USER}@noaa.gov --mail-type=fail --account=${ACCOUNT} --cluster=${cluster} C384_inline_phys.csh
